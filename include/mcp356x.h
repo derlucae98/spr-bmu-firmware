@@ -1,9 +1,24 @@
 /*
- * mcp356x.h
- *
- *  Created on: Jan 31, 2022
- *      Author: Luca Engelmann (derlucae98)
- */
+Copyright (c) 2022 Luca Engelmann (derlucae98)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 
 #ifndef MCP356X_H_
 #define MCP356X_H_
@@ -11,38 +26,41 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
+#include <stdbool.h>
 
 typedef void (*mcp356x_spi_move_array_t)(uint8_t *a, size_t len);
 typedef void (*mcp356x_assert_cs_t)(void);
 typedef void (*mcp356x_deassert_cs_t)(void);
 
 typedef struct {
+    uint8_t VREF_SEL    : 1;
+    uint8_t CLK_SEL     : 2;
+    uint8_t CS_SEL      : 2;
+    uint8_t ADC_MODE    : 2;
+    uint8_t PRE         : 2;
+    uint8_t OSR         : 4;
+    uint8_t BOOST       : 2;
+    uint8_t GAIN        : 3;
+    uint8_t AZ_MUX      : 1;
+    uint8_t AZ_REF      : 1;
+    uint8_t CONV_MODE   : 2;
+    uint8_t DATA_FORMAT : 2;
+    uint8_t CRC_FORMAT  : 1;
+    uint8_t EN_CRCCOM   : 1;
+    uint8_t EN_OFFCAL   : 1;
+    uint8_t EN_GAINCAL  : 1;
+    uint8_t IRQ_MODE    : 1;
+    uint8_t EN_FASTCMD  : 1;
+    uint8_t EN_STP      : 1;
+    uint32_t MCLK;
+} mcp356x_config_t;
+
+typedef struct {
     mcp356x_spi_move_array_t spi_move_array;
     mcp356x_assert_cs_t assert_cs;
     mcp356x_deassert_cs_t deassert_cs;
+    mcp356x_config_t config;
 } mcp356x_obj_t;
-
-typedef struct {
-    uint8_t VREF_SEL : 1;
-    uint8_t CLK_SEL : 2;
-    uint8_t CS_SEL : 2;
-    uint8_t ADC_MODE : 2;
-    uint8_t PRE : 2;
-    uint8_t OSR : 4;
-    uint8_t BOOST : 2;
-    uint8_t GAIN : 3;
-    uint8_t AZ_MUX : 1;
-    uint8_t AZ_REF : 1;
-    uint8_t CONV_MODE : 2;
-    uint8_t DATA_FORMAT : 2;
-    uint8_t CRC_FORMAT : 1;
-    uint8_t EN_CRCCOM : 1;
-    uint8_t EN_OFFCAL : 1;
-    uint8_t EN_GAINCAL : 1;
-    uint8_t IRQ_MODE : 1;
-    uint8_t EN_FASTCMD : 1;
-    uint8_t EN_STP : 1;
-} mcp356x_config_t;
 
 enum {
     VREF_SEL_EXT,
@@ -158,13 +176,15 @@ typedef enum {
 
 typedef enum {
     MCP356X_ERROR_OK,
-    MCP356X_ERROR_FAILED
+    MCP356X_ERROR_FAILED,
+    MCP356X_ERROR_CRC
 } mcp356x_error_t;
 
 mcp356x_obj_t mcp356x_init(mcp356x_spi_move_array_t mcp356x_spi_move_array, mcp356x_assert_cs_t mcp356x_assert_cs, mcp356x_deassert_cs_t mcp356x_deassert_cs);
 mcp356x_error_t mcp356x_reset(mcp356x_obj_t *obj);
-mcp356x_error_t mcp356x_set_config(mcp356x_obj_t *obj, mcp356x_config_t cfg);
-mcp356x_error_t mcp356x_get_value(mcp356x_obj_t *obj, mcp356x_channel_t ch_pos, mcp356x_channel_t ch_neg, uint32_t *val);
+mcp356x_error_t mcp356x_set_config(mcp356x_obj_t *obj);
+mcp356x_error_t mcp356x_get_value(mcp356x_obj_t *obj, mcp356x_channel_t ch_pos, mcp356x_channel_t ch_neg, int32_t *val, uint8_t *sgn, uint8_t *chID);
+mcp356x_error_t mcp356x_get_voltage(mcp356x_obj_t *obj, mcp356x_channel_t ch_pos, mcp356x_channel_t ch_neg, float refVoltage, float *result);
 
 
 #endif /* MCP356X_H_ */

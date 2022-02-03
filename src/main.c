@@ -42,10 +42,15 @@ void led_blink_task(void *pvParameters) {
     TickType_t xLastWakeTime;
     const TickType_t xPeriod = pdMS_TO_TICKS(1000);
     xLastWakeTime = xTaskGetTickCount();
+
     while (1) {
         toggle_pin(LED_WARNING_PORT, LED_WARNING_PIN);
-        uint32_t val;
-        mcp356x_get_value(&currentSensor, MUX_CH1, MUX_AGND, &val);
+        float val;
+        mcp356x_get_voltage(&currentSensor, MUX_CH2, MUX_AGND, 2.497f, &val);
+        PRINTF("Voltage: %.3f\n", val);
+        mcp356x_get_voltage(&currentSensor, MUX_AGND, MUX_CH2, 2.497f, &val);
+        PRINTF("Voltage: %.3f\n", val);
+
 
 
 		vTaskDelayUntil(&xLastWakeTime, xPeriod);
@@ -278,6 +283,8 @@ int main(void)
 	wdog_disable();
     clock_init();
     gpio_init();
+    can_init(CAN0);
+    uart_init();
     clear_pin(CAN_STBY_PORT, CAN_STBY_PIN);
 
     set_pin(CS_CARD_PORT, CS_CARD_PIN);
@@ -292,34 +299,24 @@ int main(void)
 
     currentSensor = mcp356x_init(current_sensor_spi, current_sensor_assert, current_sensor_deassert);
 
-    mcp356x_config_t currentSensorConfig;
-    currentSensorConfig.VREF_SEL = VREF_SEL_EXT;
-    currentSensorConfig.CLK_SEL = CLK_SEL_INT;
-    currentSensorConfig.CS_SEL = CS_SEL_OFF;
-    currentSensorConfig.ADC_MODE = ADC_MODE_CONV;
-    currentSensorConfig.PRE = PRE_1;
-    currentSensorConfig.OSR = OSR_256;
-    currentSensorConfig.BOOST = BOOST_1;
-    currentSensorConfig.GAIN = GAIN_1;
-    currentSensorConfig.AZ_MUX = 0;
-    currentSensorConfig.AZ_REF = 0;
-    currentSensorConfig.CONV_MODE = CONV_MODE_CONT_SCAN;
-    currentSensorConfig.DATA_FORMAT = DATA_FORMAT_24;
-    currentSensorConfig.CRC_FORMAT = CRC_FORMAT_16;
-    currentSensorConfig.EN_CRCCOM = 0;
-    currentSensorConfig.EN_OFFCAL = 0;
-    currentSensorConfig.EN_GAINCAL = 0;
-    currentSensorConfig.IRQ_MODE = IRQ_MODE_IRQ_HIGH_Z;
-    currentSensorConfig.EN_FASTCMD = 1;
-    currentSensorConfig.EN_STP = 0;
+
+    currentSensor.config.VREF_SEL = VREF_SEL_EXT;
+    currentSensor.config.CLK_SEL = CLK_SEL_INT;
+    currentSensor.config.ADC_MODE = ADC_MODE_CONV;
+    currentSensor.config.CONV_MODE = CONV_MODE_CONT_SCAN;
+    currentSensor.config.DATA_FORMAT = DATA_FORMAT_32_SGN;
+    currentSensor.config.CRC_FORMAT = CRC_FORMAT_16;
+    currentSensor.config.IRQ_MODE = IRQ_MODE_IRQ_HIGH_Z;
+    currentSensor.config.EN_STP = 0;
+    currentSensor.config.OSR = OSR_256;
+    currentSensor.config.EN_CRCCOM = 1;
     mcp356x_error_t err = MCP356X_ERROR_FAILED;
     err = mcp356x_reset(&currentSensor);
-    err = mcp356x_set_config(&currentSensor, currentSensorConfig);
+    err = mcp356x_set_config(&currentSensor);
 
 
 
-    can_init(CAN0);
-    uart_init();
+
 
     static const LTC_initial_data_t ltcInitData = {NUMBEROFSLAVES, 2700UL, 4200UL, 2};
     //ltc_init(ltcInitData);
