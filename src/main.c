@@ -10,6 +10,7 @@
 #include "LTC6811.h"
 #include "safety.h"
 #include "mcp356x.h"
+#include "sensors.h"
 
 #define NUMBEROFSLAVES 12
 
@@ -19,19 +20,6 @@ void wdog_disable (void)
   WDOG->CNT = 0xD928C520;
   WDOG->TOVAL = 0x0000FFFF;
   WDOG->CS = 0x00002100;
-}
-
-static mcp356x_obj_t currentSensor;
-static inline void current_sensor_spi(uint8_t *a, size_t len) {
-    spi_move_array(LPSPI1, a, len);
-}
-
-static inline void current_sensor_assert(void) {
-    clear_pin(CS_CURRENT_PORT, CS_CURRENT_PIN);
-}
-
-static inline void current_sensor_deassert(void) {
-    set_pin(CS_CURRENT_PORT, CS_CURRENT_PIN);
 }
 
 void led_blink_task(void *pvParameters) {
@@ -45,13 +33,6 @@ void led_blink_task(void *pvParameters) {
 
     while (1) {
         toggle_pin(LED_WARNING_PORT, LED_WARNING_PIN);
-        float val;
-        mcp356x_get_voltage(&currentSensor, MUX_CH2, MUX_AGND, 2.497f, &val);
-        PRINTF("Voltage: %.3f\n", val);
-        mcp356x_get_voltage(&currentSensor, MUX_AGND, MUX_CH2, 2.497f, &val);
-        PRINTF("Voltage: %.3f\n", val);
-
-
 
 		vTaskDelayUntil(&xLastWakeTime, xPeriod);
 	}
@@ -297,22 +278,7 @@ int main(void)
 
     spi_init(LPSPI1, LPSPI_PRESC_8, LPSPI_MODE_0);
 
-    currentSensor = mcp356x_init(current_sensor_spi, current_sensor_assert, current_sensor_deassert);
-
-
-    currentSensor.config.VREF_SEL = VREF_SEL_EXT;
-    currentSensor.config.CLK_SEL = CLK_SEL_INT;
-    currentSensor.config.ADC_MODE = ADC_MODE_CONV;
-    currentSensor.config.CONV_MODE = CONV_MODE_CONT_SCAN;
-    currentSensor.config.DATA_FORMAT = DATA_FORMAT_32_SGN;
-    currentSensor.config.CRC_FORMAT = CRC_FORMAT_16;
-    currentSensor.config.IRQ_MODE = IRQ_MODE_IRQ_HIGH_Z;
-    currentSensor.config.EN_STP = 0;
-    currentSensor.config.OSR = OSR_256;
-    currentSensor.config.EN_CRCCOM = 1;
-    mcp356x_error_t err = MCP356X_ERROR_FAILED;
-    err = mcp356x_reset(&currentSensor);
-    err = mcp356x_set_config(&currentSensor);
+    init_sensors();
 
 
 
@@ -339,17 +305,15 @@ void vApplicationTickHook(void) {
 
 }
 void vApplicationStackOverflowHook(TaskHandle_t pxTask, char *pcTaskName) {
-    //GPIOSetPin(GPIO_PORTA, LED_GN_PIN);
     PRINTF("Stack overflow in %s", pcTaskName);
 	configASSERT(0);
 }
 
 void vApplicationMallocFailedHook(void) {
-    //GPIOSetPin(GPIO_PORTA, LED_GN_PIN);
 	configASSERT(0);
 }
 
 void vApplicationIdleHook(void) {
-    //GPIOTogglePin(GPIO_PORTA, STATUS0_PIN);
+
 }
 

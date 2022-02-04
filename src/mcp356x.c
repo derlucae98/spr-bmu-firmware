@@ -190,58 +190,74 @@ mcp356x_error_t mcp356x_set_config(mcp356x_obj_t *obj) {
 }
 
 mcp356x_error_t mcp356x_get_value(mcp356x_obj_t *obj, mcp356x_channel_t ch_pos, mcp356x_channel_t ch_neg, int32_t *val, uint8_t *sgn, uint8_t *chID) {
+    mcp356x_acquire(obj, ch_pos, ch_neg);
+    mcp356x_read_value(obj, val, sgn, chID);
+}
+
+mcp356x_error_t mcp356x_get_voltage(mcp356x_obj_t *obj, mcp356x_channel_t ch_pos, mcp356x_channel_t ch_neg, float refVoltage, float *result) {
+    mcp356x_acquire(obj, ch_pos, ch_neg);
+    mcp356x_read_voltage(obj, refVoltage, result);
+}
+
+mcp356x_error_t mcp356x_acquire(mcp356x_obj_t *obj, mcp356x_channel_t ch_pos, mcp356x_channel_t ch_neg) {
     if (!obj) {
-        return MCP356X_ERROR_FAILED;
-    }
-    //Set channel
-    uint8_t buf[2];
-    buf[0] = INCR_WRITE(REG_MUX);
-    buf[1] = ((ch_pos & 0x0F) << 4) | (ch_neg & 0x0F);
-    obj->assert_cs();
-    obj->spi_move_array(buf, 2);
-    obj->deassert_cs();
+         return MCP356X_ERROR_FAILED;
+     }
+     //Set channel
+     uint8_t buf[2];
+     buf[0] = INCR_WRITE(REG_MUX);
+     buf[1] = ((ch_pos & 0x0F) << 4) | (ch_neg & 0x0F);
+     obj->assert_cs();
+     obj->spi_move_array(buf, 2);
+     obj->deassert_cs();
 
-    if (!check_status(buf[0])) {
-        return MCP356X_ERROR_FAILED;
-    }
+     if (!check_status(buf[0])) {
+         return MCP356X_ERROR_FAILED;
+     }
 
-    //Request conversion
-    uint8_t cmd = COMMAND_ADC_FAST_START;
-    obj->assert_cs();
-    obj->spi_move_array(&cmd, 1);
-    obj->deassert_cs();
+     //Request conversion
+     uint8_t cmd = COMMAND_ADC_FAST_START;
+     obj->assert_cs();
+     obj->spi_move_array(&cmd, 1);
+     obj->deassert_cs();
 
-    if (!check_status(cmd)) {
-        return MCP356X_ERROR_FAILED;
-    }
+     if (!check_status(cmd)) {
+         return MCP356X_ERROR_FAILED;
+     }
+}
 
+mcp356x_error_t mcp356x_read_value(mcp356x_obj_t *obj, int32_t *val, uint8_t *sgn, uint8_t *chID) {
     //Poll ADC value
-    uint8_t status = 0;
-    cmd = STATIC_READ(REG_ADCDATA);
-    uint16_t timeout = 1000; //TODO: Implement timeout based on OSR and DMCLK (Table 5-6)
-    while (status != ADC_CONV_COMPLETE) {
+    uint8_t cmd = 0;
+    uint32_t timeout = -1; //TODO: Implement timeout based on OSR and DMCLK (Table 5-6)
+    bool timeoutReached = true;
+
+    while (--timeout > 0) {
+        cmd = STATIC_READ(REG_ADCDATA);
         obj->assert_cs();
         obj->spi_move_array(&cmd, 1);
-        status = cmd;
-        cmd = STATIC_READ(REG_ADCDATA);
+        if (cmd == ADC_CONV_COMPLETE) {
+            timeoutReached = false;
+            break;
+        }
         obj->deassert_cs();
 
-        if (!check_status(status)) {
+        if (!check_status(cmd)) {
             //No valid answer at all
             return MCP356X_ERROR_FAILED;
         }
+    }
 
-        if (--timeout == 0) {
-            return MCP356X_ERROR_FAILED;
-        }
+    if (timeoutReached) {
+        return MCP356X_ERROR_FAILED;
     }
 
     //Read ADC value
     uint8_t rec[7];
     memset(rec, 0xFF, sizeof(rec));
-    rec[0] = STATIC_READ(REG_ADCDATA);
+    rec[0] = cmd;
     obj->assert_cs();
-    obj->spi_move_array(rec, 7);
+    obj->spi_move_array(rec + 1, 6);
     obj->deassert_cs();
 
     if (!check_status(rec[0])) {
@@ -284,12 +300,12 @@ mcp356x_error_t mcp356x_get_value(mcp356x_obj_t *obj, mcp356x_channel_t ch_pos, 
     return MCP356X_ERROR_OK;
 }
 
-mcp356x_error_t mcp356x_get_voltage(mcp356x_obj_t *obj, mcp356x_channel_t ch_pos, mcp356x_channel_t ch_neg, float refVoltage, float *result) {
+mcp356x_error_t mcp356x_read_voltage(mcp356x_obj_t *obj, float refVoltage, float *result) {
     int32_t val;
     uint8_t sgn;
     uint8_t chID;
     mcp356x_error_t res;
-    res = mcp356x_get_value(obj, ch_pos, ch_neg, &val, &sgn, &chID);
+    res = mcp356x_read_value(obj, &val, &sgn, &chID);
 
     if (res != MCP356X_ERROR_OK) {
         return res;
