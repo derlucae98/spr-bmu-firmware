@@ -68,7 +68,7 @@ static void sensor_task(void *p) {
     (void) p;
 
     TickType_t xLastWakeTime;
-    const TickType_t xPeriod = pdMS_TO_TICKS(1000);
+    const TickType_t xPeriod = pdMS_TO_TICKS(10);
     xLastWakeTime = xTaskGetTickCount();
     float val;
     float current = 0;
@@ -79,12 +79,16 @@ static void sensor_task(void *p) {
         mcp356x_read_voltage(&currentSensor, currRef, &val);
 
         val = (val + currOffset) * currGain;
-        PRINTF("U pre: %0.4f V\n", val);
+        //PRINTF("U pre: %0.4f V\n", val);
 
         val = (val - 1.250804f) / (-0.498443078);
-        PRINTF("U post: %0.4f V\n", val);
+        //PRINTF("U post: %0.4f V\n", val);
         current = (val / SHUNT) * CONVERSION_RATIO;
-        PRINTF("I: %.2f A\n", current);
+        //PRINTF("I: %.2f A\n", current);
+        if (batteryData_mutex_take(pdMS_TO_TICKS(4))) {
+            batteryData.current = (int16_t) (current * 100);
+            batteryData_mutex_give();
+        }
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
 }

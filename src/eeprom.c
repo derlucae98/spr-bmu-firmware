@@ -2,7 +2,7 @@
  * eeprom.c
  *
  *  Created on: Feb 5, 2022
- *      Author: scuderia
+ *      Author: Luca Engelmann
  */
 
 

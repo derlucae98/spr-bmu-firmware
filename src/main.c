@@ -74,12 +74,12 @@ void led_blink_task(void *pvParameters) {
 
     while (1) {
         toggle_pin(LED_WARNING_PORT, LED_WARNING_PIN);
-        uint8_t data[EEPROM_PAGESIZE];
-        eeprom_read_array(data, 0, EEPROM_PAGESIZE);
-        for (size_t i = 0; i < EEPROM_PAGESIZE; i++) {
-            PRINTF("%02X ", data[i]);
-        }
-        PRINTF("\n");
+//        uint8_t data[EEPROM_PAGESIZE];
+//        eeprom_read_array(data, 0, EEPROM_PAGESIZE);
+//        for (size_t i = 0; i < EEPROM_PAGESIZE; i++) {
+//            PRINTF("%02X ", data[i]);
+//        }
+//        PRINTF("\n");
 
 
 		vTaskDelayUntil(&xLastWakeTime, xPeriod);
@@ -97,15 +97,7 @@ void can_send_task(void *p) {
     can_msg_t msg;
 
     while (1) {
-        msg.ID = 0x001;
-        msg.DLC = 5;
-        msg.payload[0] = 0xAA;
-        msg.payload[1] = 0xBB;
-        msg.payload[2] = 0xCC;
-        msg.payload[3] = 0xDD;
-        msg.payload[4] = 0xEE;
-        can_send(CAN0, &msg);
-/*
+
         if (batteryData_mutex_take(portMAX_DELAY)) {
 
 
@@ -235,7 +227,7 @@ void can_send_task(void *p) {
             batteryData_mutex_give();
 
         }
-*/
+
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
 	}
 }
@@ -338,7 +330,7 @@ int main(void)
 
 
     static const LTC_initial_data_t ltcInitData = {NUMBEROFSLAVES, 2700UL, 4200UL, 2};
-    //ltc_init(ltcInitData);
+    ltc_init(ltcInitData);
 
 
 

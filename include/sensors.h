@@ -16,6 +16,7 @@
 #include "spi.h"
 #include "gpio.h"
 #include "gpio_def.h"
+#include "LTC6811.h"
 
 #define SENSOR_SPI LPSPI1
 

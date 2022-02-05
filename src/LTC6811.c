@@ -257,7 +257,7 @@ void ltc_init(LTC_initial_data_t initData) {
     _workerTasksPrio = initData.workerTasksPrio;
     _cellUnderVoltageThreshold = initData.undervoltageThreshold;
     _cellOverVoltageThreshold = initData.overvoltageThreshold;
-    xTaskCreate(ltc_config_slaves_task, "LTC6811 conf", 300, NULL, 4, NULL);
+    //xTaskCreate(ltc_config_slaves_task, "LTC6811 conf", 300, NULL, 4, NULL);
 }
 
 // Helper functions
