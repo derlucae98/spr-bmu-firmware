@@ -17,13 +17,13 @@
 #include "gpio.h"
 #include "gpio_def.h"
 #include "LTC6811.h"
+#include "eeprom.h"
 
 #define SENSOR_SPI LPSPI1
 
-extern volatile float currGain;
-extern volatile float currOffset;
-extern volatile float currRef;
-bool init_sensors();
+
+bool init_sensors(void);
+void load_calibration(void);
 
 
 #endif /* SENSORS_H_ */

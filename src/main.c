@@ -44,21 +44,21 @@ static void uart_rec(char* s) {
         token = strtok_r(NULL, delim, &strtokHelp);
     }
 
-    if (strcmp(tokens[0], "cal") == 0) {
-        if (strcmp(tokens[1], "curr") == 0) {
-            if (strcmp(tokens[2], "gain") == 0) {
-                sscanf(tokens[3], "%f", &currGain);
-                PRINTF("calibrating gain for %s: %.3f\n", tokens[1], currGain);
-            } else if (strcmp(tokens[2], "offset") == 0) {
-                sscanf(tokens[3], "%f", &currOffset);
-                PRINTF("calibrating offset for %s: %.3f\n", tokens[1], currOffset);
-            }
-        }
-    }
-    if (strcmp(tokens[0], "ref") == 0) {
-        sscanf(tokens[1], "%f", &currRef);
-        PRINTF("Ref: %.3f\n", tokens[1], currRef);
-    }
+//    if (strcmp(tokens[0], "cal") == 0) {
+//        if (strcmp(tokens[1], "curr") == 0) {
+//            if (strcmp(tokens[2], "gain") == 0) {
+//                sscanf(tokens[3], "%f", &currGain);
+//                PRINTF("calibrating gain for %s: %.3f\n", tokens[1], currGain);
+//            } else if (strcmp(tokens[2], "offset") == 0) {
+//                sscanf(tokens[3], "%f", &currOffset);
+//                PRINTF("calibrating offset for %s: %.3f\n", tokens[1], currOffset);
+//            }
+//        }
+//    }
+//    if (strcmp(tokens[0], "ref") == 0) {
+//        sscanf(tokens[1], "%f", &currRef);
+//        PRINTF("Ref: %.3f\n", tokens[1], currRef);
+//    }
 
 
 }
@@ -74,7 +74,28 @@ void led_blink_task(void *pvParameters) {
 
     while (1) {
         toggle_pin(LED_WARNING_PORT, LED_WARNING_PIN);
-//        uint8_t data[EEPROM_PAGESIZE];
+
+//        float currGain = 0.98145531f;
+//        float currOffset = 0.00132183f;
+//        float currRef = 2.50008f;
+//        float currFEGain = -0.498443078; //Front-end gain
+//        float currFEOffset = 1.250804f; //Front-end offset
+//
+//
+//       uint8_t data[EEPROM_PAGESIZE];
+//       uint16_t crc;
+//       memcpy(&data[0],  (float*)&currGain,     sizeof(float));
+//       memcpy(&data[4],  (float*)&currOffset,   sizeof(float));
+//       memcpy(&data[8],  (float*)&currRef,      sizeof(float));
+//       memcpy(&data[12], (float*)&currFEGain,   sizeof(float));
+//       memcpy(&data[16], (float*)&currFEOffset, sizeof(float));
+//       crc = eeprom_get_crc16(data, sizeof(data) - sizeof(uint16_t));
+//       data[254] = crc >> 8;
+//       data[255] = crc & 0xFF;
+//       eeprom_write_page(data, 0, EEPROM_PAGESIZE);
+//       while (!eeprom_has_write_finished());
+
+
 //        eeprom_read_array(data, 0, EEPROM_PAGESIZE);
 //        for (size_t i = 0; i < EEPROM_PAGESIZE; i++) {
 //            PRINTF("%02X ", data[i]);

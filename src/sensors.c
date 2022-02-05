@@ -9,7 +9,6 @@
 
 #define SHUNT 16.4f
 #define CONVERSION_RATIO 2000
-#define CURRENT_OFFSET -0.02258f
 
 static mcp356x_obj_t currentSensor;
 
@@ -18,6 +17,8 @@ static void sensor_task(void *p);
 volatile float currGain;
 volatile float currOffset;
 volatile float currRef;
+volatile float currFEGain; //Front-end gain
+volatile float currFEOffset; //Front-end offset
 
 static inline void current_sensor_spi(uint8_t *a, size_t len) {
     spi_move_array(SENSOR_SPI, a, len);
@@ -31,11 +32,7 @@ static inline void current_sensor_deassert(void) {
     set_pin(CS_CURRENT_PORT, CS_CURRENT_PIN);
 }
 
-bool init_sensors() {
-    currGain = 0.98145531f;
-    currOffset = 0.00132183f;
-    currRef = 2.50008f;
-
+bool init_sensors(void) {
     currentSensor = mcp356x_init(current_sensor_spi, current_sensor_assert, current_sensor_deassert);
 
     currentSensor.config.VREF_SEL = VREF_SEL_EXT;
@@ -60,8 +57,26 @@ bool init_sensors() {
         return false;
     }
 
+    load_calibration();
     xTaskCreate(sensor_task, "sensors", 1000, NULL, 2, NULL);
     return true;
+}
+
+void load_calibration(void) {
+    uint8_t pageBuffer[EEPROM_PAGESIZE];
+    eeprom_read_array(pageBuffer, 0, EEPROM_PAGESIZE);
+    uint16_t crcShould = (pageBuffer[254] << 8) | pageBuffer[255];
+    if (!eeprom_check_crc(pageBuffer, sizeof(pageBuffer) - sizeof(uint16_t), crcShould)) {
+        PRINTF("CRC error while loading calibration data!\n");
+        configASSERT(0);
+    }
+
+    memcpy((float*)&currGain,     &pageBuffer[0],  sizeof(float));
+    memcpy((float*)&currOffset,   &pageBuffer[4],  sizeof(float));
+    memcpy((float*)&currRef,      &pageBuffer[8],  sizeof(float));
+    memcpy((float*)&currFEGain,   &pageBuffer[12], sizeof(float));
+    memcpy((float*)&currFEOffset, &pageBuffer[16], sizeof(float));
+
 }
 
 static void sensor_task(void *p) {
@@ -81,7 +96,7 @@ static void sensor_task(void *p) {
         val = (val + currOffset) * currGain;
         //PRINTF("U pre: %0.4f V\n", val);
 
-        val = (val - 1.250804f) / (-0.498443078);
+        val = (val - currFEOffset) / (currFEGain);
         //PRINTF("U post: %0.4f V\n", val);
         current = (val / SHUNT) * CONVERSION_RATIO;
         //PRINTF("I: %.2f A\n", current);

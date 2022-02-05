@@ -30,6 +30,8 @@ void eeprom_write_page(uint8_t *data, size_t startAddress, size_t len);
 void eeprom_read_array(uint8_t *data, size_t startAddress, size_t len);
 eeprom_status_t eeprom_get_status(void);
 bool eeprom_has_write_finished(void);
+uint16_t eeprom_get_crc16(uint8_t *data, size_t len);
+bool eeprom_check_crc(uint8_t *data, size_t len, uint16_t crcIs);
 
 
 #endif /* EEPROM_H_ */
