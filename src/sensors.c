@@ -20,7 +20,7 @@ volatile float currOffset;
 volatile float currRef;
 
 static inline void current_sensor_spi(uint8_t *a, size_t len) {
-    spi_move_array(LPSPI1, a, len);
+    spi_move_array(SENSOR_SPI, a, len);
 }
 
 static inline void current_sensor_assert(void) {

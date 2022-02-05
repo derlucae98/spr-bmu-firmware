@@ -11,6 +11,7 @@
 #include "safety.h"
 #include "mcp356x.h"
 #include "sensors.h"
+#include "eeprom.h"
 
 #include <string.h>
 #include <stdarg.h>
@@ -73,6 +74,13 @@ void led_blink_task(void *pvParameters) {
 
     while (1) {
         toggle_pin(LED_WARNING_PORT, LED_WARNING_PIN);
+        uint8_t data[EEPROM_PAGESIZE];
+        eeprom_read_array(data, 0, EEPROM_PAGESIZE);
+        for (size_t i = 0; i < EEPROM_PAGESIZE; i++) {
+            PRINTF("%02X ", data[i]);
+        }
+        PRINTF("\n");
+
 
 		vTaskDelayUntil(&xLastWakeTime, xPeriod);
 	}
@@ -319,7 +327,9 @@ int main(void)
     set_pin(CS_UBATT_PORT, CS_UBATT_PIN);
     set_pin(CS_ULINK_PORT, CS_ULINK_PIN);
 
+    spi_init(LPSPI0, LPSPI_PRESC_8, LPSPI_MODE_0);
     spi_init(LPSPI1, LPSPI_PRESC_8, LPSPI_MODE_0);
+
 
     init_sensors();
 

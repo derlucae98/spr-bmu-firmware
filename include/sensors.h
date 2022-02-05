@@ -17,6 +17,8 @@
 #include "gpio.h"
 #include "gpio_def.h"
 
+#define SENSOR_SPI LPSPI1
+
 extern volatile float currGain;
 extern volatile float currOffset;
 extern volatile float currRef;
