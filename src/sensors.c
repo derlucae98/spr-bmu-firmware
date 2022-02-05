@@ -2,7 +2,7 @@
  * sensors.c
  *
  *  Created on: Feb 4, 2022
- *      Author: scuderia
+ *      Author: Luca Engelmann
  */
 
 #include "sensors.h"
@@ -15,6 +15,9 @@ static mcp356x_obj_t currentSensor;
 
 extern void PRINTF(const char *format, ...);
 static void sensor_task(void *p);
+volatile float currGain;
+volatile float currOffset;
+volatile float currRef;
 
 static inline void current_sensor_spi(uint8_t *a, size_t len) {
     spi_move_array(LPSPI1, a, len);
@@ -29,6 +32,10 @@ static inline void current_sensor_deassert(void) {
 }
 
 bool init_sensors() {
+    currGain = 0.98145531f;
+    currOffset = 0.00132183f;
+    currRef = 2.50008f;
+
     currentSensor = mcp356x_init(current_sensor_spi, current_sensor_assert, current_sensor_deassert);
 
     currentSensor.config.VREF_SEL = VREF_SEL_EXT;
@@ -53,7 +60,7 @@ bool init_sensors() {
         return false;
     }
 
-    xTaskCreate(sensor_task, "sensors", 1000, NULL, 4, NULL);
+    xTaskCreate(sensor_task, "sensors", 1000, NULL, 2, NULL);
     return true;
 }
 
@@ -61,7 +68,7 @@ static void sensor_task(void *p) {
     (void) p;
 
     TickType_t xLastWakeTime;
-    const TickType_t xPeriod = pdMS_TO_TICKS(10);
+    const TickType_t xPeriod = pdMS_TO_TICKS(1000);
     xLastWakeTime = xTaskGetTickCount();
     float val;
     float current = 0;
@@ -69,9 +76,14 @@ static void sensor_task(void *p) {
 
         mcp356x_acquire(&currentSensor, MUX_CH0, MUX_CH3);
         vTaskDelay(pdMS_TO_TICKS(6));
-        mcp356x_read_voltage(&currentSensor, 2.498f, &val);
+        mcp356x_read_voltage(&currentSensor, currRef, &val);
 
-        current = (((2.498f / 2) - val - (CURRENT_OFFSET)) / SHUNT) * CONVERSION_RATIO;
+        val = (val + currOffset) * currGain;
+        PRINTF("U pre: %0.4f V\n", val);
+
+        val = (val - 1.250804f) / (-0.498443078);
+        PRINTF("U post: %0.4f V\n", val);
+        current = (val / SHUNT) * CONVERSION_RATIO;
         PRINTF("I: %.2f A\n", current);
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }

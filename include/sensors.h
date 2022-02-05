@@ -2,7 +2,7 @@
  * sensors.h
  *
  *  Created on: Feb 4, 2022
- *      Author: scuderia
+ *      Author: Luca Engelmann
  */
 
 #ifndef SENSORS_H_
@@ -17,6 +17,9 @@
 #include "gpio.h"
 #include "gpio_def.h"
 
+extern volatile float currGain;
+extern volatile float currOffset;
+extern volatile float currRef;
 bool init_sensors();
 
 

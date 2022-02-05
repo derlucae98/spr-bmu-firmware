@@ -12,6 +12,11 @@
 #include "mcp356x.h"
 #include "sensors.h"
 
+#include <string.h>
+#include <stdarg.h>
+#include <alloca.h>
+#include <stdlib.h>
+
 #define NUMBEROFSLAVES 12
 
 
@@ -20,6 +25,41 @@ void wdog_disable (void)
   WDOG->CNT = 0xD928C520;
   WDOG->TOVAL = 0x0000FFFF;
   WDOG->CS = 0x00002100;
+}
+
+static void uart_rec(char* s) {
+
+    char *strtokHelp = NULL;
+    const char *delim = " \r\n";
+    char *token = NULL;
+    token = strtok_r(s, delim, &strtokHelp);
+    char *tokens[4];
+    uint8_t counter = 0;
+    while (token != NULL) {
+        size_t len = strlen(token) + 1;
+        tokens[counter] = alloca(len);
+        strcpy(tokens[counter], token);
+        counter++;
+        token = strtok_r(NULL, delim, &strtokHelp);
+    }
+
+    if (strcmp(tokens[0], "cal") == 0) {
+        if (strcmp(tokens[1], "curr") == 0) {
+            if (strcmp(tokens[2], "gain") == 0) {
+                sscanf(tokens[3], "%f", &currGain);
+                PRINTF("calibrating gain for %s: %.3f\n", tokens[1], currGain);
+            } else if (strcmp(tokens[2], "offset") == 0) {
+                sscanf(tokens[3], "%f", &currOffset);
+                PRINTF("calibrating offset for %s: %.3f\n", tokens[1], currOffset);
+            }
+        }
+    }
+    if (strcmp(tokens[0], "ref") == 0) {
+        sscanf(tokens[1], "%f", &currRef);
+        PRINTF("Ref: %.3f\n", tokens[1], currRef);
+    }
+
+
 }
 
 void led_blink_task(void *pvParameters) {
@@ -266,6 +306,9 @@ int main(void)
     gpio_init();
     can_init(CAN0);
     uart_init();
+    uart_register_receive_hook(uart_rec);
+    xTaskCreate(uart_rec_task, "uart_rec", 1000, NULL, 2, &uartRecTaskHandle);
+
     clear_pin(CAN_STBY_PORT, CAN_STBY_PIN);
 
     set_pin(CS_CARD_PORT, CS_CARD_PIN);
