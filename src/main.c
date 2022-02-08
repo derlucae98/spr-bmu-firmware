@@ -71,10 +71,42 @@ void led_blink_task(void *pvParameters) {
     TickType_t xLastWakeTime;
     const TickType_t xPeriod = pdMS_TO_TICKS(1000);
     xLastWakeTime = xTaskGetTickCount();
-
+    bool calWritten = true;
     while (1) {
         toggle_pin(LED_WARNING_PORT, LED_WARNING_PIN);
 
+
+        sensor_calibration_t cal;
+        cal.current_1_ref = 2.5f;
+        cal.current_1_gain = 1.0f;
+        cal.current_1_offset = 0.0f;
+        cal.current_2_ref = 2.5f;
+        cal.current_2_gain = 1.0f;
+        cal.current_2_offset = 0.0f;
+        cal.voltage_1_ref = 2.5f;
+        cal.voltage_1_gain = 1.0f;
+        cal.voltage_1_offset = 0.0f;
+        cal.voltage_2_ref = 2.5f;
+        cal.voltage_2_gain = 1.0f;
+        cal.voltage_2_offset = 0.0f;
+        cal.voltage_3_ref = 2.5f;
+        cal.voltage_3_gain = 1.0f;
+        cal.voltage_3_offset = 0.0f;
+        cal.voltage_4_ref = 2.5f;
+        cal.voltage_4_gain = 1.0f;
+        cal.voltage_4_offset = 0.0f;
+        cal.voltage_5_ref = 2.5f;
+        cal.voltage_5_gain = 1.0f;
+        cal.voltage_5_offset = 0.0f;
+
+        if (!calWritten) {
+            if(write_calibration(cal)) {
+                PRINTF("Writing calibration successful\n");
+            } else {
+                PRINTF("Writing calibration failed\n");
+            }
+            calWritten = true;
+        }
 //        float currGain = 0.98145531f;
 //        float currOffset = 0.00132183f;
 //        float currRef = 2.50008f;
