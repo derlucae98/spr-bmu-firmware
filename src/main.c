@@ -135,8 +135,8 @@ void can_send_task(void *p) {
      		//Send BMS info message every 10 ms
             msg.ID = 0x001;
             msg.DLC = 5;
-    		msg.payload[0] = batteryData.current >> 8;
-    		msg.payload[1] = batteryData.current & 0xFF;
+    		msg.payload[0] = ((int16_t) (batteryData.current * 100)) >> 8;
+    		msg.payload[1] = ((int16_t) (batteryData.current * 100)) & 0xFF;
     		msg.payload[2] = (batteryData.packVoltage & 0x1FFF) >> 5;
     		msg.payload[3] = ((batteryData.packVoltage & 0x1F) << 3) | ((batteryData.shutdownStatus & 0x01) << 2) | ((batteryData.bmsStatus & 0x01) << 1);
     		msg.payload[4] = batteryData.soc;

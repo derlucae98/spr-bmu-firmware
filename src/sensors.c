@@ -41,11 +41,11 @@ static inline void ubat_deassert(void) {
 }
 
 static inline void ulink_assert(void) {
-    clear_pin(CS_UBATT_PORT, CS_UBATT_PIN);
+    clear_pin(CS_ULINK_PORT, CS_ULINK_PIN);
 }
 
 static inline void ulink_deassert(void) {
-    set_pin(CS_UBATT_PORT, CS_UBATT_PIN);
+    set_pin(CS_ULINK_PORT, CS_ULINK_PIN);
 }
 
 bool init_sensors(void) {
@@ -53,7 +53,7 @@ bool init_sensors(void) {
 
     _currentSensor = mcp356x_init(sensor_spi, current_sensor_assert, current_sensor_deassert);
     _ubat = mcp356x_init(sensor_spi, ubat_assert, ubat_deassert);
-    //_ulink = mcp356x_init(sensor_spi, ulink_assert, ulink_deassert);
+    _ulink = mcp356x_init(sensor_spi, ulink_assert, ulink_deassert);
 
     _currentSensor.config.VREF_SEL = VREF_SEL_EXT;
     _currentSensor.config.CLK_SEL = CLK_SEL_INT;
@@ -114,18 +114,18 @@ bool init_sensors(void) {
         return false;
     }
 
-//    err = mcp356x_reset(&_ulink);
-//
-//    if (err != MCP356X_ERROR_OK) {
-//        PRINTF("ULINK init failed!\n");
-//        return false;
-//    }
-//
-//    err = mcp356x_set_config(&_ulink);
-//    if (err != MCP356X_ERROR_OK) {
-//        PRINTF("ULINK init failed!\n");
-//        return false;
-//    }
+    err = mcp356x_reset(&_ulink);
+
+    if (err != MCP356X_ERROR_OK) {
+        PRINTF("ULINK init failed!\n");
+        return false;
+    }
+
+    err = mcp356x_set_config(&_ulink);
+    if (err != MCP356X_ERROR_OK) {
+        PRINTF("ULINK init failed!\n");
+        return false;
+    }
 
     reload_calibration();
     xTaskCreate(_sensor_task, "sensors", 1000, NULL, 2, NULL);
@@ -196,11 +196,11 @@ static void _sensor_task(void *p) {
 
         mcp356x_acquire(&_currentSensor, MUX_CH0, MUX_CH3);
         mcp356x_acquire(&_ubat, MUX_CH0, MUX_AGND);
-//        mcp356x_acquire(&_ulink, MUX_CH0, MUX_AGND);
-        vTaskDelay(pdMS_TO_TICKS(10));
+        mcp356x_acquire(&_ulink, MUX_CH0, MUX_AGND);
+        vTaskDelay(pdMS_TO_TICKS(6));
         mcp356x_read_voltage(&_currentSensor, _cal.current_1_ref, &current);
         mcp356x_read_voltage(&_ubat, _cal.ubatt_ref, &ubatVolt);
-//        mcp356x_read_voltage(&_ulink, _cal.ulink_ref, &ulinkVolt);
+        mcp356x_read_voltage(&_ulink, _cal.ulink_ref, &ulinkVolt);
 
         current = (current / SHUNT) * CURRENT_CONVERSION_RATIO;
         current = (current + _cal.current_1_offset) * _cal.current_1_gain;
@@ -208,17 +208,20 @@ static void _sensor_task(void *p) {
         ubatVolt = ubatVolt * VOLTAGE_CONVERSION_RATIO;
         ubatVolt = (ubatVolt + _cal.ubatt_offset) * _cal.ubatt_gain;
 
-//        ulinkVolt = ulinkVolt * VOLTAGE_CONVERSION_RATIO;
-//        ulinkVolt = (ulinkVolt + _cal.ulink_offset) * _cal.ulink_gain;
+        ulinkVolt = ulinkVolt * VOLTAGE_CONVERSION_RATIO;
+        ulinkVolt = (ulinkVolt + _cal.ulink_offset) * _cal.ulink_gain;
 
         PRINTF("Ubat: %.3f V\n", ubatVolt);
-//        PRINTF("Ulink: %.3f V\n", ulinkVolt);
+        PRINTF("Ulink: %.3f V\n", ulinkVolt);
         PRINTF("I: %.2f A\n", current);
 
-
         if (batteryData_mutex_take(pdMS_TO_TICKS(4))) {
-            batteryData.current = (int16_t) (current * 100);
+            batteryData.current = current;
+            batteryData.batteryVoltage = ubatVolt;
+            batteryData.dcLinkVoltage = ulinkVolt;
             batteryData_mutex_give();
+        } else {
+            PRINTF("Sensor: Can't get mutex!\n");
         }
 
         vTaskDelayUntil(&xLastWakeTime, xPeriod);

@@ -28,7 +28,9 @@ typedef struct {
     uint16_t temperature[MAXSTACKS][MAXTEMPSENS];
     uint8_t temperatureStatus[MAXSTACKS][MAXTEMPSENS];
     uint16_t packVoltage;
-    uint16_t current;
+    float current;
+    float batteryVoltage;
+    float dcLinkVoltage;
     uint8_t soc;
     bool bmsStatus;
     bool shutdownStatus;
