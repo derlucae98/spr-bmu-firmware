@@ -12,10 +12,10 @@ extern void PRINTF(const char *format, ...);
 TaskHandle_t contactor_control_task_handle = NULL;
 static void contactor_control_task(void *p);
 
-static void standby(void* p);
-static void pre_charge(void* p);
-static void operate(void* p);
-static void error(void* p);
+static void standby(void);
+static void pre_charge(void);
+static void operate(void);
+static void error(void);
 
 typedef enum {
     STATE_STANDBY,
@@ -49,7 +49,7 @@ static state_array_t stateArray[] = {
 
 typedef struct {
     const char* name;
-    void (*function)(void*);
+    void (*function)(void);
 } state_function_t;
 
 static state_function_t stateFunction[] = {
@@ -62,19 +62,65 @@ static state_function_t stateFunction[] = {
 static state_machine_t _stateMachine;
 volatile event_t contactorEvent = EVENT_NONE;
 
-static void standby(void* p) {
+typedef enum {
+    CONTACTOR_HV_POS,
+    CONTACTOR_HV_NEG,
+    CONTACTOR_HV_PRE
+} contactor_t;
+
+static inline void open_contactor(contactor_t contactor) {
+    switch (contactor) {
+        case CONTACTOR_HV_POS:
+            clear_pin(CONT_HV_POS_PORT, CONT_HV_POS_PIN);
+            break;
+        case CONTACTOR_HV_NEG:
+            clear_pin(CONT_HV_NEG_PORT, CONT_HV_NEG_PIN);
+            break;
+        case CONTACTOR_HV_PRE:
+            clear_pin(CONT_HV_PRE_PORT, CONT_HV_PRE_PIN);
+            break;
+    }
+}
+
+static inline void close_contactor(contactor_t contactor) {
+    switch (contactor) {
+        case CONTACTOR_HV_POS:
+            set_pin(CONT_HV_POS_PORT, CONT_HV_POS_PIN);
+            break;
+        case CONTACTOR_HV_NEG:
+            set_pin(CONT_HV_NEG_PORT, CONT_HV_NEG_PIN);
+            break;
+        case CONTACTOR_HV_PRE:
+            set_pin(CONT_HV_PRE_PORT, CONT_HV_PRE_PIN);
+            break;
+    }
+}
+
+static inline void open_all_contactors(void) {
+    open_contactor(CONTACTOR_HV_POS);
+    open_contactor(CONTACTOR_HV_NEG);
+    open_contactor(CONTACTOR_HV_PRE);
+}
+
+static void standby(void) {
+    open_all_contactors();
     PRINTF("State standby\n");
 }
 
-static void pre_charge(void* p) {
+static void pre_charge(void) {
+    close_contactor(CONTACTOR_HV_NEG);
+    close_contactor(CONTACTOR_HV_PRE);
     PRINTF("State pre-charge\n");
 }
 
-static void operate(void* p) {
+static void operate(void) {
+    close_contactor(CONTACTOR_HV_POS);
+    open_contactor(CONTACTOR_HV_PRE);
     PRINTF("State operate\n");
 }
 
-static void error(void* p) {
+static void error(void) {
+    open_all_contactors();
     PRINTF("State error\n");
 }
 
@@ -89,7 +135,6 @@ static void contactor_control_task(void *p) {
     const TickType_t xPeriod = pdMS_TO_TICKS(100);
     xLastWakeTime = xTaskGetTickCount();
 
-    void *arg = NULL;
     while (1) {
 
         // Process events and set arg
@@ -103,7 +148,7 @@ static void contactor_control_task(void *p) {
 
                        _stateMachine.current =  stateArray[i].next;
 
-                       stateFunction[_stateMachine.current].function(arg);
+                       stateFunction[_stateMachine.current].function();
                    }
                }
            }

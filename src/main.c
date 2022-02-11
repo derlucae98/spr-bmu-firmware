@@ -106,7 +106,7 @@ static void uart_rec(char* s) {
         if (strcmp(tokens[1], "success") == 0) {
             contactorEvent = EVENT_PRE_CHARGE_SUCCESSFUL;
         } else if (strcmp(tokens[1], "fail") == 0) {
-            contactorEvent = EVENT_PRE_CHARGE_TIMEOUT;
+            contactorEvent = EVENT_ERROR;
         }
     } else if (strcmp(tokens[0], "error") == 0) {
         contactorEvent = EVENT_ERROR;

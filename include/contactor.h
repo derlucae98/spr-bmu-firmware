@@ -11,6 +11,8 @@
 #include "S32K146.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "gpio.h"
+#include "gpio_def.h"
 
 typedef enum {
     EVENT_NONE,
