@@ -12,6 +12,7 @@
 #include "mcp356x.h"
 #include "sensors.h"
 #include "eeprom.h"
+#include "bmu.h"
 
 #include <string.h>
 #include <stdarg.h>
@@ -93,6 +94,24 @@ static void uart_rec(char* s) {
                 calibration.ulink_ref = calVal;
             }
         }
+    }
+
+    if (strcmp(tokens[0], "ts") == 0) {
+        if (strcmp(tokens[1], "activate") == 0) {
+            contactorEvent = EVENT_TS_ACTIVATE;
+        } else if (strcmp(tokens[1], "deactivate") == 0) {
+            contactorEvent = EVENT_TS_DEACTIVATE;
+        }
+    } else if (strcmp(tokens[0], "pre") == 0) {
+        if (strcmp(tokens[1], "success") == 0) {
+            contactorEvent = EVENT_PRE_CHARGE_SUCCESSFUL;
+        } else if (strcmp(tokens[1], "fail") == 0) {
+            contactorEvent = EVENT_PRE_CHARGE_TIMEOUT;
+        }
+    } else if (strcmp(tokens[0], "error") == 0) {
+        contactorEvent = EVENT_ERROR;
+    } else if (strcmp(tokens[0], "clear") == 0) {
+        contactorEvent = EVENT_ERROR_CLEARED;
     }
 
     write_calibration(calibration);
@@ -362,6 +381,8 @@ int main(void)
 
     static const LTC_initial_data_t ltcInitData = {NUMBEROFSLAVES, 2700UL, 4200UL, 2};
     ltc_init(ltcInitData);
+
+    init_bmu();
 
 
 
