@@ -12,7 +12,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "gpio.h"
-#include "gpio_def.h"
+#include "config.h"
 
 typedef enum {
     EVENT_NONE,

@@ -12,7 +12,6 @@
 #include "spi.h"
 #include "uart.h"
 #include "gpio.h"
-#include "gpio_def.h"
 #include "config.h"
 
 #ifndef NUMBEROFSLAVES

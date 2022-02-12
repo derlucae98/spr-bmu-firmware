@@ -14,7 +14,7 @@
 #include <stdbool.h>
 #include "S32K146.h"
 #include "gpio.h"
-#include "gpio_def.h"
+#include "config.h"
 #include "spi.h"
 
 #define EEPROM_SPI LPSPI0

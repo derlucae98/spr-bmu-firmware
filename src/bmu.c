@@ -42,75 +42,72 @@ static void ltc6811_worker_task(void *p) {
     stacks_data_t stacksDataLocal;
     static uint8_t pecVoltage[MAXSTACKS][MAXCELLS];
     TickType_t xLastWakeTime = xTaskGetTickCount();
-
+    const TickType_t xPeriod = pdMS_TO_TICKS(200);
     while (1) {
-        if (spi_mutex_take(LTC6811_SPI, portMAX_DELAY)) {
+
+        ltc6811_wake_daisy_chain();
+        ltc6811_open_wire_check(stacksDataLocal.cellVoltageStatus);
+        ltc6811_get_voltage(stacksDataLocal.cellVoltage, pecVoltage);
+        ltc6811_get_temperatures_in_degC(stacksDataLocal.temperature, stacksDataLocal.temperatureStatus);
+
+        // Error priority:
+        // PEC error
+        // Open cell wire
+        // value out of range
 
 
-
-            ltc6811_wake_daisy_chain();
-            ltc6811_open_wire_check(stacksDataLocal.cellVoltageStatus);
-            ltc6811_get_voltage(stacksDataLocal.cellVoltage, pecVoltage);
-            ltc6811_get_temperatures_in_degC(stacksDataLocal.temperature, stacksDataLocal.temperatureStatus);
-
-            // Error priority:
-            // PEC error
-            // Open cell wire
-            // value out of range
-
-
-            //memset(&stackDataLocal.cellVoltageStatus, 0, sizeof(stackDataLocal.cellVoltageStatus));
-            for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
-                // Validity check for temperature sensors
-                for (size_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
-                    if ((stacksDataLocal.temperature[slave][tempsens] > MAXCELLTEMP) &&
-                         stacksDataLocal.temperatureStatus[slave][tempsens] != PECERROR) {
-                        stacksDataLocal.temperatureStatus[slave][tempsens] = VALUEOUTOFRANGE;
-                    }
-
-                    if ((stacksDataLocal.temperature[slave][tempsens] < 10) &&
-                         stacksDataLocal.temperatureStatus[slave][tempsens] != PECERROR) {
-                         stacksDataLocal.temperatureStatus[slave][tempsens] = OPENCELLWIRE;
-                    }
+        //memset(&stackDataLocal.cellVoltageStatus, 0, sizeof(stackDataLocal.cellVoltageStatus));
+        for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
+            // Validity check for temperature sensors
+            for (size_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
+                if ((stacksDataLocal.temperature[slave][tempsens] > MAXCELLTEMP) &&
+                     stacksDataLocal.temperatureStatus[slave][tempsens] != PECERROR) {
+                    stacksDataLocal.temperatureStatus[slave][tempsens] = VALUEOUTOFRANGE;
                 }
 
-                // Validity checks for cell voltage measurement
-                for (size_t cell = 0; cell < MAXCELLS; cell++) {
-                    // PEC error: highest prio
-                    if (pecVoltage[slave][cell] == PECERROR) {
-                        stacksDataLocal.cellVoltageStatus[slave][cell + 1] = PECERROR;
-                        continue;
-                    }
-                    // Open sensor wire: Prio 2
-                    if (stacksDataLocal.cellVoltageStatus[slave][cell + 1] == OPENCELLWIRE) {
-                        continue;
-                    }
-                    // Value out of range: Prio 3
-                    if ((stacksDataLocal.cellVoltage[slave][cell] > CELL_OVERVOLTAGE)||
-                        (stacksDataLocal.cellVoltage[slave][cell] < CELL_UNDERVOLTAGE)) {
-                            stacksDataLocal.cellVoltageStatus[slave][cell + 1] = VALUEOUTOFRANGE;
-                    }
-
+                if ((stacksDataLocal.temperature[slave][tempsens] < 10) &&
+                     stacksDataLocal.temperatureStatus[slave][tempsens] != PECERROR) {
+                     stacksDataLocal.temperatureStatus[slave][tempsens] = OPENCELLWIRE;
                 }
             }
 
-            PRINTF("Cell 0: %u V\n", stacksDataLocal.cellVoltage[0][0]);
+            // Validity checks for cell voltage measurement
+            for (size_t cell = 0; cell < MAXCELLS; cell++) {
+                // PEC error: highest prio
+                if (pecVoltage[slave][cell] == PECERROR) {
+                    stacksDataLocal.cellVoltageStatus[slave][cell + 1] = PECERROR;
+                    continue;
+                }
+                // Open sensor wire: Prio 2
+                if (stacksDataLocal.cellVoltageStatus[slave][cell + 1] == OPENCELLWIRE) {
+                    continue;
+                }
+                // Value out of range: Prio 3
+                if ((stacksDataLocal.cellVoltage[slave][cell] > CELL_OVERVOLTAGE)||
+                    (stacksDataLocal.cellVoltage[slave][cell] < CELL_UNDERVOLTAGE)) {
+                        stacksDataLocal.cellVoltageStatus[slave][cell + 1] = VALUEOUTOFRANGE;
+                }
 
-            if (stacks_mutex_take(portMAX_DELAY)) {
-                memcpy(&stacksData, &stacksDataLocal, sizeof(stacks_data_t));
- //               memcpy(&stacksData.UID, _UID, sizeof(_UID));
-
-
-                stacks_mutex_give();
             }
-
-
-
-
-
-            spi_mutex_give(LTC6811_SPI);
-            vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(200));
         }
+
+        PRINTF("Cell 0: %.3f V\n", (float)stacksDataLocal.cellVoltage[0][0]/1000.0f);
+
+        if (stacks_mutex_take(portMAX_DELAY)) {
+            memcpy(&stacksData, &stacksDataLocal, sizeof(stacks_data_t));
+//               memcpy(&stacksData.UID, _UID, sizeof(_UID));
+
+
+            stacks_mutex_give();
+        }
+
+
+
+
+
+
+        vTaskDelayUntil(&xLastWakeTime, xPeriod);
+
     }
 }
 

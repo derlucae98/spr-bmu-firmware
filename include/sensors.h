@@ -15,7 +15,7 @@
 #include "mcp356x.h"
 #include "spi.h"
 #include "gpio.h"
-#include "gpio_def.h"
+#include "config.h"
 #include "LTC6811.h"
 #include "eeprom.h"
 
