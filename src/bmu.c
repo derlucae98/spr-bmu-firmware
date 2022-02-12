@@ -25,7 +25,7 @@ void init_bmu(void) {
     for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
         PRINTF("UID %d: %08X\n", slave+1, _UID[slave]);
     }
-    //xTaskCreate(can_send_task, "CAN", 1000, NULL, 3, NULL);
+    xTaskCreate(can_send_task, "CAN", 1000, NULL, 3, NULL);
     xTaskCreate(ltc6811_worker_task, "LTC", 2000, NULL, 3, NULL);
 }
 
