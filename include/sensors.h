@@ -36,6 +36,16 @@ typedef struct {
     float ulink_offset;
 } sensor_calibration_t;
 
+typedef struct {
+    float current;
+    float batteryVoltage;
+    float dcLinkVoltage;
+} sensor_data_t;
+
+BaseType_t sensor_mutex_take(TickType_t blocktime);
+void sensor_mutex_give(void);
+extern sensor_data_t sensorData;
+
 bool init_sensors(void);
 sensor_calibration_t load_calibration(void);
 void reload_calibration(void);

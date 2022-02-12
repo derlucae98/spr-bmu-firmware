@@ -16,9 +16,20 @@ static mcp356x_obj_t _ubat;
 static mcp356x_obj_t _ulink;
 static volatile sensor_calibration_t _cal;
 
+static SemaphoreHandle_t _sensorDataMutex = NULL;
+sensor_data_t sensorData;
+
 extern void PRINTF(const char *format, ...);
 static void _sensor_task(void *p);
 static sensor_calibration_t _default_calibration(void);
+
+BaseType_t sensor_mutex_take(TickType_t blocktime) {
+    return xSemaphoreTake(_sensorDataMutex, blocktime);
+}
+
+void sensor_mutex_give(void) {
+    xSemaphoreGive(_sensorDataMutex);
+}
 
 static inline void sensor_spi(uint8_t *a, size_t len) {
     spi_move_array(SENSOR_SPI, a, len);
@@ -49,6 +60,9 @@ static inline void ulink_deassert(void) {
 }
 
 bool init_sensors(void) {
+    _sensorDataMutex = xSemaphoreCreateMutex();
+    configASSERT(_sensorDataMutex);
+
     mcp356x_error_t err;
 
     _currentSensor = mcp356x_init(sensor_spi, current_sensor_assert, current_sensor_deassert);
@@ -211,15 +225,15 @@ static void _sensor_task(void *p) {
         ulinkVolt = ulinkVolt * VOLTAGE_CONVERSION_RATIO;
         ulinkVolt = (ulinkVolt + _cal.ulink_offset) * _cal.ulink_gain;
 
-        //PRINTF("Ubat: %.3f V\n", ubatVolt);
-        //PRINTF("Ulink: %.3f V\n", ulinkVolt);
-        //PRINTF("I: %.2f A\n", current);
+        PRINTF("Ubat: %.3f V\n", ubatVolt);
+        PRINTF("Ulink: %.3f V\n", ulinkVolt);
+        PRINTF("I: %.2f A\n", current);
 
-        if (batteryData_mutex_take(pdMS_TO_TICKS(4))) {
-            batteryData.current = current;
-            batteryData.batteryVoltage = ubatVolt;
-            batteryData.dcLinkVoltage = ulinkVolt;
-            batteryData_mutex_give();
+        if (sensor_mutex_take(pdMS_TO_TICKS(4))) {
+            sensorData.current = current;
+            sensorData.batteryVoltage = ubatVolt;
+            sensorData.dcLinkVoltage = ulinkVolt;
+            sensor_mutex_give();
         } else {
             PRINTF("Sensor: Can't get mutex!\n");
         }

@@ -13,35 +13,35 @@
 #include "uart.h"
 #include "gpio.h"
 #include "gpio_def.h"
+#include "config.h"
 
-#define LTC6811_SPI LPSPI0
+#ifndef NUMBEROFSLAVES
+#error "NUMBEROFSLAVES undefined!"
+#endif
 
-#define MAXSTACKS 12
-#define MAXCELLS  12
-#define MAXTEMPSENS 14
-#define MAXCELLTEMP 540 //54.0 deg C
+#ifndef CELL_UNDERVOLTAGE
+#error "CELL_UNDERVOLTAGE undefined!"
+#endif
 
-typedef struct {
-    uint32_t UID[MAXSTACKS];
-    uint16_t cellVoltage[MAXSTACKS][MAXCELLS];
-    uint8_t cellVoltageStatus[MAXSTACKS][MAXCELLS+1];
-    uint16_t temperature[MAXSTACKS][MAXTEMPSENS];
-    uint8_t temperatureStatus[MAXSTACKS][MAXTEMPSENS];
-    uint16_t packVoltage;
-    float current;
-    float batteryVoltage;
-    float dcLinkVoltage;
-    uint8_t soc;
-    bool bmsStatus;
-    bool shutdownStatus;
-} battery_data_t;
+#ifndef CELL_OVERVOLTAGE
+#error "CELL_OVERVOLTAGE undefined!"
+#endif
 
-typedef struct {
-    uint8_t numberOfSlaves;
-    uint16_t undervoltageThreshold;
-    uint16_t overvoltageThreshold;
-    uint8_t workerTasksPrio;
-} LTC_initial_data_t;
+#ifndef MAXSTACKS
+#error "MAXSTACKS undefined!"
+#endif
+
+#ifndef MAXCELLS
+#error "MAXCELLS undefined!"
+#endif
+
+#ifndef MAXTEMPSENS
+#error "MAXTEMPSENS undefined!"
+#endif
+
+#ifndef MAXCELLTEMP
+#error "MAXCELLTEMP undefined!"
+#endif
 
 /*!
  * @enum Enumeration type for possible errors.
@@ -53,14 +53,48 @@ typedef enum {
     OPENCELLWIRE    = 0x3, //!< OPENCELLWIRE
 } LTCError_t;
 
-void ltc_init(LTC_initial_data_t initData);
+void ltc6811_init(uint32_t UID[]);
 
-void ltc_config_slaves_task(void *p);
+/*!
+ * @brief Wakes a daisy chain of _numberOfSlaves slaves
+ */
+void ltc6811_wake_daisy_chain(void);
 
-void ltc6811_worker_task(void *p);
-BaseType_t batteryData_mutex_take(TickType_t blocktime);
-void batteryData_mutex_give(void);
-extern battery_data_t batteryData;
+/*!
+ * @brief Performs the ADC conversion on all cells of all slaves and stores the result in an array
+ * @param voltage Array in which the voltages will be stored.\n
+ * An error code is stored in the lower byte if an error occurs
+ */
+void ltc6811_get_voltage(uint16_t voltage[][MAXCELLS], uint8_t voltageStatus[][MAXCELLS]);
+
+/*!
+ * @brief Selects a mux channel, performs the ADC conversion and returns the temperature\n
+ * in degree celsius as fixed point integer value with one decimal place.
+ * @param temperature Array in which the temperatures will be stored.
+ */
+void ltc6811_get_temperatures_in_degC(uint16_t temperature[][MAXTEMPSENS], uint8_t temperatureStatus[][MAXTEMPSENS]);
+
+/*!
+ * @brief Gets the 32 bit unique ID stored in an EEPROM on the slave for every slave
+ * @param UID Array in which the UIDs will be stored.\n
+ * An error code is stored in the lower byte if an error occurs
+ */
+void ltc6811_get_uid(uint32_t UID[]);
+
+/*!
+ * @brief Performs an open wire check on the all slaves.
+ * @param result Array in which the results will be stored. See enum LTCError_t for possible values.
+ */
+void ltc6811_open_wire_check(uint8_t result[][MAXCELLS+1]);
+
+/*!
+ *  @brief Enables/disables the desired balancing gates on the slaves.
+ *  @param gates Array for the values of all 12*12 gates (0 = off, else on)
+ */
+void ltc6811_set_balancing_gates(uint8_t gates[][MAXCELLS]);
+
+
+
 
 
 

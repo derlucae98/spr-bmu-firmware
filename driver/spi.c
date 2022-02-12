@@ -2,6 +2,7 @@
 
 static SemaphoreHandle_t _spi0Mutex = NULL;
 static SemaphoreHandle_t _spi1Mutex = NULL;
+static SemaphoreHandle_t _spi2Mutex = NULL;
 
 void spi_init(LPSPI_Type *spi, uint8_t presc, uint8_t mode) {
     configASSERT(spi);
@@ -18,6 +19,11 @@ void spi_init(LPSPI_Type *spi, uint8_t presc, uint8_t mode) {
         PCC->PCCn[PCC_LPSPI1_INDEX]  = PCC_PCCn_PCS(1) | PCC_PCCn_CGC(1);  //Set clock to option 1: SOSCDIV2_CLK
         _spi1Mutex = xSemaphoreCreateRecursiveMutex();
         configASSERT(_spi1Mutex);
+        break;
+    case LPSPI2_BASE:
+        PCC->PCCn[PCC_LPSPI2_INDEX]  = PCC_PCCn_PCS(1) | PCC_PCCn_CGC(1);  //Set clock to option 1: SOSCDIV2_CLK
+        _spi2Mutex = xSemaphoreCreateRecursiveMutex();
+        configASSERT(_spi2Mutex);
         break;
     }
 
@@ -64,6 +70,9 @@ BaseType_t spi_mutex_take(LPSPI_Type *spi, TickType_t blockTime) {
     case LPSPI1_BASE:
         configASSERT(_spi1Mutex);
         return xSemaphoreTakeRecursive(_spi1Mutex, blockTime);
+    case LPSPI2_BASE:
+        configASSERT(_spi2Mutex);
+        return xSemaphoreTakeRecursive(_spi2Mutex, blockTime);
     default:
         configASSERT(0);
     }
@@ -77,6 +86,9 @@ void spi_mutex_give(LPSPI_Type *spi) {
         break;
     case LPSPI1_BASE:
         xSemaphoreGiveRecursive(_spi1Mutex);
+        break;
+    case LPSPI2_BASE:
+        xSemaphoreGiveRecursive(_spi2Mutex);
         break;
     default:
         configASSERT(0);

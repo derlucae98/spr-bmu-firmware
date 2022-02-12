@@ -84,16 +84,9 @@ typedef enum {
 #define NTC_CELL 3960
 #define NTC_PCB  3900
 
-
-static uint32_t _UID[MAXSTACKS];
-static uint8_t _numberOfSlaves = 0;
-static uint16_t _cellOverVoltageThreshold;
-static uint16_t _cellUnderVoltageThreshold;
 static uint16_t _undervoltage_reg;
 static uint16_t _overvoltage_reg;
-battery_data_t batteryData;
-static SemaphoreHandle_t _batteryDataMutex = NULL;
-static uint8_t _workerTasksPrio;
+
 
 
 
@@ -139,23 +132,10 @@ static inline uint16_t calc_pec(uint8_t len, const uint8_t *data);
 static void check_pec(uint8_t payload[][8], uint8_t *result);
 
 /*!
- * @brief Wakes a daisy chain of _numberOfSlaves slaves
- */
-static void ltc_wake_daisy_chain();
-
-/*!
  * @brief LTC6811 helper function
  * @details Set the LTC configuration. The configuration is fixed.
  */
 static void set_config(void);
-
-/*!
- * @brief LTC6811 helper function
- * @details Performs the ADC conversion on all cells of all slaves and stores the result in an array
- * @param voltage Array in which the voltages will be stored.\n
- * An error code is stored in the lower byte if an error occurs
- */
-static void get_voltage(uint16_t voltage[][MAXCELLS], uint8_t voltageStatus[][MAXCELLS]);
 
 /*!
  * @brief LTC6811 helper function
@@ -192,14 +172,6 @@ static void get_gpio_voltage(uint16_t voltGPIO[][2], uint8_t *voltGPIOStatus);
 
 /*!
  * @brief LTC6811 helper function
- * @details Selects a mux channel, performs the ADC conversion and returns the temperature\n
- * in degree celsius as fixed point integer value with one decimal place.
- * @param temperature Array in which the temperatures will be stored.
- */
-static void get_temperatures_in_degC(uint16_t temperature[][MAXTEMPSENS], uint8_t temperatureStatus[][MAXTEMPSENS]);
-
-/*!
- * @brief LTC6811 helper function
  * @details Calculates the NTC temperature based on the measured voltage
  * @param ntc NTC type. @see NTC_Type_t
  * @param temp_voltage Voltage which is converted to a temperature
@@ -208,27 +180,6 @@ static void get_temperatures_in_degC(uint16_t temperature[][MAXTEMPSENS], uint8_
  */
 static uint16_t calc_temperature_from_voltage(uint16_t B, uint16_t temp_voltage);
 
-/*!
- * @brief LTC6811 helper function
- * @details Gets the 32 bit unique ID stored in an EEPROM on the slave for every slave
- * @param UID Array in which the UIDs will be stored.\n
- * An error code is stored in the lower byte if an error occurs
- */
-static void get_uid(uint32_t UID[]);
-
-/*!
- * @brief LTC6811 helper function
- * @details Performs an open wire check on the all slaves.
- * @param result Array in which the results will be stored. See enum LTCError_t for possible values.
- */
-static void open_wire_check(uint8_t result[][MAXCELLS+1]);
-
-/*!
- *  @brief LTC6811 helper function
- *  @details Enables/disables the desired balancing gates on the slaves.
- *  @param gates Array for the values of all 12*12 gates (0 = off, else on)
- */
-static void set_balancing_gates(uint8_t gates[][MAXCELLS]);
 
 /*!
  * @enum Enumerator for the LTC8611 I2C function
@@ -249,15 +200,13 @@ enum {
 
 //############################################################################################
 
-void ltc_init(LTC_initial_data_t initData) {
-    _batteryDataMutex = xSemaphoreCreateMutex();
-    configASSERT(_batteryDataMutex);
-    memset(&batteryData, 0, sizeof(battery_data_t));
-    _numberOfSlaves = initData.numberOfSlaves;
-    _workerTasksPrio = initData.workerTasksPrio;
-    _cellUnderVoltageThreshold = initData.undervoltageThreshold;
-    _cellOverVoltageThreshold = initData.overvoltageThreshold;
-    //xTaskCreate(ltc_config_slaves_task, "LTC6811 conf", 300, NULL, 4, NULL);
+void ltc6811_init(uint32_t UID[]) {
+    if(spi_mutex_take(LTC6811_SPI, portMAX_DELAY)) {
+        ltc6811_wake_daisy_chain();
+        set_config();
+        ltc6811_get_uid(UID);
+        spi_mutex_give(LTC6811_SPI);
+    }
 }
 
 // Helper functions
@@ -272,8 +221,8 @@ void deselect_bms(void) {
 
 void broadcast(commandLTC_t command, uint8_t sendPayload[][PAYLOADLEN], uint8_t recPayload[][PAYLOADLEN], uint8_t *recPEC) {
     uint8_t command_temp[4];
-    uint16_t PEC[_numberOfSlaves]; //PEC for the payload. Each payload has different PECs
-    uint8_t tempRecPayload[_numberOfSlaves][8]; //Holds payload and received PEC. PEC will be removed
+    uint16_t PEC[NUMBEROFSLAVES]; //PEC for the payload. Each payload has different PECs
+    uint8_t tempRecPayload[NUMBEROFSLAVES][8]; //Holds payload and received PEC. PEC will be removed
 
     command_temp[0] = (uint8_t)  (command >> 24);
     command_temp[1] = (uint8_t) ((command & 0x00FF0000) >> 16);
@@ -318,14 +267,14 @@ void broadcast(commandLTC_t command, uint8_t sendPayload[][PAYLOADLEN], uint8_t 
     case WRPWM:
     case WRCOMM:
 
-        for (size_t slave = _numberOfSlaves; slave-- > 0; ) { //Reverse order since first byte will be shifted to the last slave in the chain!
+        for (size_t slave = NUMBEROFSLAVES; slave-- > 0; ) { //Reverse order since first byte will be shifted to the last slave in the chain!
             PEC[slave] = calc_pec(6, &sendPayload[slave][0]); //Calculate the payload PEC beforehand for every slave
         }
 
         select_bms();
         spi_move_array(LTC6811_SPI, command_temp, 4);
 
-        for (size_t slave = _numberOfSlaves; slave-- > 0; ) { //Reverse order since first byte will be shifted to the last slave in the chain!
+        for (size_t slave = NUMBEROFSLAVES; slave-- > 0; ) { //Reverse order since first byte will be shifted to the last slave in the chain!
             for (size_t byte = 0; byte < 6; byte++) {
                 spi_move(LTC6811_SPI, sendPayload[slave][byte]);
             }
@@ -352,12 +301,12 @@ void broadcast(commandLTC_t command, uint8_t sendPayload[][PAYLOADLEN], uint8_t 
         select_bms();
         spi_move_array(LTC6811_SPI, command_temp, 4);
 
-        for (size_t slave = 0; slave < _numberOfSlaves; slave++) {
+        for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
             memset(&tempRecPayload[slave][0], 0xFF, 8);
             spi_move_array(LTC6811_SPI, &tempRecPayload[slave][0], 8);
         }
         deselect_bms();
-        for (size_t slave = 0; slave < _numberOfSlaves; slave++) {
+        for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
             memcpy(&recPayload[slave][0], &tempRecPayload[slave][0], 6); //Copy only the first 6 bytes per payload
         }
         check_pec(tempRecPayload, recPEC);
@@ -412,7 +361,7 @@ void check_pec(uint8_t payload[][8], uint8_t *result) {
     uint16_t PEC_should;
     uint16_t PEC_is;
 
-    for (size_t slave = 0; slave < _numberOfSlaves; slave++) {
+    for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
         PEC_is = calc_pec(6, &payload[slave][0]);
         PEC_should = (payload[slave][6] << 8) | payload[slave][7];
         if (PEC_should != PEC_is) {
@@ -423,9 +372,9 @@ void check_pec(uint8_t payload[][8], uint8_t *result) {
     }
 }
 
-void ltc_wake_daisy_chain() {
+void ltc6811_wake_daisy_chain(void) {
 
-    for (size_t slave = 0; slave < _numberOfSlaves + 1U; slave++) {
+    for (size_t slave = 0; slave < NUMBEROFSLAVES + 1U; slave++) {
         select_bms();
         spi_move(LTC6811_SPI, 0xFF);
         deselect_bms();
@@ -435,12 +384,12 @@ void ltc_wake_daisy_chain() {
 }
 
 void set_config(void) {
-    uint8_t payload[_numberOfSlaves][PAYLOADLEN];
+    uint8_t payload[NUMBEROFSLAVES][PAYLOADLEN];
 
-    _undervoltage_reg = (_cellUnderVoltageThreshold / (16 * 100E-3)) - 1;
-    _overvoltage_reg = _cellOverVoltageThreshold / (16 * 100E-3);
+    _undervoltage_reg = (CELL_UNDERVOLTAGE / (16 * 100E-3)) - 1;
+    _overvoltage_reg = CELL_OVERVOLTAGE / (16 * 100E-3);
 
-    for (size_t slave = 0; slave < _numberOfSlaves; slave++){
+    for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++){
         payload[slave][0] = 0xFC;
         payload[slave][1] = _undervoltage_reg & 0x00FF;
         payload[slave][2] = ((_undervoltage_reg & 0x0F00) >> 8)
@@ -452,7 +401,7 @@ void set_config(void) {
     broadcast(WRCFGA, payload, NULL, NULL);
 }
 
-void get_voltage(uint16_t voltage[][MAXCELLS], uint8_t voltageStatus[][MAXCELLS]) {
+void ltc6811_get_voltage(uint16_t voltage[][MAXCELLS], uint8_t voltageStatus[][MAXCELLS]) {
 
     //Start ADC conversion
     broadcast(ADCV_NORM_ALL, NULL, NULL, NULL);
@@ -464,13 +413,13 @@ void get_voltage(uint16_t voltage[][MAXCELLS], uint8_t voltageStatus[][MAXCELLS]
 }
 
 void read_cell_voltage_registers_and_convert_to_voltage(uint16_t voltage[][MAXCELLS], uint8_t voltageStatus[][MAXCELLS]) {
-    uint8_t payload[_numberOfSlaves][PAYLOADLEN];
-    uint8_t pec[_numberOfSlaves];
+    uint8_t payload[NUMBEROFSLAVES][PAYLOADLEN];
+    uint8_t pec[NUMBEROFSLAVES];
 
     //Load Cell Voltage Register A
     broadcast(RDCVA, NULL, payload, pec);
     //Set cell voltages 1 to 3
-    for (size_t slave = 0; slave < _numberOfSlaves; slave++) {
+    for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
         voltage[slave][0] = ((payload[slave][1] << 8) | payload[slave][0]) / 10;
         voltage[slave][1] = ((payload[slave][3] << 8) | payload[slave][2]) / 10;
         voltage[slave][2] = ((payload[slave][5] << 8) | payload[slave][4]) / 10;
@@ -483,7 +432,7 @@ void read_cell_voltage_registers_and_convert_to_voltage(uint16_t voltage[][MAXCE
     //Load Cell Voltage Register B
     broadcast(RDCVB, NULL, payload, pec);
     //Set cell voltages 4 to 6
-    for (size_t slave = 0; slave < _numberOfSlaves; slave++) {
+    for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
         voltage[slave][3] = ((payload[slave][1] << 8) | payload[slave][0]) / 10;
         voltage[slave][4] = ((payload[slave][3] << 8) | payload[slave][2]) / 10;
         voltage[slave][5] = ((payload[slave][5] << 8) | payload[slave][4]) / 10;
@@ -496,7 +445,7 @@ void read_cell_voltage_registers_and_convert_to_voltage(uint16_t voltage[][MAXCE
     //Load Cell Voltage Register C
     broadcast(RDCVC, NULL, payload, pec);
     //Set cell voltages 7 to 9
-    for (size_t slave = 0; slave < _numberOfSlaves; slave++) {
+    for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
         voltage[slave][6] = ((payload[slave][1] << 8) | payload[slave][0]) / 10;
         voltage[slave][7] = ((payload[slave][3] << 8) | payload[slave][2]) / 10;
         voltage[slave][8] = ((payload[slave][5] << 8) | payload[slave][4]) / 10;
@@ -509,7 +458,7 @@ void read_cell_voltage_registers_and_convert_to_voltage(uint16_t voltage[][MAXCE
     //Load Cell Voltage Register D
     broadcast(RDCVD, NULL, payload, pec);
     //Set cell voltages 10 to 12
-    for (size_t slave = 0; slave < _numberOfSlaves; slave++) {
+    for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
         voltage[slave][9] = ((payload[slave][1] << 8) | payload[slave][0]) / 10;
         voltage[slave][10] = ((payload[slave][3] << 8) | payload[slave][2]) / 10;
         voltage[slave][11] = ((payload[slave][5] << 8) | payload[slave][4]) / 10;
@@ -522,11 +471,11 @@ void read_cell_voltage_registers_and_convert_to_voltage(uint16_t voltage[][MAXCE
 
 void set_mux_channel(uint8_t temperature_channel) {
     uint8_t cmd = 0;
-    uint8_t payload[_numberOfSlaves][PAYLOADLEN];
+    uint8_t payload[NUMBEROFSLAVES][PAYLOADLEN];
 
     cmd = return_mux_command_byte(temperature_channel);
 
-    for (size_t slave = 0; slave < _numberOfSlaves; slave++) {
+    for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
         //Set mux
         payload[slave][0] = 0x69; //START, Control byte mux HIGH
         payload[slave][1] = 0x00; //Control byte mux LOW, ACK
@@ -547,30 +496,30 @@ inline uint8_t return_mux_command_byte(uint8_t channel) {
 }
 
 void get_gpio_voltage(uint16_t voltGPIO[][2], uint8_t *voltGPIOStatus) {
-    uint8_t payload_auxa[_numberOfSlaves][PAYLOADLEN];
-    uint8_t pec[_numberOfSlaves];
+    uint8_t payload_auxa[NUMBEROFSLAVES][PAYLOADLEN];
+    uint8_t pec[NUMBEROFSLAVES];
     broadcast(ADAXD_NORM_ALL, NULL, NULL, NULL);
 
     vTaskDelay(pdMS_TO_TICKS(3));
 
     broadcast(RDAUXA, NULL, payload_auxa, pec);
 
-    for (size_t slave = 0; slave < _numberOfSlaves; slave++) {
+    for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
         voltGPIOStatus[slave] = pec[slave];
         voltGPIO[slave][0] = (payload_auxa[slave][1] << 8) | payload_auxa[slave][0]; //GPIO1
         voltGPIO[slave][1] = (payload_auxa[slave][3] << 8) | payload_auxa[slave][2]; //GPIO2
     }
 }
 
-void get_temperatures_in_degC(uint16_t temperature[][MAXTEMPSENS], uint8_t temperatureStatus[][MAXTEMPSENS]) {
-    uint16_t voltGPIO[_numberOfSlaves][2]; //GPIO1 and GPIO2 are converted simultaneously
-    uint8_t status[_numberOfSlaves];
+void ltc6811_get_temperatures_in_degC(uint16_t temperature[][MAXTEMPSENS], uint8_t temperatureStatus[][MAXTEMPSENS]) {
+    uint16_t voltGPIO[NUMBEROFSLAVES][2]; //GPIO1 and GPIO2 are converted simultaneously
+    uint8_t status[NUMBEROFSLAVES];
 
     for (size_t channel = 0; channel < 7; channel++) {
         set_mux_channel(channel); //Select channels channel+1 and channel+9
         get_gpio_voltage(voltGPIO, status); //Get channel+1 and channel+9
         //PRINTF("%u\n", voltGPIO[2][1]);
-        for (size_t slave = 0; slave < _numberOfSlaves; slave++) {
+        for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
             temperatureStatus[slave][channel] = status[slave];
             temperatureStatus[slave][channel+7] = status[slave];
             if (channel == 6) { //PCB Sensor
@@ -597,10 +546,10 @@ uint16_t calc_temperature_from_voltage(uint16_t B, uint16_t temp_voltage) {
     return (uint16_t) (T * 10);
 }
 
-void get_uid(uint32_t UID[]) {
-    uint8_t payload[_numberOfSlaves][PAYLOADLEN];
-    uint32_t uid[_numberOfSlaves];
-    uint8_t  pec[_numberOfSlaves];
+void ltc6811_get_uid(uint32_t UID[]) {
+    uint8_t payload[NUMBEROFSLAVES][PAYLOADLEN];
+    uint32_t uid[NUMBEROFSLAVES];
+    uint8_t  pec[NUMBEROFSLAVES];
     uint8_t  transmit[3];
 
     //Transmitted bytes are the same for all slaves
@@ -608,7 +557,7 @@ void get_uid(uint32_t UID[]) {
     transmit[1] = 0xFC; //Address byte
     transmit[2] = 0xA1; //Control byte read
 
-    for (size_t slave = 0; slave < _numberOfSlaves; slave++) {
+    for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
         payload[slave][0] = I2C_START | I2C_HIGHBYTE(transmit[0]);
         payload[slave][1] = I2C_LOWBYTE(transmit[0]) | I2C_MASTER_ACK;
         payload[slave][2] = I2C_BLANK | I2C_HIGHBYTE(transmit[1]);
@@ -624,7 +573,7 @@ void get_uid(uint32_t UID[]) {
     transmit[1] = 0xFF; //dummy bytes for reading from slave
     transmit[2] = 0xFF; //dummy bytes for reading from slave
 
-    for (size_t slave = 0; slave < _numberOfSlaves; slave++) {
+    for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
         payload[slave][0] = I2C_BLANK | I2C_HIGHBYTE(transmit[0]);
         payload[slave][1] = I2C_LOWBYTE(transmit[0]) | I2C_MASTER_ACK;
         payload[slave][2] = I2C_BLANK | I2C_HIGHBYTE(transmit[1]);
@@ -639,7 +588,7 @@ void get_uid(uint32_t UID[]) {
     //Read COMM Register
     broadcast(RDCOMM, NULL, payload, pec);
 
-    for (size_t slave = 0; slave < _numberOfSlaves; slave++) {
+    for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
         if (pec[slave] != PECERROR) {
             uid[slave]  = ((payload[slave][0] & 0x0F) << 28) | ((payload[slave][1] & 0xF0) << 20);
             uid[slave] |= ((payload[slave][2] & 0x0F) << 20) | ((payload[slave][3] & 0xF0) << 12);
@@ -653,7 +602,7 @@ void get_uid(uint32_t UID[]) {
     transmit[1] = 0x00;
     transmit[2] = 0x00;
 
-    for (size_t slave = 0; slave < _numberOfSlaves; slave++) {
+    for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
         payload[slave][0] = I2C_BLANK | I2C_HIGHBYTE(transmit[0]);
         payload[slave][1] = I2C_LOWBYTE(transmit[0]) | I2C_MASTER_NACK_STOP;
         payload[slave][2] = I2C_NO_TRANSMIT;
@@ -669,7 +618,7 @@ void get_uid(uint32_t UID[]) {
     //Read COMM Register
     broadcast(RDCOMM, NULL, payload, pec);
 
-    for (size_t slave = 0; slave < _numberOfSlaves; slave++) {
+    for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
         if (pec[slave] != PECERROR && uid[slave] != PECERROR) {
             uid[slave] |= ((payload[slave][0] & 0x0F) << 4) | ((payload[slave][1] & 0xF0) >> 4);
         } else {
@@ -677,15 +626,15 @@ void get_uid(uint32_t UID[]) {
         }
     }
 
-    memcpy(UID, uid, sizeof(uint32_t) * _numberOfSlaves);
+    memcpy(UID, uid, sizeof(uint32_t) * NUMBEROFSLAVES);
 }
 
-void open_wire_check(uint8_t result[][MAXCELLS+1]) {
-    uint16_t voltage_pup[_numberOfSlaves][MAXCELLS];
-    uint8_t pec_pup[_numberOfSlaves][MAXCELLS];
-    uint16_t voltage_pdn[_numberOfSlaves][MAXCELLS];
-    uint8_t pec_pdn[_numberOfSlaves][MAXCELLS];
-    int32_t  volt_diff[_numberOfSlaves][MAXCELLS];
+void ltc6811_open_wire_check(uint8_t result[][MAXCELLS+1]) {
+    uint16_t voltage_pup[NUMBEROFSLAVES][MAXCELLS];
+    uint8_t pec_pup[NUMBEROFSLAVES][MAXCELLS];
+    uint16_t voltage_pdn[NUMBEROFSLAVES][MAXCELLS];
+    uint8_t pec_pdn[NUMBEROFSLAVES][MAXCELLS];
+    int32_t  volt_diff[NUMBEROFSLAVES][MAXCELLS];
 
 
     //Algorithm described in LTC6811 datasheet
@@ -706,7 +655,7 @@ void open_wire_check(uint8_t result[][MAXCELLS+1]) {
     vTaskDelay(pdMS_TO_TICKS(3));
     read_cell_voltage_registers_and_convert_to_voltage(voltage_pdn, pec_pdn);
 
-    for (size_t slave = 0; slave < _numberOfSlaves; slave++) {
+    for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
         for (size_t cell = 1; cell < MAXCELLS; cell++) {
             volt_diff[slave][cell] = voltage_pup[slave][cell]
                                             - voltage_pdn[slave][cell];
@@ -735,10 +684,10 @@ void open_wire_check(uint8_t result[][MAXCELLS+1]) {
 
 }
 
-void set_balancing_gates(uint8_t gates[][MAXCELLS]) {
-    uint8_t payload[_numberOfSlaves][PAYLOADLEN];
+void ltc6811_set_balancing_gates(uint8_t gates[][MAXCELLS]) {
+    uint8_t payload[NUMBEROFSLAVES][PAYLOADLEN];
 
-    for (size_t slave = 0; slave < _numberOfSlaves; slave++){
+    for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++){
         payload[slave][0] = 0xFC;
         payload[slave][1] = _undervoltage_reg & 0x00FF;
         payload[slave][2] = ((_undervoltage_reg & 0x0F00) >> 8)
@@ -755,107 +704,8 @@ void set_balancing_gates(uint8_t gates[][MAXCELLS]) {
     //broadcast(WRCFGA, payload, NULL, NULL);
 }
 
-void ltc_config_slaves_task(void *p) {
-    (void)p;
-    while (1) {
-        if(spi_mutex_take(LTC6811_SPI, portMAX_DELAY)) {
-            xTaskCreate(ltc6811_worker_task, "ltc_worker", 2000, NULL, _workerTasksPrio, NULL);
-            ltc_wake_daisy_chain();
-            set_config();
-            get_uid(_UID);
-            for (size_t slave = 0; slave < _numberOfSlaves; slave++) {
-                PRINTF("UID %d: %08X\n", slave+1, _UID[slave]);
-            }
-            spi_mutex_give(LTC6811_SPI);
-            vTaskDelete(NULL);
-        }
-    }
-}
-
-void ltc6811_worker_task(void *p) {
-    (void)p;
-    battery_data_t stackDataLocal;
-    static uint8_t pecVoltage[MAXSTACKS][MAXCELLS];
-    TickType_t xLastWakeTime = xTaskGetTickCount();
-
-    while (1) {
-        if (spi_mutex_take(LTC6811_SPI, portMAX_DELAY)) {
-
-
-
-            ltc_wake_daisy_chain();
-            open_wire_check(stackDataLocal.cellVoltageStatus);
-            get_voltage(stackDataLocal.cellVoltage, pecVoltage);
-            get_temperatures_in_degC(stackDataLocal.temperature, stackDataLocal.temperatureStatus);
-
-            // Error priority:
-            // PEC error
-            // Open cell wire
-            // value out of range
-
-
-            //memset(&stackDataLocal.cellVoltageStatus, 0, sizeof(stackDataLocal.cellVoltageStatus));
-            for (size_t slave = 0; slave < _numberOfSlaves; slave++) {
-                // Validity check for temperature sensors
-                for (size_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
-                    if ((stackDataLocal.temperature[slave][tempsens] > MAXCELLTEMP) &&
-                         stackDataLocal.temperatureStatus[slave][tempsens] != PECERROR) {
-                        stackDataLocal.temperatureStatus[slave][tempsens] = VALUEOUTOFRANGE;
-                    }
-
-                    if ((stackDataLocal.temperature[slave][tempsens] < 10) &&
-                         stackDataLocal.temperatureStatus[slave][tempsens] != PECERROR) {
-                         stackDataLocal.temperatureStatus[slave][tempsens] = OPENCELLWIRE;
-                    }
-                }
-
-                // Validity checks for cell voltage measurement
-                for (size_t cell = 0; cell < MAXCELLS; cell++) {
-                    // PEC error: highest prio
-                    if (pecVoltage[slave][cell] == PECERROR) {
-                        stackDataLocal.cellVoltageStatus[slave][cell + 1] = PECERROR;
-                        continue;
-                    }
-                    // Open sensor wire: Prio 2
-                    if (stackDataLocal.cellVoltageStatus[slave][cell + 1] == OPENCELLWIRE) {
-                        continue;
-                    }
-                    // Value out of range: Prio 3
-                    if ((stackDataLocal.cellVoltage[slave][cell] > _cellOverVoltageThreshold)||
-                        (stackDataLocal.cellVoltage[slave][cell] < _cellUnderVoltageThreshold)) {
-                            stackDataLocal.cellVoltageStatus[slave][cell + 1] = VALUEOUTOFRANGE;
-                    }
-
-                }
-            }
-
-            stackDataLocal.bmsStatus = batteryData.bmsStatus;
-            stackDataLocal.shutdownStatus = batteryData.shutdownStatus;
-
-            if (batteryData_mutex_take(portMAX_DELAY)) {
-                memcpy(&batteryData, &stackDataLocal, sizeof(battery_data_t));
-                memcpy(&batteryData.UID, _UID, sizeof(_UID));
-                batteryData.packVoltage = 0;
-                batteryData.current = 0;
-                batteryData.soc = 0;
-
-                batteryData_mutex_give();
-            }
 
 
 
 
 
-            spi_mutex_give(LTC6811_SPI);
-            vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(200));
-        }
-    }
-}
-
-BaseType_t batteryData_mutex_take(TickType_t blocktime) {
-    return xSemaphoreTake(_batteryDataMutex, blocktime);
-}
-
-void batteryData_mutex_give(void) {
-    xSemaphoreGive(_batteryDataMutex);
-}

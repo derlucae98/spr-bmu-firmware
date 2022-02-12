@@ -10,7 +10,6 @@
 #include "LTC6811.h"
 #include "safety.h"
 #include "mcp356x.h"
-#include "sensors.h"
 #include "eeprom.h"
 #include "bmu.h"
 
@@ -19,7 +18,7 @@
 #include <alloca.h>
 #include <stdlib.h>
 
-#define NUMBEROFSLAVES 12
+
 
 
 void wdog_disable (void)
@@ -138,149 +137,7 @@ void led_blink_task(void *pvParameters) {
 
 
 
-void can_send_task(void *p) {
-	(void)p;
-	TickType_t xLastWakeTime;
-    const TickType_t xPeriod = pdMS_TO_TICKS(10);
-    xLastWakeTime = xTaskGetTickCount();
-    uint8_t counter = 0;
-    can_msg_t msg;
 
-    while (1) {
-
-        if (batteryData_mutex_take(portMAX_DELAY)) {
-
-
-     		//Send BMS info message every 10 ms
-            msg.ID = 0x001;
-            msg.DLC = 5;
-    		msg.payload[0] = ((int16_t) (batteryData.current * 100)) >> 8;
-    		msg.payload[1] = ((int16_t) (batteryData.current * 100)) & 0xFF;
-    		msg.payload[2] = (batteryData.packVoltage & 0x1FFF) >> 5;
-    		msg.payload[3] = ((batteryData.packVoltage & 0x1F) << 3) | ((batteryData.shutdownStatus & 0x01) << 2) | ((batteryData.bmsStatus & 0x01) << 1);
-    		msg.payload[4] = batteryData.soc;
-    		//Send message
-    		can_send(CAN0, &msg);
-
-
-            //Send BMS temperature 1 message every 10 ms
-            msg.ID = 0x003;
-            msg.DLC = 8;
-            msg.payload[0] = (counter << 4) | ((batteryData.temperature[counter][0] >> 6) & 0x0F);
-            msg.payload[1] = (batteryData.temperature[counter][0] << 2) | (batteryData.temperatureStatus[counter][0] & 0x03);
-            msg.payload[2] = (batteryData.temperature[counter][1] >> 2);
-            msg.payload[3] = (batteryData.temperature[counter][1] << 6) | ((batteryData.temperatureStatus[counter][1] & 0x03) << 4) | ((batteryData.temperature[counter][2] >> 6) & 0x0F);
-            msg.payload[4] = (batteryData.temperature[counter][2] << 2) | (batteryData.temperatureStatus[counter][2] & 0x03);
-            msg.payload[5] = (batteryData.temperature[counter][3] >> 2);
-            msg.payload[6] = (batteryData.temperature[counter][3] << 6) | ((batteryData.temperatureStatus[counter][3] & 0x03) << 4) | ((batteryData.temperature[counter][4] >> 6) & 0x0F);
-            msg.payload[7] = (batteryData.temperature[counter][4] << 2) | (batteryData.temperatureStatus[counter][4] & 0x03);
-            //Send message
-            can_send(CAN0, &msg);
-
-            //Send BMS temperature 2 message every 10 ms
-            msg.ID = 0x004;
-            msg.DLC = 8;
-            msg.payload[0] = (counter << 4) | ((batteryData.temperature[counter][5] >> 6) & 0x0F);
-            msg.payload[1] = (batteryData.temperature[counter][5] << 2) | (batteryData.temperatureStatus[counter][5] & 0x03);
-            msg.payload[2] = (batteryData.temperature[counter][6] >> 2);
-            msg.payload[3] = (batteryData.temperature[counter][6] << 6) | ((batteryData.temperatureStatus[counter][6] & 0x03) << 4) | ((batteryData.temperature[counter][7] >> 6) & 0x0F);
-            msg.payload[4] = (batteryData.temperature[counter][7] << 2) | (batteryData.temperatureStatus[counter][7] & 0x03);
-            msg.payload[5] = (batteryData.temperature[counter][8] >> 2);
-            msg.payload[6] = (batteryData.temperature[counter][8] << 6) | ((batteryData.temperatureStatus[counter][8] & 0x03) << 4) | ((batteryData.temperature[counter][9] >> 6) & 0x0F);
-            msg.payload[7] = (batteryData.temperature[counter][9] << 2) | (batteryData.temperatureStatus[counter][9] & 0x03);
-            //Send message
-            can_send(CAN0, &msg);
-
-            //Send BMS temperature 3 message every 10 ms
-            msg.ID = 0x005;
-            msg.DLC = 8;
-            msg.payload[0] = (counter << 4) | ((batteryData.temperature[counter][10] >> 6) & 0x0F);
-            msg.payload[1] = (batteryData.temperature[counter][10] << 2) | (batteryData.temperatureStatus[counter][10] & 0x03);
-            msg.payload[2] = (batteryData.temperature[counter][11] >> 2);
-            msg.payload[3] = (batteryData.temperature[counter][11] << 6) | ((batteryData.temperatureStatus[counter][11] & 0x03) << 4) | ((batteryData.temperature[counter][12] >> 6) & 0x0F);
-            msg.payload[4] = (batteryData.temperature[counter][12] << 2) | (batteryData.temperatureStatus[counter][12] & 0x03);
-            msg.payload[5] = (batteryData.temperature[counter][13] >> 2);
-            msg.payload[6] = (batteryData.temperature[counter][13] << 6) | ((batteryData.temperatureStatus[counter][13] & 0x03) << 4);
-            msg.payload[7] = 0;
-            //Send message
-            can_send(CAN0, &msg);
-
-            //Send BMS cell voltage 1 message every 10 ms
-            msg.ID = 0x006;
-            msg.DLC = 7;
-            msg.payload[0] = (counter << 4) | (batteryData.cellVoltageStatus[counter][0] & 0x3);
-            msg.payload[1] = batteryData.cellVoltage[counter][0] >> 5;
-            msg.payload[2] = ((batteryData.cellVoltage[counter][0] & 0x1F) << 3) | (batteryData.cellVoltageStatus[counter][1] & 0x3);
-            msg.payload[3] = batteryData.cellVoltage[counter][1] >> 5;
-            msg.payload[4] = ((batteryData.cellVoltage[counter][1] & 0x1F) << 3) | (batteryData.cellVoltageStatus[counter][2] & 0x3);
-            msg.payload[5] = batteryData.cellVoltage[counter][2] >> 5;
-            msg.payload[6] = ((batteryData.cellVoltage[counter][2] & 0x1F) << 3) | (batteryData.cellVoltageStatus[counter][3] & 0x3);
-            //Send message
-            can_send(CAN0, &msg);
-
-            //Send BMS cell voltage 2 message every 10 ms
-            msg.ID = 0x007;
-            msg.DLC = 7;
-            msg.payload[0] = counter << 4;
-            msg.payload[1] = batteryData.cellVoltage[counter][3] >> 5;
-            msg.payload[2] = ((batteryData.cellVoltage[counter][3] & 0x1F) << 3) | (batteryData.cellVoltageStatus[counter][4] & 0x3);
-            msg.payload[3] = batteryData.cellVoltage[counter][4] >> 5;
-            msg.payload[4] = ((batteryData.cellVoltage[counter][4] & 0x1F) << 3) | (batteryData.cellVoltageStatus[counter][5] & 0x3);
-            msg.payload[5] = batteryData.cellVoltage[counter][5] >> 5;
-            msg.payload[6] = ((batteryData.cellVoltage[counter][5] & 0x1F) << 3) | (batteryData.cellVoltageStatus[counter][6] & 0x3);
-            //Send message
-            can_send(CAN0, &msg);
-
-            //Send BMS cell voltage 3 message every 10 ms
-            msg.ID = 0x008;
-            msg.DLC = 7;
-            msg.payload[0] = counter << 4;
-            msg.payload[1] = batteryData.cellVoltage[counter][6] >> 5;
-            msg.payload[2] = ((batteryData.cellVoltage[counter][6] & 0x1F) << 3) | (batteryData.cellVoltageStatus[counter][7] & 0x3);
-            msg.payload[3] = batteryData.cellVoltage[counter][7] >> 5;
-            msg.payload[4] = ((batteryData.cellVoltage[counter][7] & 0x1F) << 3) | (batteryData.cellVoltageStatus[counter][8] & 0x3);
-            msg.payload[5] = batteryData.cellVoltage[counter][8] >> 5;
-            msg.payload[6] = ((batteryData.cellVoltage[counter][8] & 0x1F) << 3) | (batteryData.cellVoltageStatus[counter][9] & 0x3);
-            //Send message
-            can_send(CAN0, &msg);
-
-            //Send BMS cell voltage 4 message every 10 ms
-            msg.ID = 0x009;
-            msg.DLC = 7;
-            msg.payload[0] = counter << 4;
-            msg.payload[1] = batteryData.cellVoltage[counter][9] >> 5;
-            msg.payload[2] = ((batteryData.cellVoltage[counter][9] & 0x1F) << 3) | (batteryData.cellVoltageStatus[counter][10] & 0x3);
-            msg.payload[3] = batteryData.cellVoltage[counter][10] >> 5;
-            msg.payload[4] = ((batteryData.cellVoltage[counter][10] & 0x1F) << 3) | (batteryData.cellVoltageStatus[counter][11] & 0x3);
-            msg.payload[5] = batteryData.cellVoltage[counter][11] >> 5;
-            msg.payload[6] = ((batteryData.cellVoltage[counter][11] & 0x1F) << 3) | (batteryData.cellVoltageStatus[counter][12] & 0x3);
-            //Send message
-            can_send(CAN0, &msg);
-
-            //Send Unique ID every 10 ms
-            msg.ID = 0x00A;
-            msg.DLC = 5;
-            msg.payload[0] = counter << 4;
-            msg.payload[1] = batteryData.UID[counter] >> 24;
-            msg.payload[2] = batteryData.UID[counter] >> 16;
-            msg.payload[3] = batteryData.UID[counter] >> 8;
-            msg.payload[4] = batteryData.UID[counter] & 0xFF;
-            //Send message
-            can_send(CAN0, &msg);
-
-            if (counter < NUMBEROFSLAVES-1) {
-                counter++;
-            } else {
-                counter = 0;
-            }
-
-            batteryData_mutex_give();
-
-        }
-
-        vTaskDelayUntil(&xLastWakeTime, xPeriod);
-	}
-}
 
 void gpio_init(void) {
     //Enable clocks for GPIO modules
@@ -349,6 +206,20 @@ void gpio_init(void) {
     set_pin_mux(SPI2_PORT, SPI2_SCK,  3);
 }
 
+void init_task(void *p) {
+    (void) p;
+
+    while (1) {
+        xTaskCreate(uart_rec_task, "uart_rec", 1000, NULL, 2, &uartRecTaskHandle);
+        init_bmu();
+        xTaskCreate(led_blink_task, "LED blink", 1000, NULL, 1, NULL);
+
+        vTaskDelete(NULL);
+    }
+
+}
+
+
 int main(void)
 {
 	wdog_disable();
@@ -357,7 +228,6 @@ int main(void)
     can_init(CAN0);
     uart_init();
     uart_register_receive_hook(uart_rec);
-    xTaskCreate(uart_rec_task, "uart_rec", 1000, NULL, 2, &uartRecTaskHandle);
 
     clear_pin(CAN_STBY_PORT, CAN_STBY_PIN);
 
@@ -371,25 +241,9 @@ int main(void)
 
     spi_init(LPSPI0, LPSPI_PRESC_8, LPSPI_MODE_0);
     spi_init(LPSPI1, LPSPI_PRESC_8, LPSPI_MODE_0);
+    spi_init(LPSPI2, LPSPI_PRESC_8, LPSPI_MODE_3);
 
-
-    init_sensors();
-
-
-
-
-
-    static const LTC_initial_data_t ltcInitData = {NUMBEROFSLAVES, 2700UL, 4200UL, 2};
-    ltc_init(ltcInitData);
-
-    init_bmu();
-
-
-
-	xTaskCreate(led_blink_task, "LED blink", 1000, NULL, 1, NULL);
-
-	xTaskCreate(can_send_task, "CAN", 1000, NULL, 3, NULL);
-	//xTaskCreate(shutdown_circuit_handle_task, "SC", 500, NULL, 3, NULL);
+    xTaskCreate(init_task, "init", 1000, NULL, configMAX_PRIORITIES-1, NULL);
 
 	vTaskStartScheduler();
 
@@ -402,7 +256,6 @@ void vApplicationTickHook(void) {
 
 }
 void vApplicationStackOverflowHook(TaskHandle_t pxTask, char *pcTaskName) {
-    PRINTF("Stack overflow in %s", pcTaskName);
 	configASSERT(0);
 }
 
