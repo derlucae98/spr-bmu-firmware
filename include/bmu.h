@@ -48,6 +48,10 @@ BaseType_t stacks_mutex_take(TickType_t blocktime);
 void stacks_mutex_give(void);
 extern stacks_data_t stacksData;
 
+BaseType_t batteryStatus_mutex_take(TickType_t blocktime);
+void batteryStatus_mutex_give(void);
+extern battery_status_t batteryStatus;
+
 
 
 void init_bmu(void);

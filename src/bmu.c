@@ -9,24 +9,42 @@
 
 static SemaphoreHandle_t _stacksDataMutex = NULL;
 stacks_data_t stacksData;
+static SemaphoreHandle_t _batteryStatusMutex = NULL;
+battery_status_t batteryStatus;
 
 
 static uint32_t _UID[NUMBEROFSLAVES];
 static void can_send_task(void *p);
 static void ltc6811_worker_task(void *p);
+static void safety_task(void *p);
+
+static inline void open_shutdown_circuit(void);
+static inline void close_shutdown_circuit(void);
 
 void init_bmu(void) {
     init_sensors();
     init_contactor();
+
     _stacksDataMutex = xSemaphoreCreateMutex();
     configASSERT(_stacksDataMutex);
     memset(&stacksData, 0, sizeof(stacks_data_t));
+
+    _batteryStatusMutex = xSemaphoreCreateMutex();
+    configASSERT(_batteryStatusMutex);
+    memset(&batteryStatus, 0, sizeof(batteryStatus));
+
     ltc6811_init(_UID);
+    if (stacks_mutex_take(portMAX_DELAY)) {
+        memcpy(&stacksData.UID, _UID, sizeof(_UID));
+        stacks_mutex_give();
+    }
+
     for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
         PRINTF("UID %d: %08X\n", slave+1, _UID[slave]);
     }
     xTaskCreate(can_send_task, "CAN", 1000, NULL, 3, NULL);
     xTaskCreate(ltc6811_worker_task, "LTC", 2000, NULL, 3, NULL);
+    xTaskCreate(safety_task, "status", 500, NULL, 3, NULL);
 }
 
 BaseType_t stacks_mutex_take(TickType_t blocktime) {
@@ -35,6 +53,14 @@ BaseType_t stacks_mutex_take(TickType_t blocktime) {
 
 void stacks_mutex_give(void) {
     xSemaphoreGive(_stacksDataMutex);
+}
+
+BaseType_t batteryStatus_mutex_take(TickType_t blocktime) {
+    return xSemaphoreTake(_batteryStatusMutex, blocktime);
+}
+
+void batteryStatus_mutex_give(void) {
+    xSemaphoreGive(_batteryStatusMutex);
 }
 
 static void ltc6811_worker_task(void *p) {
@@ -59,14 +85,14 @@ static void ltc6811_worker_task(void *p) {
         //memset(&stackDataLocal.cellVoltageStatus, 0, sizeof(stackDataLocal.cellVoltageStatus));
         for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
             // Validity check for temperature sensors
-            for (size_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
-                if ((stacksDataLocal.temperature[slave][tempsens] > MAXCELLTEMP) &&
-                     stacksDataLocal.temperatureStatus[slave][tempsens] != PECERROR) {
-                    stacksDataLocal.temperatureStatus[slave][tempsens] = VALUEOUTOFRANGE;
-                }
 
-                if ((stacksDataLocal.temperature[slave][tempsens] < 10) &&
-                     stacksDataLocal.temperatureStatus[slave][tempsens] != PECERROR) {
+            for (size_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
+                if (stacksDataLocal.temperatureStatus[slave][tempsens] == PECERROR) {
+                    continue;
+                }
+                if (stacksDataLocal.temperature[slave][tempsens] > MAXCELLTEMP) {
+                    stacksDataLocal.temperatureStatus[slave][tempsens] = VALUEOUTOFRANGE;
+                } else if (stacksDataLocal.temperature[slave][tempsens] < 10) {
                      stacksDataLocal.temperatureStatus[slave][tempsens] = OPENCELLWIRE;
                 }
             }
@@ -91,23 +117,87 @@ static void ltc6811_worker_task(void *p) {
             }
         }
 
-        PRINTF("Cell 0: %.3f V\n", (float)stacksDataLocal.cellVoltage[0][0]/1000.0f);
-
         if (stacks_mutex_take(portMAX_DELAY)) {
             memcpy(&stacksData, &stacksDataLocal, sizeof(stacks_data_t));
-//               memcpy(&stacksData.UID, _UID, sizeof(_UID));
-
-
             stacks_mutex_give();
         }
 
-
-
-
-
-
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
+    }
+}
 
+static void safety_task(void *p) {
+    /* This task polls all status inputs and determines the AMS status based on the measured cell parameters.
+     * It controls the shutdown circuit for the AMS and also controls the status LEDs.
+     */
+    (void)p;
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    const TickType_t xPeriod = pdMS_TO_TICKS(100);
+    while (1) {
+
+        bool criticalValue = false;
+        if (stacks_mutex_take(portMAX_DELAY)) {
+            //Check for critical AMS values. This represents the AMS status.
+            for (uint8_t stack = 0; stack < NUMBEROFSLAVES; stack++) {
+                for (uint8_t cell = 0; cell < MAXCELLS+1; cell++) {
+                    if (stacksData.cellVoltageStatus[stack][cell] != NOERROR) {
+                        criticalValue |= true;
+                    }
+                }
+                for (uint8_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
+                    if (stacksData.temperatureStatus[stack][tempsens] != NOERROR) {
+                        criticalValue |= true;
+                    }
+                }
+            }
+            stacks_mutex_give();
+        }
+
+        //Poll external status pins
+        bool amsResetStatus = get_pin(AMS_RES_STAT_PORT, AMS_RES_STAT_PIN);
+        bool imdResetStatus = get_pin(IMD_RES_STAT_PORT, IMD_RES_STAT_PIN);
+        bool imdStatus = get_pin(IMD_STAT_PORT, IMD_STAT_PIN);
+        bool scStat = get_pin(SC_STATUS_PORT, SC_STATUS_PIN);
+
+        if (criticalValue) {
+            //AMS opens the shutdown circuit in case of critical values
+            open_shutdown_circuit();
+            set_pin(LED_AMS_FAULT_PORT, LED_AMS_FAULT_PIN);
+            clear_pin(LED_AMS_OK_PORT, LED_AMS_OK_PIN);
+        } else {
+            //If error clears, we close the shutdown circuit again
+            close_shutdown_circuit();
+            clear_pin(LED_AMS_FAULT_PORT, LED_AMS_FAULT_PIN);
+            if (amsResetStatus) {
+                //LED is constantly on, if AMS error has been manually cleared
+                set_pin(LED_AMS_OK_PORT, LED_AMS_OK_PIN);
+            } else {
+                //A blinking green LED signalizes, that the AMS is ready but needs manual reset
+                toggle_pin(LED_AMS_OK_PORT, LED_AMS_OK_PIN);
+            }
+        }
+
+        if (imdStatus) {
+            clear_pin(LED_IMD_FAULT_PORT, LED_IMD_FAULT_PIN);
+            if (imdResetStatus) {
+                set_pin(LED_IMD_OK_PORT, LED_IMD_OK_PIN);
+            } else {
+                toggle_pin(LED_IMD_OK_PORT, LED_IMD_OK_PIN);
+            }
+        } else {
+            set_pin(LED_IMD_FAULT_PORT, LED_IMD_FAULT_PIN);
+            clear_pin(LED_IMD_OK_PORT, LED_IMD_OK_PIN);
+        }
+
+        if (batteryStatus_mutex_take(portMAX_DELAY)) {
+            batteryStatus.amsStatus = !criticalValue;
+            batteryStatus.amsResetStatus = amsResetStatus;
+            batteryStatus.imdStatus = imdStatus;
+            batteryStatus.imdResetStatus = imdResetStatus;
+            batteryStatus.shutdownCircuit = scStat;
+            batteryStatus_mutex_give();
+        }
+        vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
 }
 
@@ -255,47 +345,12 @@ static void can_send_task(void *p) {
     }
 }
 
-static void open_shutdown_circuit();
-static void close_shutdown_circuit();
-static volatile bool _criticalFault;
 
-void shutdown_circuit_handle_task(void *p) {
-    (void)p;
-    TickType_t xLastWakeTime = xTaskGetTickCount();
-    const TickType_t xPeriod = pdMS_TO_TICKS(100);
-    _criticalFault = false;
-    while (1) {
-        if (stacks_mutex_take(portMAX_DELAY)) {
-            // Check for critical values and open S/C
-            _criticalFault = false;
-            for (uint8_t stack = 0; stack < MAXSTACKS; stack++) {
-                for (uint8_t cell = 0; cell < MAXCELLS+1; cell++) {
-                    if (stacksData.cellVoltageStatus[stack][cell] != NOERROR) {
-                        _criticalFault |= true;
-                    }
-                }
-                for (uint8_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
-                    if (stacksData.temperatureStatus[stack][tempsens] != NOERROR) {
-                        _criticalFault |= true;
-                    }
-                }
-            }
-
-//TODO fault handling
-
-
-
-            stacks_mutex_give();
-            vTaskDelayUntil(&xLastWakeTime, xPeriod);
-        }
-    }
-}
-
-void open_shutdown_circuit() {
+static inline void open_shutdown_circuit(void) {
     clear_pin(AMS_FAULT_PORT, AMS_FAULT_PIN);
 }
 
-void close_shutdown_circuit() {
+static inline void close_shutdown_circuit(void) {
     set_pin(AMS_FAULT_PORT, AMS_FAULT_PIN);
 }
 

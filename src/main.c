@@ -7,9 +7,6 @@
 #include "config.h"
 #include "spi.h"
 #include "uart.h"
-#include "LTC6811.h"
-#include "mcp356x.h"
-#include "eeprom.h"
 #include "bmu.h"
 
 #include <string.h>
@@ -134,10 +131,6 @@ void led_blink_task(void *pvParameters) {
 	}
 }
 
-
-
-
-
 void gpio_init(void) {
     //Enable clocks for GPIO modules
     PCC->PCCn[PCC_PORTA_INDEX] = PCC_PCCn_CGC_MASK;
@@ -207,17 +200,13 @@ void gpio_init(void) {
 
 void init_task(void *p) {
     (void) p;
-
     while (1) {
         xTaskCreate(uart_rec_task, "uart_rec", 1000, NULL, 2, &uartRecTaskHandle);
         init_bmu();
         xTaskCreate(led_blink_task, "LED blink", 1000, NULL, 1, NULL);
-
         vTaskDelete(NULL);
     }
-
 }
-
 
 int main(void)
 {
@@ -255,6 +244,8 @@ void vApplicationTickHook(void) {
 
 }
 void vApplicationStackOverflowHook(TaskHandle_t pxTask, char *pcTaskName) {
+    (void) pxTask;
+    (void) pcTaskName;
 	configASSERT(0);
 }
 

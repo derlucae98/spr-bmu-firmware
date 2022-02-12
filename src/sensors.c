@@ -225,9 +225,9 @@ static void _sensor_task(void *p) {
         ulinkVolt = ulinkVolt * VOLTAGE_CONVERSION_RATIO;
         ulinkVolt = (ulinkVolt + _cal.ulink_offset) * _cal.ulink_gain;
 
-        PRINTF("Ubat: %.3f V\n", ubatVolt);
-        PRINTF("Ulink: %.3f V\n", ulinkVolt);
-        PRINTF("I: %.2f A\n", current);
+//        PRINTF("Ubat: %.3f V\n", ubatVolt);
+//        PRINTF("Ulink: %.3f V\n", ulinkVolt);
+//        PRINTF("I: %.2f A\n", current);
 
         if (sensor_mutex_take(pdMS_TO_TICKS(4))) {
             sensorData.current = current;
