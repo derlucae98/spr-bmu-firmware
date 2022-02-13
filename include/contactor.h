@@ -23,6 +23,17 @@ typedef enum {
     EVENT_ERROR_CLEARED
 } event_t;
 
+typedef enum {
+    STATE_STANDBY,
+    STATE_PRE_CHARGE,
+    STATE_OPERATE,
+    STATE_ERROR
+} state_t;
+
+typedef enum {
+    ERROR_x //TODO implement error codes
+} error_t;
+
 extern TaskHandle_t contactor_control_task_handle;
 extern volatile event_t contactorEvent;
 void init_contactor(void);

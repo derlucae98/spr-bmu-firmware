@@ -17,12 +17,7 @@ static void pre_charge(void);
 static void operate(void);
 static void error(void);
 
-typedef enum {
-    STATE_STANDBY,
-    STATE_PRE_CHARGE,
-    STATE_OPERATE,
-    STATE_ERROR
-} state_t;
+
 
 typedef struct {
     state_t current;

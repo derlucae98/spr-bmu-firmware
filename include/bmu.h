@@ -21,9 +21,6 @@
 #include "sensors.h"
 
 
-
-
-
 typedef struct {
     uint32_t UID[MAXSTACKS];
     uint16_t cellVoltage[MAXSTACKS][MAXCELLS];
@@ -33,7 +30,9 @@ typedef struct {
     uint16_t packVoltage;
     float soc[MAXSTACKS][MAXCELLS];
     float minSoc;
+    bool minSocValid;
     float maxSoc;
+    bool maxSocValid;
 } stacks_data_t;
 
 typedef struct {
@@ -42,6 +41,8 @@ typedef struct {
     bool imdStatus;
     bool imdResetStatus;
     bool shutdownCircuit;
+    state_t contactorStateMachineState;
+    error_t contactorStateMachineError;
 } battery_status_t;
 
 BaseType_t stacks_mutex_take(TickType_t blocktime);

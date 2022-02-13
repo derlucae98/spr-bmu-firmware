@@ -269,7 +269,7 @@ static void _sensor_task(void *p) {
 //        PRINTF("Ulink: %.3f V\n", ulinkVolt);
 
         if (!currentSensorError) {
-            PRINTF("I: %.2f A\n", current);
+//            PRINTF("I: %.2f A\n", current);
         } else {
             PRINTF("Current sensor failed!\n");
         }

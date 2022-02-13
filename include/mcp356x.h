@@ -27,8 +27,7 @@ SOFTWARE.
 #include <stddef.h>
 #include <string.h>
 #include <stdbool.h>
-#include "FreeRTOS.h"
-#include "task.h"
+
 
 typedef void (*mcp356x_spi_move_array_t)(uint8_t *a, size_t len);
 typedef void (*mcp356x_assert_cs_t)(void);
