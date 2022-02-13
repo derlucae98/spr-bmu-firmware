@@ -694,14 +694,16 @@ void ltc6811_set_balancing_gates(uint8_t gates[][MAXCELLS]) {
                       | ((_overvoltage_reg & 0x000F) << 4);
         payload[slave][3] = ((_overvoltage_reg & 0x0FF0) >> 4);
 
+        payload[slave][4] = 0;
+        payload[slave][5] = 0;
         for (size_t cell = 0; cell < 8; cell++) {
             payload[slave][4] |= ((gates[slave][cell] & 0x1) << cell);
         }
         payload[slave][5] = ((gates[slave][8] & 0x1) << 0) | ((gates[slave][9] & 0x1) << 1) |
                             ((gates[slave][10] & 0x1) << 2) | ((gates[slave][11] & 0x1) << 3);
+
     }
-    //TODO remove comment. Just for safety during testing!
-    //broadcast(WRCFGA, payload, NULL, NULL);
+    broadcast(WRCFGA, payload, NULL, NULL);
 }
 
 

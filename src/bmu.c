@@ -124,9 +124,12 @@ static void ltc6811_worker_task(void *p) {
     static uint8_t pecVoltage[MAXSTACKS][MAXCELLS];
     TickType_t xLastWakeTime = xTaskGetTickCount();
     const TickType_t xPeriod = pdMS_TO_TICKS(200);
+    uint8_t balancingGates[NUMBEROFSLAVES][MAXCELLS];
+    memset(balancingGates, 0, sizeof(balancingGates));
     while (1) {
 
         ltc6811_wake_daisy_chain();
+        ltc6811_set_balancing_gates(balancingGates);
         ltc6811_open_wire_check(stacksDataLocal.cellVoltageStatus);
         ltc6811_get_voltage(stacksDataLocal.cellVoltage, pecVoltage);
         ltc6811_get_temperatures_in_degC(stacksDataLocal.temperature, stacksDataLocal.temperatureStatus);
