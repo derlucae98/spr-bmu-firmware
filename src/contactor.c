@@ -139,7 +139,7 @@ static void contactor_control_task(void *p) {
 
         // Process events and set arg
         // ...
-        PRINTF("State: %s\n", stateFunction[_stateMachine.current].name);
+        //PRINTF("State: %s\n", stateFunction[_stateMachine.current].name);
 
 
         for(size_t i = 0; i < sizeof(stateArray)/sizeof(stateArray[0]); i++) {

@@ -21,7 +21,7 @@ sensor_data_t sensorData;
 
 extern void PRINTF(const char *format, ...);
 static void _sensor_task(void *p);
-static sensor_calibration_t _default_calibration(void);
+static sensor_calibration_t default_calibration(void);
 
 BaseType_t sensor_mutex_take(TickType_t blocktime) {
     return xSemaphoreTake(_sensorDataMutex, blocktime);
@@ -161,7 +161,7 @@ sensor_calibration_t load_calibration(void) {
 
     if (uncal) {
         PRINTF("No calibration data found!\n");
-        return _default_calibration();
+        return default_calibration();
     }
 
     if (!eeprom_check_crc(pageBuffer, sizeof(pageBuffer) - sizeof(uint16_t), crcShould)) {
@@ -206,15 +206,55 @@ static void _sensor_task(void *p) {
     float current = 0.0f;
     float ubatVolt = 0.0f;
     float ulinkVolt = 0.0f;
+    bool currentSensorError = false;
+    bool batteryVoltageError = false;
+    bool dcLinkVoltageError = false;
     while (1) {
 
-        mcp356x_acquire(&_currentSensor, MUX_CH0, MUX_CH3);
-        mcp356x_acquire(&_ubat, MUX_CH0, MUX_AGND);
-        mcp356x_acquire(&_ulink, MUX_CH0, MUX_AGND);
+        // If an error occurred, try to reset the sensor to clear the error
+        if (currentSensorError) {
+            mcp356x_reset(&_currentSensor);
+            mcp356x_set_config(&_currentSensor);
+        }
+        if (batteryVoltageError) {
+            mcp356x_reset(&_ubat);
+            mcp356x_set_config(&_ubat);
+        }
+        if (dcLinkVoltageError) {
+            mcp356x_reset(&_ulink);
+            mcp356x_set_config(&_ulink);
+        }
+
+
+        if (mcp356x_acquire(&_currentSensor, MUX_CH0, MUX_CH3) != MCP356X_ERROR_OK) {
+            currentSensorError = true;
+        }
+        if (mcp356x_acquire(&_ubat, MUX_CH0, MUX_AGND) != MCP356X_ERROR_OK) {
+            batteryVoltageError = true;
+        }
+        if (mcp356x_acquire(&_ulink, MUX_CH0, MUX_AGND) != MCP356X_ERROR_OK) {
+            dcLinkVoltageError = true;
+        }
+
         vTaskDelay(pdMS_TO_TICKS(6));
-        mcp356x_read_voltage(&_currentSensor, _cal.current_1_ref, &current);
-        mcp356x_read_voltage(&_ubat, _cal.ubatt_ref, &ubatVolt);
-        mcp356x_read_voltage(&_ulink, _cal.ulink_ref, &ulinkVolt);
+
+        if (mcp356x_read_voltage(&_currentSensor, _cal.current_1_ref, &current) == MCP356X_ERROR_OK) {
+            currentSensorError = false;
+        } else {
+            currentSensorError = true;
+        }
+
+        if (mcp356x_read_voltage(&_ubat, _cal.ubatt_ref, &ubatVolt) == MCP356X_ERROR_OK) {
+            batteryVoltageError = false;
+        } else {
+            batteryVoltageError = true;
+        }
+
+        if (mcp356x_read_voltage(&_ulink, _cal.ulink_ref, &ulinkVolt) == MCP356X_ERROR_OK) {
+            dcLinkVoltageError = false;
+        } else {
+            dcLinkVoltageError = true;
+        }
 
         current = (current / SHUNT) * CURRENT_CONVERSION_RATIO;
         current = (current + _cal.current_1_offset) * _cal.current_1_gain;
@@ -227,12 +267,21 @@ static void _sensor_task(void *p) {
 
 //        PRINTF("Ubat: %.3f V\n", ubatVolt);
 //        PRINTF("Ulink: %.3f V\n", ulinkVolt);
-//        PRINTF("I: %.2f A\n", current);
+
+        if (!currentSensorError) {
+            PRINTF("I: %.2f A\n", current);
+        } else {
+            PRINTF("Current sensor failed!\n");
+        }
+
 
         if (sensor_mutex_take(pdMS_TO_TICKS(4))) {
             sensorData.current = current;
             sensorData.batteryVoltage = ubatVolt;
             sensorData.dcLinkVoltage = ulinkVolt;
+            sensorData.currentValid = !currentSensorError;
+            sensorData.batteryVoltageValid = !batteryVoltageError;
+            sensorData.dcLinkVoltageValid = !dcLinkVoltageError;
             sensor_mutex_give();
         } else {
             PRINTF("Sensor: Can't get mutex!\n");
@@ -242,7 +291,7 @@ static void _sensor_task(void *p) {
     }
 }
 
-sensor_calibration_t _default_calibration(void) {
+sensor_calibration_t default_calibration(void) {
     sensor_calibration_t cal;
     cal.current_1_ref = 2.5f;
     cal.current_1_gain = 1.0f;

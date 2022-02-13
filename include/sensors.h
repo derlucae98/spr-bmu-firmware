@@ -38,8 +38,11 @@ typedef struct {
 
 typedef struct {
     float current;
+    bool currentValid;
     float batteryVoltage;
+    bool batteryVoltageValid;
     float dcLinkVoltage;
+    bool dcLinkVoltageValid;
 } sensor_data_t;
 
 BaseType_t sensor_mutex_take(TickType_t blocktime);

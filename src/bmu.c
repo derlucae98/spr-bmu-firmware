@@ -153,6 +153,13 @@ static void safety_task(void *p) {
             stacks_mutex_give();
         }
 
+        if (sensor_mutex_take(portMAX_DELAY)) {
+            criticalValue |= !sensorData.currentValid;
+            criticalValue |= !sensorData.batteryVoltageValid;
+            criticalValue |= !sensorData.dcLinkVoltageValid;
+            sensor_mutex_give();
+        }
+
         //Poll external status pins
         bool amsResetStatus = get_pin(AMS_RES_STAT_PORT, AMS_RES_STAT_PIN);
         bool imdResetStatus = get_pin(IMD_RES_STAT_PORT, IMD_RES_STAT_PIN);

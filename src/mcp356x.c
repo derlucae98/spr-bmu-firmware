@@ -246,7 +246,7 @@ mcp356x_error_t mcp356x_acquire(mcp356x_obj_t *obj, mcp356x_channel_t ch_pos, mc
 mcp356x_error_t mcp356x_read_value(mcp356x_obj_t *obj, int32_t *val, uint8_t *sgn, uint8_t *chID) {
     //Poll ADC value
     uint8_t cmd = 0;
-    uint32_t timeout = -1; //TODO: Implement timeout based on OSR and DMCLK (Table 5-6)
+    uint32_t timeout = 2000; //TODO: Implement timeout based on OSR and DMCLK (Table 5-6)
     bool timeoutReached = true;
 
     while (--timeout > 0) {
