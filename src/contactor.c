@@ -17,7 +17,23 @@ static void pre_charge(void);
 static void operate(void);
 static void error(void);
 
-
+static bool _tsActive = false;
+//TODO: Hier etwas anderes überlegen!:
+typedef struct {
+    bool amsStatus;
+    bool amsResetStatus;
+    bool imdStatus;
+    bool imdResetStatus;
+    bool shutdownCircuit;
+    bool hvPosState;
+    bool hvNegState;
+    bool hvPreState;
+    state_t contactorStateMachineState;
+    error_t contactorStateMachineError;
+} battery_status_t;
+extern BaseType_t batteryStatus_mutex_take(TickType_t blocktime);
+extern void batteryStatus_mutex_give(void);
+extern battery_status_t batteryStatus;
 
 typedef struct {
     state_t current;
@@ -55,7 +71,7 @@ static state_function_t stateFunction[] = {
 };
 
 static state_machine_t _stateMachine;
-volatile event_t contactorEvent = EVENT_NONE;
+static event_t _contactorEvent = EVENT_NONE;
 
 typedef enum {
     CONTACTOR_HV_POS,
@@ -132,14 +148,102 @@ static void contactor_control_task(void *p) {
 
     while (1) {
 
-        // Process events and set arg
-        // ...
-        //PRINTF("State: %s\n", stateFunction[_stateMachine.current].name);
+        /*
+         * 1) System is healthy if AMS and IMD are not in error state,
+         * 2) AMS and IMD power stages are enabled to close the shutdown circuit,
+         * 3) Rest of the shut down circuit is OK
+         * 4) Relay state is plausible
+         */
+        bool systemIsHealthy = true;
+        bool relayPlausible = true;
+        bool voltageEqual = false;
 
+        uint8_t contactorState = 0; //bit-coded: 00000xyz, x=pos, y=neg, z=pre
+
+        if (batteryStatus_mutex_take(portMAX_DELAY)) {
+            systemIsHealthy &= batteryStatus.amsStatus;
+            systemIsHealthy &= batteryStatus.amsResetStatus;
+            systemIsHealthy &= batteryStatus.imdStatus;
+            systemIsHealthy &= batteryStatus.imdResetStatus;
+            systemIsHealthy &= batteryStatus.shutdownCircuit;
+            batteryStatus.contactorStateMachineState = _stateMachine.current;
+
+            contactorState = ((batteryStatus.hvPosState & 0x01) << 2) | ((batteryStatus.hvNegState & 0x01) << 1) | ((batteryStatus.hvPreState & 0x01));
+            batteryStatus_mutex_give();
+        }
+
+        switch (_stateMachine.current) {
+        case STATE_STANDBY:
+            // All contactors must be off
+            if (contactorState != 0x0) {
+                relayPlausible = false;
+            }
+            break;
+        case STATE_PRE_CHARGE:
+            // Only pre-charge and neg AIR active
+            if (contactorState != 0x3) {
+                relayPlausible = false;
+            }
+            break;
+        case STATE_OPERATE:
+            // Only pos AIR and neg AIR active
+            if (contactorState != 0x6) {
+                relayPlausible = false;
+            }
+            break;
+        case STATE_ERROR:
+            // All contactors must be off
+            if (contactorState != 0x0) {
+                relayPlausible = false;
+            }
+            break;
+        }
+
+        if (sensor_mutex_take(pdMS_TO_TICKS(portMAX_DELAY))) {
+            if (fabs(sensorData.batteryVoltage - sensorData.dcLinkVoltage) >= 0.95f * sensorData.batteryVoltage) {
+                voltageEqual = true;
+            }
+            if (!sensorData.batteryVoltageValid || !sensorData.dcLinkVoltageValid) {
+                voltageEqual = false;
+            }
+            sensor_mutex_give();
+        }
+
+        _contactorEvent = EVENT_NONE;
+
+
+        if (_stateMachine.current == STATE_PRE_CHARGE && voltageEqual) {
+            _contactorEvent = EVENT_PRE_CHARGE_SUCCESSFUL;
+        }
+        if (_stateMachine.current == STATE_PRE_CHARGE && !_tsActive) {
+            _contactorEvent = EVENT_TS_DEACTIVATE;
+        }
+
+        if (_stateMachine.current == STATE_STANDBY && _tsActive) {
+            _contactorEvent = EVENT_TS_ACTIVATE;
+        }
+
+        if (_stateMachine.current == STATE_OPERATE && !_tsActive) {
+            _contactorEvent = EVENT_TS_DEACTIVATE;
+        }
+
+        //Clear error if TS request clears and errors are gone
+        if (_stateMachine.current == STATE_ERROR && !_tsActive) {
+            _contactorEvent = EVENT_ERROR_CLEARED;
+        }
+
+
+
+        if (!systemIsHealthy) {
+            _contactorEvent = EVENT_ERROR;
+        }
+        if (!relayPlausible) {
+            _contactorEvent = EVENT_ERROR;
+        }
 
         for(size_t i = 0; i < sizeof(stateArray)/sizeof(stateArray[0]); i++) {
                if(stateArray[i].current == _stateMachine.current) {
-                   if((stateArray[i].event == contactorEvent)) {
+                   if((stateArray[i].event == _contactorEvent)) {
 
                        _stateMachine.current =  stateArray[i].next;
 
@@ -149,6 +253,10 @@ static void contactor_control_task(void *p) {
            }
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
+}
+
+void request_tractive_system(bool active) {
+    _tsActive = active;
 }
 
 

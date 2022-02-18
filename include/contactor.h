@@ -13,6 +13,9 @@
 #include "task.h"
 #include "gpio.h"
 #include "config.h"
+#include <stdbool.h>
+#include "sensors.h"
+
 
 typedef enum {
     EVENT_NONE,
@@ -35,8 +38,8 @@ typedef enum {
 } error_t;
 
 extern TaskHandle_t contactor_control_task_handle;
-extern volatile event_t contactorEvent;
 void init_contactor(void);
+void request_tractive_system(bool active);
 
 
 #endif /* CONTACTOR_H_ */

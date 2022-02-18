@@ -250,6 +250,10 @@ static void safety_task(void *p) {
             batteryStatus.imdStatus = imdStatus;
             batteryStatus.imdResetStatus = imdResetStatus;
             batteryStatus.shutdownCircuit = scStat;
+            // Get contactor states reported by TSAL
+            batteryStatus.hvPosState = get_pin(HV_POS_STAT_PORT, HV_POS_STAT_PIN);
+            batteryStatus.hvNegState = get_pin(HV_NEG_STAT_PORT, HV_NEG_STAT_PIN);
+            batteryStatus.hvPreState = get_pin(HV_PRE_STAT_PORT, HV_PRE_STAT_PIN);
             batteryStatus_mutex_give();
         }
         vTaskDelayUntil(&xLastWakeTime, xPeriod);

@@ -93,20 +93,10 @@ static void uart_rec(char* s) {
 
     if (strcmp(tokens[0], "ts") == 0) {
         if (strcmp(tokens[1], "activate") == 0) {
-            contactorEvent = EVENT_TS_ACTIVATE;
+            request_tractive_system(true);
         } else if (strcmp(tokens[1], "deactivate") == 0) {
-            contactorEvent = EVENT_TS_DEACTIVATE;
+            request_tractive_system(false);
         }
-    } else if (strcmp(tokens[0], "pre") == 0) {
-        if (strcmp(tokens[1], "success") == 0) {
-            contactorEvent = EVENT_PRE_CHARGE_SUCCESSFUL;
-        } else if (strcmp(tokens[1], "fail") == 0) {
-            contactorEvent = EVENT_ERROR;
-        }
-    } else if (strcmp(tokens[0], "error") == 0) {
-        contactorEvent = EVENT_ERROR;
-    } else if (strcmp(tokens[0], "clear") == 0) {
-        contactorEvent = EVENT_ERROR_CLEARED;
     }
 
     if (strcmp(tokens[0], "help") == 0) {

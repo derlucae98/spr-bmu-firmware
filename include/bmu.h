@@ -41,6 +41,9 @@ typedef struct {
     bool imdStatus;
     bool imdResetStatus;
     bool shutdownCircuit;
+    bool hvPosState;
+    bool hvNegState;
+    bool hvPreState;
     state_t contactorStateMachineState;
     error_t contactorStateMachineError;
 } battery_status_t;
