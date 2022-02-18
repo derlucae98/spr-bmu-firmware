@@ -15,6 +15,7 @@
 #include "config.h"
 #include <stdbool.h>
 #include "sensors.h"
+#include "safety.h"
 
 
 typedef enum {
@@ -38,6 +39,8 @@ typedef enum {
 } error_t;
 
 extern TaskHandle_t contactor_control_task_handle;
+extern state_t contactorStateMachineState;
+extern error_t contactorStateMachineError;
 void init_contactor(void);
 void request_tractive_system(bool active);
 

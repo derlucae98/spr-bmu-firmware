@@ -7,19 +7,14 @@
 
 #include "bmu.h"
 
-static SemaphoreHandle_t _stacksDataMutex = NULL;
-stacks_data_t stacksData;
-static SemaphoreHandle_t _batteryStatusMutex = NULL;
-battery_status_t batteryStatus;
 
 
-static uint32_t _UID[NUMBEROFSLAVES];
+
+
 static void can_send_task(void *p);
-static void ltc6811_worker_task(void *p);
-static void safety_task(void *p);
 
-static inline void open_shutdown_circuit(void);
-static inline void close_shutdown_circuit(void);
+
+
 
 static uint16_t max_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks);
 static uint16_t min_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks);
@@ -27,8 +22,6 @@ static uint16_t avg_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks);
 static uint16_t max_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stacks);
 static uint16_t min_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stacks);
 static uint16_t avg_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stacks);
-static bool check_voltage_validity(uint8_t voltageStatus[][MAXCELLS+1], uint8_t stacks);
-static bool check_temperature_validity(uint8_t temperatureStatus[][MAXTEMPSENS], uint8_t stacks);
 
 typedef struct {
     uint32_t UID[MAXSTACKS];
@@ -79,185 +72,12 @@ void init_bmu(void) {
     init_sensors();
     init_contactor();
 
-    _stacksDataMutex = xSemaphoreCreateMutex();
-    configASSERT(_stacksDataMutex);
-    memset(&stacksData, 0, sizeof(stacks_data_t));
+    init_safety();
+    init_stacks();
 
-    _batteryStatusMutex = xSemaphoreCreateMutex();
-    configASSERT(_batteryStatusMutex);
-    memset(&batteryStatus, 0, sizeof(batteryStatus));
-
-    ltc6811_init(_UID);
-    if (stacks_mutex_take(portMAX_DELAY)) {
-        memcpy(&stacksData.UID, _UID, sizeof(_UID));
-        stacks_mutex_give();
-    }
-
-    for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
-        PRINTF("UID %d: %08X\n", slave+1, _UID[slave]);
-    }
     xTaskCreate(can_send_task, "CAN", 1000, NULL, 3, NULL);
-    xTaskCreate(ltc6811_worker_task, "LTC", 2000, NULL, 3, NULL);
+    xTaskCreate(stacks_worker_task, "LTC", 2000, NULL, 3, NULL);
     xTaskCreate(safety_task, "status", 500, NULL, 3, NULL);
-}
-
-BaseType_t stacks_mutex_take(TickType_t blocktime) {
-    return xSemaphoreTake(_stacksDataMutex, blocktime);
-}
-
-void stacks_mutex_give(void) {
-    xSemaphoreGive(_stacksDataMutex);
-}
-
-BaseType_t batteryStatus_mutex_take(TickType_t blocktime) {
-    return xSemaphoreTake(_batteryStatusMutex, blocktime);
-}
-
-void batteryStatus_mutex_give(void) {
-    xSemaphoreGive(_batteryStatusMutex);
-}
-
-static void ltc6811_worker_task(void *p) {
-    (void)p;
-    stacks_data_t stacksDataLocal;
-    memset(&stacksDataLocal, 0, sizeof(stacks_data_t));
-    static uint8_t pecVoltage[MAXSTACKS][MAXCELLS];
-    TickType_t xLastWakeTime = xTaskGetTickCount();
-    const TickType_t xPeriod = pdMS_TO_TICKS(200);
-    uint8_t balancingGates[NUMBEROFSLAVES][MAXCELLS];
-    memset(balancingGates, 0, sizeof(balancingGates));
-    while (1) {
-
-        ltc6811_wake_daisy_chain();
-        ltc6811_set_balancing_gates(balancingGates);
-        ltc6811_open_wire_check(stacksDataLocal.cellVoltageStatus);
-        ltc6811_get_voltage(stacksDataLocal.cellVoltage, pecVoltage);
-        ltc6811_get_temperatures_in_degC(stacksDataLocal.temperature, stacksDataLocal.temperatureStatus);
-
-        // Error priority:
-        // PEC error
-        // Open cell wire
-        // value out of range
-
-
-        //memset(&stackDataLocal.cellVoltageStatus, 0, sizeof(stackDataLocal.cellVoltageStatus));
-        for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
-            // Validity check for temperature sensors
-
-            for (size_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
-                if (stacksDataLocal.temperatureStatus[slave][tempsens] == PECERROR) {
-                    continue;
-                }
-                if (stacksDataLocal.temperature[slave][tempsens] > MAXCELLTEMP) {
-                    stacksDataLocal.temperatureStatus[slave][tempsens] = VALUEOUTOFRANGE;
-                } else if (stacksDataLocal.temperature[slave][tempsens] < 10) {
-                     stacksDataLocal.temperatureStatus[slave][tempsens] = OPENCELLWIRE;
-                }
-            }
-
-            // Validity checks for cell voltage measurement
-            for (size_t cell = 0; cell < MAXCELLS; cell++) {
-                // PEC error: highest prio
-                if (pecVoltage[slave][cell] == PECERROR) {
-                    stacksDataLocal.cellVoltageStatus[slave][cell + 1] = PECERROR;
-                    continue;
-                }
-                // Open sensor wire: Prio 2
-                if (stacksDataLocal.cellVoltageStatus[slave][cell + 1] == OPENCELLWIRE) {
-                    continue;
-                }
-                // Value out of range: Prio 3
-                if ((stacksDataLocal.cellVoltage[slave][cell] > CELL_OVERVOLTAGE)||
-                    (stacksDataLocal.cellVoltage[slave][cell] < CELL_UNDERVOLTAGE)) {
-                        stacksDataLocal.cellVoltageStatus[slave][cell + 1] = VALUEOUTOFRANGE;
-                }
-
-            }
-        }
-
-        if (stacks_mutex_take(portMAX_DELAY)) {
-            memcpy(&stacksData, &stacksDataLocal, sizeof(stacks_data_t));
-            stacks_mutex_give();
-        }
-
-        vTaskDelayUntil(&xLastWakeTime, xPeriod);
-    }
-}
-
-static void safety_task(void *p) {
-    /* This task polls all status inputs and determines the AMS status based on the measured cell parameters.
-     * It controls the shutdown circuit for the AMS and also controls the status LEDs.
-     */
-    (void)p;
-    TickType_t xLastWakeTime = xTaskGetTickCount();
-    const TickType_t xPeriod = pdMS_TO_TICKS(100);
-    while (1) {
-
-        bool criticalValue = false;
-        if (stacks_mutex_take(portMAX_DELAY)) {
-            //Check for critical AMS values. This represents the AMS status.
-            criticalValue |= !check_voltage_validity(stacksData.cellVoltageStatus, NUMBEROFSLAVES);
-            criticalValue |= !check_temperature_validity(stacksData.temperatureStatus, NUMBEROFSLAVES);
-            stacks_mutex_give();
-        }
-
-        if (sensor_mutex_take(portMAX_DELAY)) {
-            criticalValue |= !sensorData.currentValid;
-            criticalValue |= !sensorData.batteryVoltageValid;
-            criticalValue |= !sensorData.dcLinkVoltageValid;
-            sensor_mutex_give();
-        }
-
-        //Poll external status pins
-        bool amsResetStatus = get_pin(AMS_RES_STAT_PORT, AMS_RES_STAT_PIN);
-        bool imdResetStatus = get_pin(IMD_RES_STAT_PORT, IMD_RES_STAT_PIN);
-        bool imdStatus = get_pin(IMD_STAT_PORT, IMD_STAT_PIN);
-        bool scStat = get_pin(SC_STATUS_PORT, SC_STATUS_PIN);
-
-        if (criticalValue) {
-            //AMS opens the shutdown circuit in case of critical values
-            open_shutdown_circuit();
-            set_pin(LED_AMS_FAULT_PORT, LED_AMS_FAULT_PIN);
-            clear_pin(LED_AMS_OK_PORT, LED_AMS_OK_PIN);
-        } else {
-            //If error clears, we close the shutdown circuit again
-            close_shutdown_circuit();
-            clear_pin(LED_AMS_FAULT_PORT, LED_AMS_FAULT_PIN);
-            if (amsResetStatus) {
-                //LED is constantly on, if AMS error has been manually cleared
-                set_pin(LED_AMS_OK_PORT, LED_AMS_OK_PIN);
-            } else {
-                //A blinking green LED signalizes, that the AMS is ready but needs manual reset
-                toggle_pin(LED_AMS_OK_PORT, LED_AMS_OK_PIN);
-            }
-        }
-
-        if (imdStatus) {
-            clear_pin(LED_IMD_FAULT_PORT, LED_IMD_FAULT_PIN);
-            if (imdResetStatus) {
-                set_pin(LED_IMD_OK_PORT, LED_IMD_OK_PIN);
-            } else {
-                toggle_pin(LED_IMD_OK_PORT, LED_IMD_OK_PIN);
-            }
-        } else {
-            set_pin(LED_IMD_FAULT_PORT, LED_IMD_FAULT_PIN);
-            clear_pin(LED_IMD_OK_PORT, LED_IMD_OK_PIN);
-        }
-
-        if (batteryStatus_mutex_take(portMAX_DELAY)) {
-            batteryStatus.amsStatus = !criticalValue;
-            batteryStatus.amsResetStatus = amsResetStatus;
-            batteryStatus.imdStatus = imdStatus;
-            batteryStatus.imdResetStatus = imdResetStatus;
-            batteryStatus.shutdownCircuit = scStat;
-            // Get contactor states reported by TSAL
-            batteryStatus.hvPosState = get_pin(HV_POS_STAT_PORT, HV_POS_STAT_PIN);
-            batteryStatus.hvNegState = get_pin(HV_NEG_STAT_PORT, HV_NEG_STAT_PIN);
-            batteryStatus.hvPreState = get_pin(HV_PRE_STAT_PORT, HV_PRE_STAT_PIN);
-            batteryStatus_mutex_give();
-        }
-        vTaskDelayUntil(&xLastWakeTime, xPeriod);
-    }
 }
 
 static void can_send_task(void *p) {
@@ -315,12 +135,12 @@ static void can_send_task(void *p) {
             canData.isolationResistance = 0; //TODO isolation resistance CAN
             canData.isolationResistanceValid = false; //TODO isolation resistance CAN validity
             canData.shutdownStatus = batteryStatus.shutdownCircuit;
-            canData.tsState = (uint8_t)batteryStatus.contactorStateMachineState;
+            canData.tsState = (uint8_t)contactorStateMachineState;
             canData.amsResetStatus = batteryStatus.amsResetStatus;
             canData.amsStatus = batteryStatus.amsStatus;
             canData.imdResetStatus = batteryStatus.imdResetStatus;
             canData.imdStatus = batteryStatus.imdStatus;
-            canData.errorCode = (uint8_t)batteryStatus.contactorStateMachineError;
+            canData.errorCode = (uint8_t)contactorStateMachineError;
             batteryStatus_mutex_give();
         }
 
@@ -478,15 +298,6 @@ static void can_send_task(void *p) {
     }
 }
 
-
-static inline void open_shutdown_circuit(void) {
-    clear_pin(AMS_FAULT_PORT, AMS_FAULT_PIN);
-}
-
-static inline void close_shutdown_circuit(void) {
-    set_pin(AMS_FAULT_PORT, AMS_FAULT_PIN);
-}
-
 static uint16_t max_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks) {
     uint16_t volt = 0;
     for (uint8_t stack = 0; stack < stacks; stack++) {
@@ -553,29 +364,5 @@ static uint16_t avg_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_
         }
     }
     return (uint16_t)(temp / (MAXTEMPSENS * stacks));
-}
-
-static bool check_voltage_validity(uint8_t voltageStatus[][MAXCELLS+1], uint8_t stacks) {
-    bool critical = false;
-    for (uint8_t stack = 0; stack < stacks; stack++) {
-        for (uint8_t cell = 0; cell < MAXCELLS+1; cell++) {
-            if (voltageStatus[stack][cell] != NOERROR) {
-                critical |= true;
-            }
-        }
-    }
-    return !critical;
-}
-
-static bool check_temperature_validity(uint8_t temperatureStatus[][MAXTEMPSENS], uint8_t stacks) {
-    bool critical = false;
-    for (uint8_t stack = 0; stack < stacks; stack++) {
-        for (uint8_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
-            if (temperatureStatus[stack][tempsens] != NOERROR) {
-                critical |= true;
-            }
-        }
-    }
-    return !critical;
 }
 

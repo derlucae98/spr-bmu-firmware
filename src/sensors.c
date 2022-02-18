@@ -62,6 +62,7 @@ static inline void ulink_deassert(void) {
 bool init_sensors(void) {
     _sensorDataMutex = xSemaphoreCreateMutex();
     configASSERT(_sensorDataMutex);
+    memset(&sensorData, 0, sizeof(sensor_data_t));
 
     mcp356x_error_t err;
 

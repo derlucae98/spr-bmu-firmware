@@ -10,51 +10,26 @@
 
 
 
+#include <safety.h>
 #include "S32K146.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
 #include "contactor.h"
-#include "LTC6811.h"
 #include "config.h"
 #include "can.h"
 #include "sensors.h"
+#include "stacks.h"
+#include "safety.h"
 
 
-typedef struct {
-    uint32_t UID[MAXSTACKS];
-    uint16_t cellVoltage[MAXSTACKS][MAXCELLS];
-    uint8_t cellVoltageStatus[MAXSTACKS][MAXCELLS+1];
-    uint16_t temperature[MAXSTACKS][MAXTEMPSENS];
-    uint8_t temperatureStatus[MAXSTACKS][MAXTEMPSENS];
-    uint16_t packVoltage;
-    float soc[MAXSTACKS][MAXCELLS];
-    float minSoc;
-    bool minSocValid;
-    float maxSoc;
-    bool maxSocValid;
-} stacks_data_t;
 
-typedef struct {
-    bool amsStatus;
-    bool amsResetStatus;
-    bool imdStatus;
-    bool imdResetStatus;
-    bool shutdownCircuit;
-    bool hvPosState;
-    bool hvNegState;
-    bool hvPreState;
-    state_t contactorStateMachineState;
-    error_t contactorStateMachineError;
-} battery_status_t;
 
-BaseType_t stacks_mutex_take(TickType_t blocktime);
-void stacks_mutex_give(void);
-extern stacks_data_t stacksData;
 
-BaseType_t batteryStatus_mutex_take(TickType_t blocktime);
-void batteryStatus_mutex_give(void);
-extern battery_status_t batteryStatus;
+
+
+
+
 
 
 

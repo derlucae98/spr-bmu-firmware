@@ -18,22 +18,9 @@ static void operate(void);
 static void error(void);
 
 static bool _tsActive = false;
-//TODO: Hier etwas anderes überlegen!:
-typedef struct {
-    bool amsStatus;
-    bool amsResetStatus;
-    bool imdStatus;
-    bool imdResetStatus;
-    bool shutdownCircuit;
-    bool hvPosState;
-    bool hvNegState;
-    bool hvPreState;
-    state_t contactorStateMachineState;
-    error_t contactorStateMachineError;
-} battery_status_t;
-extern BaseType_t batteryStatus_mutex_take(TickType_t blocktime);
-extern void batteryStatus_mutex_give(void);
-extern battery_status_t batteryStatus;
+state_t contactorStateMachineState = STATE_STANDBY;
+error_t contactorStateMachineError;
+
 
 typedef struct {
     state_t current;
@@ -160,13 +147,14 @@ static void contactor_control_task(void *p) {
 
         uint8_t contactorState = 0; //bit-coded: 00000xyz, x=pos, y=neg, z=pre
 
+        contactorStateMachineState = _stateMachine.current;
+
         if (batteryStatus_mutex_take(portMAX_DELAY)) {
             systemIsHealthy &= batteryStatus.amsStatus;
             systemIsHealthy &= batteryStatus.amsResetStatus;
             systemIsHealthy &= batteryStatus.imdStatus;
             systemIsHealthy &= batteryStatus.imdResetStatus;
             systemIsHealthy &= batteryStatus.shutdownCircuit;
-            batteryStatus.contactorStateMachineState = _stateMachine.current;
 
             contactorState = ((batteryStatus.hvPosState & 0x01) << 2) | ((batteryStatus.hvNegState & 0x01) << 1) | ((batteryStatus.hvPreState & 0x01));
             batteryStatus_mutex_give();
@@ -212,7 +200,7 @@ static void contactor_control_task(void *p) {
         _contactorEvent = EVENT_NONE;
 
 
-        if (_stateMachine.current == STATE_PRE_CHARGE && voltageEqual) {
+        if ((_stateMachine.current == STATE_PRE_CHARGE) && voltageEqual) {
             _contactorEvent = EVENT_PRE_CHARGE_SUCCESSFUL;
         }
         if (_stateMachine.current == STATE_PRE_CHARGE && !_tsActive) {
