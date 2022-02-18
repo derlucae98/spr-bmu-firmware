@@ -53,6 +53,7 @@ bool init_sensors(void);
 sensor_calibration_t load_calibration(void);
 void reload_calibration(void);
 bool write_calibration(sensor_calibration_t cal);
+void print_calibration(void);
 
 
 #endif /* SENSORS_H_ */

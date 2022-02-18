@@ -336,9 +336,9 @@ static void can_send_task(void *p) {
         //BMS_Info_2
         msg.ID = 0x002;
         msg.DLC = 7;
-        msg.payload[0] = ((canData.batteryVoltage & 0x1FFF) >> 8);
-        msg.payload[1] = ((canData.batteryVoltage & 0x1FFF) << 3) | ((canData.batteryVoltageValid & 0x01) << 2);
-        msg.payload[2] = ((canData.dcLinkVoltage & 0x1FFF) >> 8);
+        msg.payload[0] = ((canData.batteryVoltage) >> 5);
+        msg.payload[1] = ((canData.batteryVoltage) << 3) | ((canData.batteryVoltageValid & 0x01) << 2);
+        msg.payload[2] = ((canData.dcLinkVoltage & 0x1FFF) >> 5);
         msg.payload[3] = ((canData.dcLinkVoltage & 0x1FFF) << 3) | ((canData.dcLinkVoltageValid & 0x01) << 2);
         msg.payload[4] = (canData.current >> 8);
         msg.payload[5] = (canData.current & 0xFF);
@@ -346,21 +346,21 @@ static void can_send_task(void *p) {
         can_send(CAN0, &msg);
 
         //BMS_Info_3
-        msg.ID = 0x002;
+        msg.ID = 0x003;
         msg.DLC = 8;
         msg.payload[0] = (canData.isolationResistance & 0x7FFF) >> 8;
         msg.payload[1] = ((canData.isolationResistance & 0x7FFF) << 1) | ((canData.isolationResistanceValid & 0x01));
         msg.payload[2] = ((canData.shutdownStatus & 0x01) << 7) | ((canData.tsState & 0x03) << 5) | ((canData.amsResetStatus & 0x01) << 4)
-                        | ((canData.amsStatus & 0x01) << 3) | ((canData.imdResetStatus & 0x01) << 2) || ((canData.imdStatus & 0x01) << 1);
+                        | ((canData.amsStatus & 0x01) << 3) | ((canData.imdResetStatus & 0x01) << 2) | ((canData.imdStatus & 0x01) << 1);
         msg.payload[3] = ((canData.errorCode & 0x7F) << 1) | ((canData.minTemp & 0x3FF) >> 9);
         msg.payload[4] = (canData.minTemp & 0x3FF) >> 1;
-        msg.payload[5] = ((canData.minTemp & 0x3FF) << 7) | ((canData.minTempValid & 0x01) << 6) | ((canData.maxTemp & 0x3FF) >> 6);
+        msg.payload[5] = ((canData.minTemp & 0x3FF) << 7) | ((canData.minTempValid & 0x01) << 6) | ((canData.maxTemp >> 4) & 0x3F);
         msg.payload[6] = ((canData.maxTemp & 0x3FF) << 4) | ((canData.maxTempValid & 0x01) << 3) | ((canData.avgTemp & 0x3FF) >> 7);
         msg.payload[7] = ((canData.avgTemp & 0x3FF) << 1) | (canData.avgTempValid & 0x01);
         can_send(CAN0, &msg);
 
         //Send BMS temperature 1 message every 10 ms
-        msg.ID = 0x003;
+        msg.ID = 0x004;
         msg.DLC = 8;
         msg.payload[0] = (counter << 4) | ((stacksData.temperature[counter][0] >> 6) & 0x0F);
         msg.payload[1] = (stacksData.temperature[counter][0] << 2) | (stacksData.temperatureStatus[counter][0] & 0x03);
@@ -374,7 +374,7 @@ static void can_send_task(void *p) {
         can_send(CAN0, &msg);
 
         //Send BMS temperature 2 message every 10 ms
-        msg.ID = 0x004;
+        msg.ID = 0x005;
         msg.DLC = 8;
         msg.payload[0] = (counter << 4) | ((stacksData.temperature[counter][5] >> 6) & 0x0F);
         msg.payload[1] = (stacksData.temperature[counter][5] << 2) | (stacksData.temperatureStatus[counter][5] & 0x03);
@@ -388,7 +388,7 @@ static void can_send_task(void *p) {
         can_send(CAN0, &msg);
 
         //Send BMS temperature 3 message every 10 ms
-        msg.ID = 0x005;
+        msg.ID = 0x006;
         msg.DLC = 8;
         msg.payload[0] = (counter << 4) | ((stacksData.temperature[counter][10] >> 6) & 0x0F);
         msg.payload[1] = (stacksData.temperature[counter][10] << 2) | (stacksData.temperatureStatus[counter][10] & 0x03);
@@ -402,7 +402,7 @@ static void can_send_task(void *p) {
         can_send(CAN0, &msg);
 
         //Send BMS cell voltage 1 message every 10 ms
-        msg.ID = 0x006;
+        msg.ID = 0x007;
         msg.DLC = 7;
         msg.payload[0] = (counter << 4) | (stacksData.cellVoltageStatus[counter][0] & 0x3);
         msg.payload[1] = stacksData.cellVoltage[counter][0] >> 5;
@@ -415,7 +415,7 @@ static void can_send_task(void *p) {
         can_send(CAN0, &msg);
 
         //Send BMS cell voltage 2 message every 10 ms
-        msg.ID = 0x007;
+        msg.ID = 0x008;
         msg.DLC = 7;
         msg.payload[0] = counter << 4;
         msg.payload[1] = stacksData.cellVoltage[counter][3] >> 5;
@@ -428,7 +428,7 @@ static void can_send_task(void *p) {
         can_send(CAN0, &msg);
 
         //Send BMS cell voltage 3 message every 10 ms
-        msg.ID = 0x008;
+        msg.ID = 0x009;
         msg.DLC = 7;
         msg.payload[0] = counter << 4;
         msg.payload[1] = stacksData.cellVoltage[counter][6] >> 5;
@@ -441,7 +441,7 @@ static void can_send_task(void *p) {
         can_send(CAN0, &msg);
 
         //Send BMS cell voltage 4 message every 10 ms
-        msg.ID = 0x009;
+        msg.ID = 0x00A;
         msg.DLC = 7;
         msg.payload[0] = counter << 4;
         msg.payload[1] = stacksData.cellVoltage[counter][9] >> 5;
@@ -454,7 +454,7 @@ static void can_send_task(void *p) {
         can_send(CAN0, &msg);
 
         //Send Unique ID every 10 ms
-        msg.ID = 0x00A;
+        msg.ID = 0x00B;
         msg.DLC = 5;
         msg.payload[0] = counter << 4;
         msg.payload[1] = stacksData.UID[counter] >> 24;

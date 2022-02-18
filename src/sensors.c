@@ -307,3 +307,18 @@ sensor_calibration_t default_calibration(void) {
     cal.ulink_offset = 0.0f;
     return cal;
 }
+
+void print_calibration(void) {
+    sensor_calibration_t calData;
+    calData = load_calibration();
+    PRINTF("Calibration data:\n");
+    PRINTF("Current ref:    %.6f\n", calData.current_1_ref);
+    PRINTF("Current gain:   %.6f\n", calData.current_1_gain);
+    PRINTF("Current offset: %.6f\n", calData.current_1_offset);
+    PRINTF("ULINK ref:      %.6f\n", calData.ulink_ref);
+    PRINTF("ULINK gain:     %.6f\n", calData.ulink_gain);
+    PRINTF("ULINK offset:   %.6f\n", calData.ulink_offset);
+    PRINTF("UBATT ref:      %.6f\n", calData.ubatt_ref);
+    PRINTF("UBATT gain:     %.6f\n", calData.ubatt_gain);
+    PRINTF("UBATT offset:   %.6f\n", calData.ubatt_offset);
+}

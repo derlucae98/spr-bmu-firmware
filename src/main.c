@@ -109,6 +109,9 @@ static void uart_rec(char* s) {
         contactorEvent = EVENT_ERROR_CLEARED;
     }
 
+    if (strcmp(tokens[0], "help") == 0) {
+        PRINTF("cal <curr,ubatt,ulink> <ref,gain,offset> <val>\n");
+    }
     write_calibration(calibration);
     reload_calibration();
 
