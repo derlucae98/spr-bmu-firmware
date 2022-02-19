@@ -202,7 +202,7 @@ static void _sensor_task(void *p) {
     (void) p;
 
     TickType_t xLastWakeTime;
-    const TickType_t xPeriod = pdMS_TO_TICKS(100);
+    const TickType_t xPeriod = pdMS_TO_TICKS(10);
     xLastWakeTime = xTaskGetTickCount();
     float current = 0.0f;
     float ubatVolt = 0.0f;

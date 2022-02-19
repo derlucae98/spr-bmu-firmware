@@ -15,6 +15,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
+#include "queue.h"
 #include "contactor.h"
 #include "config.h"
 #include "can.h"

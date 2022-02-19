@@ -12,6 +12,7 @@
 
 
 static void can_send_task(void *p);
+static void can_rec_task(void *p);
 
 
 
@@ -76,6 +77,7 @@ void init_bmu(void) {
     init_stacks();
 
     xTaskCreate(can_send_task, "CAN", 1000, NULL, 3, NULL);
+    xTaskCreate(can_rec_task, "CAN rec", 300, NULL, 2, NULL);
     xTaskCreate(stacks_worker_task, "LTC", 2000, NULL, 3, NULL);
     xTaskCreate(safety_task, "status", 500, NULL, 3, NULL);
 }
@@ -364,5 +366,26 @@ static uint16_t avg_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_
         }
     }
     return (uint16_t)(temp / (MAXTEMPSENS * stacks));
+}
+
+static void can_rec_task(void *p) {
+    (void) p;
+    can_msg_t msg;
+    while (1) {
+        configASSERT(BMU_Q_HANDLE);
+        if (xQueueReceive(BMU_Q_HANDLE, &msg, portMAX_DELAY)) {
+            switch (msg.ID) {
+                case 0:
+                    if (msg.DLC == 1 && msg.payload[0] == 0xFF) {
+                        request_tractive_system(true);
+                    } else {
+                        request_tractive_system(false);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
 }
 

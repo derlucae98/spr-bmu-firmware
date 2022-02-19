@@ -18,6 +18,7 @@ static void operate(void);
 static void error(void);
 
 static bool _tsActive = false;
+static uint8_t _tsRequestTimeout = 0;
 state_t contactorStateMachineState = STATE_STANDBY;
 error_t contactorStateMachineError;
 
@@ -108,11 +109,13 @@ static void standby(void) {
 static void pre_charge(void) {
     close_contactor(CONTACTOR_HV_NEG);
     close_contactor(CONTACTOR_HV_PRE);
+    open_contactor(CONTACTOR_HV_POS);
     PRINTF("State pre-charge\n");
 }
 
 static void operate(void) {
     close_contactor(CONTACTOR_HV_POS);
+    close_contactor(CONTACTOR_HV_NEG);
     open_contactor(CONTACTOR_HV_PRE);
     PRINTF("State operate\n");
 }
@@ -187,14 +190,22 @@ static void contactor_control_task(void *p) {
             break;
         }
 
+        //TODO: Plausibility check is temporarily disabled. Cannot be tested with demonstrator.
+        relayPlausible = true;
+
         if (sensor_mutex_take(pdMS_TO_TICKS(portMAX_DELAY))) {
-            if (fabs(sensorData.batteryVoltage - sensorData.dcLinkVoltage) >= 0.95f * sensorData.batteryVoltage) {
+            if (fabs(sensorData.batteryVoltage - sensorData.dcLinkVoltage) <= (0.05f * sensorData.batteryVoltage)) {
                 voltageEqual = true;
             }
             if (!sensorData.batteryVoltageValid || !sensorData.dcLinkVoltageValid) {
                 voltageEqual = false;
             }
             sensor_mutex_give();
+        }
+
+        if (++_tsRequestTimeout >= 5) {
+            //timeout after 500ms
+            _tsActive = false;
         }
 
         _contactorEvent = EVENT_NONE;
@@ -220,12 +231,11 @@ static void contactor_control_task(void *p) {
             _contactorEvent = EVENT_ERROR_CLEARED;
         }
 
-
-
         if (!systemIsHealthy) {
             _contactorEvent = EVENT_ERROR;
         }
         if (!relayPlausible) {
+            PRINTF("Relay implausible!\n");
             _contactorEvent = EVENT_ERROR;
         }
 
@@ -245,6 +255,9 @@ static void contactor_control_task(void *p) {
 
 void request_tractive_system(bool active) {
     _tsActive = active;
+    if (active) {
+        _tsRequestTimeout = 0;
+    }
 }
 
 

@@ -8,6 +8,8 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
+#include "can.h"
+
 #define NUMBEROFSLAVES 1
 #define CELL_UNDERVOLTAGE 2700
 #define CELL_OVERVOLTAGE  4200
@@ -18,6 +20,7 @@
 #define MAXTEMPSENS 14
 #define MAXCELLTEMP 540 //54.0 deg C
 
+#define BMU_Q_HANDLE can0RxQueueHandle
 
 #define LED_CARD_PORT       PORTE
 #define LED_CARD_PIN        1
