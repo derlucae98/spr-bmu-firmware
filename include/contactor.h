@@ -35,7 +35,11 @@ typedef enum {
 } state_t;
 
 typedef enum {
-    ERROR_x //TODO implement error codes
+    ERROR_NO_ERROR,
+    ERROR_SYSTEM_NOT_HEALTHY,
+    ERROR_CONTACTOR_IMPLAUSIBLE,
+    ERROR_PRE_CHARGE_TOO_SHORT,
+    ERROR_PRE_CHARGE_TIMEOUT
 } error_t;
 
 extern TaskHandle_t contactor_control_task_handle;

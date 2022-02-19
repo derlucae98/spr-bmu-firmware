@@ -77,7 +77,7 @@ void init_bmu(void) {
     init_stacks();
 
     xTaskCreate(can_send_task, "CAN", 1000, NULL, 3, NULL);
-    xTaskCreate(can_rec_task, "CAN rec", 300, NULL, 2, NULL);
+    xTaskCreate(can_rec_task, "CAN rec", 600, NULL, 2, NULL);
     xTaskCreate(stacks_worker_task, "LTC", 2000, NULL, 3, NULL);
     xTaskCreate(safety_task, "status", 500, NULL, 3, NULL);
 }
@@ -374,6 +374,7 @@ static void can_rec_task(void *p) {
     while (1) {
         configASSERT(BMU_Q_HANDLE);
         if (xQueueReceive(BMU_Q_HANDLE, &msg, portMAX_DELAY)) {
+
             switch (msg.ID) {
                 case 0:
                     if (msg.DLC == 1 && msg.payload[0] == 0xFF) {
@@ -381,6 +382,9 @@ static void can_rec_task(void *p) {
                     } else {
                         request_tractive_system(false);
                     }
+                    break;
+                case 0xC:
+                    PRINTF("New Message from ID 0xC!\n");
                     break;
                 default:
                     break;

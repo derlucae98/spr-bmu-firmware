@@ -20,7 +20,7 @@ static void error(void);
 static bool _tsActive = false;
 static uint8_t _tsRequestTimeout = 0;
 state_t contactorStateMachineState = STATE_STANDBY;
-error_t contactorStateMachineError;
+error_t contactorStateMachineError = ERROR_NO_ERROR;
 
 
 typedef struct {
@@ -152,6 +152,7 @@ static void contactor_control_task(void *p) {
 
         contactorStateMachineState = _stateMachine.current;
 
+
         if (batteryStatus_mutex_take(portMAX_DELAY)) {
             systemIsHealthy &= batteryStatus.amsStatus;
             systemIsHealthy &= batteryStatus.amsResetStatus;
@@ -161,6 +162,13 @@ static void contactor_control_task(void *p) {
 
             contactorState = ((batteryStatus.hvPosState & 0x01) << 2) | ((batteryStatus.hvNegState & 0x01) << 1) | ((batteryStatus.hvPreState & 0x01));
             batteryStatus_mutex_give();
+        }
+
+        if (sensor_mutex_take(pdMS_TO_TICKS(portMAX_DELAY))) {
+            if (fabs(sensorData.batteryVoltage - sensorData.dcLinkVoltage) <= (0.05f * sensorData.batteryVoltage)) {
+                voltageEqual = true;
+            }
+            sensor_mutex_give();
         }
 
         switch (_stateMachine.current) {
@@ -193,15 +201,7 @@ static void contactor_control_task(void *p) {
         //TODO: Plausibility check is temporarily disabled. Cannot be tested with demonstrator.
         relayPlausible = true;
 
-        if (sensor_mutex_take(pdMS_TO_TICKS(portMAX_DELAY))) {
-            if (fabs(sensorData.batteryVoltage - sensorData.dcLinkVoltage) <= (0.05f * sensorData.batteryVoltage)) {
-                voltageEqual = true;
-            }
-            if (!sensorData.batteryVoltageValid || !sensorData.dcLinkVoltageValid) {
-                voltageEqual = false;
-            }
-            sensor_mutex_give();
-        }
+
 
         if (++_tsRequestTimeout >= 5) {
             //timeout after 500ms
@@ -209,6 +209,7 @@ static void contactor_control_task(void *p) {
         }
 
         _contactorEvent = EVENT_NONE;
+
 
 
         if ((_stateMachine.current == STATE_PRE_CHARGE) && voltageEqual) {
@@ -229,14 +230,16 @@ static void contactor_control_task(void *p) {
         //Clear error if TS request clears and errors are gone
         if (_stateMachine.current == STATE_ERROR && !_tsActive) {
             _contactorEvent = EVENT_ERROR_CLEARED;
+            contactorStateMachineError = ERROR_NO_ERROR;
         }
 
         if (!systemIsHealthy) {
             _contactorEvent = EVENT_ERROR;
+            contactorStateMachineError = ERROR_SYSTEM_NOT_HEALTHY;
         }
         if (!relayPlausible) {
-            PRINTF("Relay implausible!\n");
             _contactorEvent = EVENT_ERROR;
+            contactorStateMachineError = ERROR_CONTACTOR_IMPLAUSIBLE;
         }
 
         for(size_t i = 0; i < sizeof(stateArray)/sizeof(stateArray[0]); i++) {
