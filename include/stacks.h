@@ -15,6 +15,7 @@
 #include "config.h"
 #include "LTC6811.h"
 
+
 typedef struct {
     uint32_t UID[MAXSTACKS];
     uint16_t cellVoltage[MAXSTACKS][MAXCELLS];
@@ -29,11 +30,22 @@ typedef struct {
     bool maxSocValid;
 } stacks_data_t;
 
+uint16_t max_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks);
+uint16_t min_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks);
+uint16_t avg_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks);
+bool check_voltage_validity(uint8_t voltageStatus[][MAXCELLS+1], uint8_t stacks);
+bool check_temperature_validity(uint8_t temperatureStatus[][MAXTEMPSENS], uint8_t stacks);
+uint16_t max_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stacks);
+uint16_t min_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stacks);
+uint16_t avg_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stacks);
 void init_stacks(void);
 void stacks_worker_task(void *p);
+void balancing_task(void *p);
 BaseType_t stacks_mutex_take(TickType_t blocktime);
 void stacks_mutex_give(void);
 extern stacks_data_t stacksData;
 
+void control_balancing(bool enabled);
+void get_balancing_status(uint8_t gates[NUMBEROFSLAVES][MAXCELLS]);
 
 #endif /* STACKS_H_ */

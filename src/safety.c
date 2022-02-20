@@ -97,29 +97,7 @@ void safety_task(void *p) {
     }
 }
 
-bool check_voltage_validity(uint8_t voltageStatus[][MAXCELLS+1], uint8_t stacks) {
-    bool critical = false;
-    for (uint8_t stack = 0; stack < stacks; stack++) {
-        for (uint8_t cell = 0; cell < MAXCELLS+1; cell++) {
-            if (voltageStatus[stack][cell] != NOERROR) {
-                critical |= true;
-            }
-        }
-    }
-    return !critical;
-}
 
-bool check_temperature_validity(uint8_t temperatureStatus[][MAXTEMPSENS], uint8_t stacks) {
-    bool critical = false;
-    for (uint8_t stack = 0; stack < stacks; stack++) {
-        for (uint8_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
-            if (temperatureStatus[stack][tempsens] != NOERROR) {
-                critical |= true;
-            }
-        }
-    }
-    return !critical;
-}
 
 BaseType_t batteryStatus_mutex_take(TickType_t blocktime) {
     if (!_batteryStatusMutex) {

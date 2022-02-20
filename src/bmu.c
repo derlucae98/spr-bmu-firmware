@@ -7,22 +7,11 @@
 
 #include "bmu.h"
 
-
-
-
-
 static void can_send_task(void *p);
 static void can_rec_task(void *p);
-
-
-
-
-static uint16_t max_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks);
-static uint16_t min_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks);
-static uint16_t avg_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks);
-static uint16_t max_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stacks);
-static uint16_t min_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stacks);
-static uint16_t avg_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stacks);
+static void handle_diag_request(can_msg_t *msg);
+static void send_diag_response(can_msg_t *msg);
+static void soc_lookup(void);
 
 typedef struct {
     uint32_t UID[MAXSTACKS];
@@ -79,6 +68,7 @@ void init_bmu(void) {
     xTaskCreate(can_send_task, "CAN", 1000, NULL, 3, NULL);
     xTaskCreate(can_rec_task, "CAN rec", 600, NULL, 2, NULL);
     xTaskCreate(stacks_worker_task, "LTC", 2000, NULL, 3, NULL);
+    xTaskCreate(balancing_task, "balance", 500, NULL, 2, NULL);
     xTaskCreate(safety_task, "status", 500, NULL, 3, NULL);
 }
 
@@ -188,41 +178,41 @@ static void can_send_task(void *p) {
         //Send BMS temperature 1 message every 10 ms
         msg.ID = 0x004;
         msg.DLC = 8;
-        msg.payload[0] = (counter << 4) | ((stacksData.temperature[counter][0] >> 6) & 0x0F);
-        msg.payload[1] = (stacksData.temperature[counter][0] << 2) | (stacksData.temperatureStatus[counter][0] & 0x03);
-        msg.payload[2] = (stacksData.temperature[counter][1] >> 2);
-        msg.payload[3] = (stacksData.temperature[counter][1] << 6) | ((stacksData.temperatureStatus[counter][1] & 0x03) << 4) | ((stacksData.temperature[counter][2] >> 6) & 0x0F);
-        msg.payload[4] = (stacksData.temperature[counter][2] << 2) | (stacksData.temperatureStatus[counter][2] & 0x03);
-        msg.payload[5] = (stacksData.temperature[counter][3] >> 2);
-        msg.payload[6] = (stacksData.temperature[counter][3] << 6) | ((stacksData.temperatureStatus[counter][3] & 0x03) << 4) | ((stacksData.temperature[counter][4] >> 6) & 0x0F);
-        msg.payload[7] = (stacksData.temperature[counter][4] << 2) | (stacksData.temperatureStatus[counter][4] & 0x03);
+        msg.payload[0] = (counter << 4) | ((canData.temperature[counter][0] >> 6) & 0x0F);
+        msg.payload[1] = (canData.temperature[counter][0] << 2) | (canData.temperatureStatus[counter][0] & 0x03);
+        msg.payload[2] = (canData.temperature[counter][1] >> 2);
+        msg.payload[3] = (canData.temperature[counter][1] << 6) | ((canData.temperatureStatus[counter][1] & 0x03) << 4) | ((canData.temperature[counter][2] >> 6) & 0x0F);
+        msg.payload[4] = (canData.temperature[counter][2] << 2) | (canData.temperatureStatus[counter][2] & 0x03);
+        msg.payload[5] = (canData.temperature[counter][3] >> 2);
+        msg.payload[6] = (canData.temperature[counter][3] << 6) | ((canData.temperatureStatus[counter][3] & 0x03) << 4) | ((canData.temperature[counter][4] >> 6) & 0x0F);
+        msg.payload[7] = (canData.temperature[counter][4] << 2) | (canData.temperatureStatus[counter][4] & 0x03);
         //Send message
         can_send(CAN0, &msg);
 
         //Send BMS temperature 2 message every 10 ms
         msg.ID = 0x005;
         msg.DLC = 8;
-        msg.payload[0] = (counter << 4) | ((stacksData.temperature[counter][5] >> 6) & 0x0F);
-        msg.payload[1] = (stacksData.temperature[counter][5] << 2) | (stacksData.temperatureStatus[counter][5] & 0x03);
-        msg.payload[2] = (stacksData.temperature[counter][6] >> 2);
-        msg.payload[3] = (stacksData.temperature[counter][6] << 6) | ((stacksData.temperatureStatus[counter][6] & 0x03) << 4) | ((stacksData.temperature[counter][7] >> 6) & 0x0F);
-        msg.payload[4] = (stacksData.temperature[counter][7] << 2) | (stacksData.temperatureStatus[counter][7] & 0x03);
-        msg.payload[5] = (stacksData.temperature[counter][8] >> 2);
-        msg.payload[6] = (stacksData.temperature[counter][8] << 6) | ((stacksData.temperatureStatus[counter][8] & 0x03) << 4) | ((stacksData.temperature[counter][9] >> 6) & 0x0F);
-        msg.payload[7] = (stacksData.temperature[counter][9] << 2) | (stacksData.temperatureStatus[counter][9] & 0x03);
+        msg.payload[0] = (counter << 4) | ((canData.temperature[counter][5] >> 6) & 0x0F);
+        msg.payload[1] = (canData.temperature[counter][5] << 2) | (canData.temperatureStatus[counter][5] & 0x03);
+        msg.payload[2] = (canData.temperature[counter][6] >> 2);
+        msg.payload[3] = (canData.temperature[counter][6] << 6) | ((canData.temperatureStatus[counter][6] & 0x03) << 4) | ((canData.temperature[counter][7] >> 6) & 0x0F);
+        msg.payload[4] = (canData.temperature[counter][7] << 2) | (canData.temperatureStatus[counter][7] & 0x03);
+        msg.payload[5] = (canData.temperature[counter][8] >> 2);
+        msg.payload[6] = (canData.temperature[counter][8] << 6) | ((canData.temperatureStatus[counter][8] & 0x03) << 4) | ((canData.temperature[counter][9] >> 6) & 0x0F);
+        msg.payload[7] = (canData.temperature[counter][9] << 2) | (canData.temperatureStatus[counter][9] & 0x03);
         //Send message
         can_send(CAN0, &msg);
 
         //Send BMS temperature 3 message every 10 ms
         msg.ID = 0x006;
         msg.DLC = 8;
-        msg.payload[0] = (counter << 4) | ((stacksData.temperature[counter][10] >> 6) & 0x0F);
-        msg.payload[1] = (stacksData.temperature[counter][10] << 2) | (stacksData.temperatureStatus[counter][10] & 0x03);
-        msg.payload[2] = (stacksData.temperature[counter][11] >> 2);
-        msg.payload[3] = (stacksData.temperature[counter][11] << 6) | ((stacksData.temperatureStatus[counter][11] & 0x03) << 4) | ((stacksData.temperature[counter][12] >> 6) & 0x0F);
-        msg.payload[4] = (stacksData.temperature[counter][12] << 2) | (stacksData.temperatureStatus[counter][12] & 0x03);
-        msg.payload[5] = (stacksData.temperature[counter][13] >> 2);
-        msg.payload[6] = (stacksData.temperature[counter][13] << 6) | ((stacksData.temperatureStatus[counter][13] & 0x03) << 4);
+        msg.payload[0] = (counter << 4) | ((canData.temperature[counter][10] >> 6) & 0x0F);
+        msg.payload[1] = (canData.temperature[counter][10] << 2) | (canData.temperatureStatus[counter][10] & 0x03);
+        msg.payload[2] = (canData.temperature[counter][11] >> 2);
+        msg.payload[3] = (canData.temperature[counter][11] << 6) | ((canData.temperatureStatus[counter][11] & 0x03) << 4) | ((canData.temperature[counter][12] >> 6) & 0x0F);
+        msg.payload[4] = (canData.temperature[counter][12] << 2) | (canData.temperatureStatus[counter][12] & 0x03);
+        msg.payload[5] = (canData.temperature[counter][13] >> 2);
+        msg.payload[6] = (canData.temperature[counter][13] << 6) | ((canData.temperatureStatus[counter][13] & 0x03) << 4);
         msg.payload[7] = 0;
         //Send message
         can_send(CAN0, &msg);
@@ -230,13 +220,13 @@ static void can_send_task(void *p) {
         //Send BMS cell voltage 1 message every 10 ms
         msg.ID = 0x007;
         msg.DLC = 7;
-        msg.payload[0] = (counter << 4) | (stacksData.cellVoltageStatus[counter][0] & 0x3);
-        msg.payload[1] = stacksData.cellVoltage[counter][0] >> 5;
-        msg.payload[2] = ((stacksData.cellVoltage[counter][0] & 0x1F) << 3) | (stacksData.cellVoltageStatus[counter][1] & 0x3);
-        msg.payload[3] = stacksData.cellVoltage[counter][1] >> 5;
-        msg.payload[4] = ((stacksData.cellVoltage[counter][1] & 0x1F) << 3) | (stacksData.cellVoltageStatus[counter][2] & 0x3);
-        msg.payload[5] = stacksData.cellVoltage[counter][2] >> 5;
-        msg.payload[6] = ((stacksData.cellVoltage[counter][2] & 0x1F) << 3) | (stacksData.cellVoltageStatus[counter][3] & 0x3);
+        msg.payload[0] = (counter << 4) | (canData.cellVoltageStatus[counter][0] & 0x3);
+        msg.payload[1] = canData.cellVoltage[counter][0] >> 5;
+        msg.payload[2] = ((canData.cellVoltage[counter][0] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][1] & 0x3);
+        msg.payload[3] = canData.cellVoltage[counter][1] >> 5;
+        msg.payload[4] = ((canData.cellVoltage[counter][1] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][2] & 0x3);
+        msg.payload[5] = canData.cellVoltage[counter][2] >> 5;
+        msg.payload[6] = ((canData.cellVoltage[counter][2] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][3] & 0x3);
         //Send message
         can_send(CAN0, &msg);
 
@@ -244,12 +234,12 @@ static void can_send_task(void *p) {
         msg.ID = 0x008;
         msg.DLC = 7;
         msg.payload[0] = counter << 4;
-        msg.payload[1] = stacksData.cellVoltage[counter][3] >> 5;
-        msg.payload[2] = ((stacksData.cellVoltage[counter][3] & 0x1F) << 3) | (stacksData.cellVoltageStatus[counter][4] & 0x3);
-        msg.payload[3] = stacksData.cellVoltage[counter][4] >> 5;
-        msg.payload[4] = ((stacksData.cellVoltage[counter][4] & 0x1F) << 3) | (stacksData.cellVoltageStatus[counter][5] & 0x3);
-        msg.payload[5] = stacksData.cellVoltage[counter][5] >> 5;
-        msg.payload[6] = ((stacksData.cellVoltage[counter][5] & 0x1F) << 3) | (stacksData.cellVoltageStatus[counter][6] & 0x3);
+        msg.payload[1] = canData.cellVoltage[counter][3] >> 5;
+        msg.payload[2] = ((canData.cellVoltage[counter][3] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][4] & 0x3);
+        msg.payload[3] = canData.cellVoltage[counter][4] >> 5;
+        msg.payload[4] = ((canData.cellVoltage[counter][4] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][5] & 0x3);
+        msg.payload[5] = canData.cellVoltage[counter][5] >> 5;
+        msg.payload[6] = ((canData.cellVoltage[counter][5] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][6] & 0x3);
         //Send message
         can_send(CAN0, &msg);
 
@@ -257,12 +247,12 @@ static void can_send_task(void *p) {
         msg.ID = 0x009;
         msg.DLC = 7;
         msg.payload[0] = counter << 4;
-        msg.payload[1] = stacksData.cellVoltage[counter][6] >> 5;
-        msg.payload[2] = ((stacksData.cellVoltage[counter][6] & 0x1F) << 3) | (stacksData.cellVoltageStatus[counter][7] & 0x3);
-        msg.payload[3] = stacksData.cellVoltage[counter][7] >> 5;
-        msg.payload[4] = ((stacksData.cellVoltage[counter][7] & 0x1F) << 3) | (stacksData.cellVoltageStatus[counter][8] & 0x3);
-        msg.payload[5] = stacksData.cellVoltage[counter][8] >> 5;
-        msg.payload[6] = ((stacksData.cellVoltage[counter][8] & 0x1F) << 3) | (stacksData.cellVoltageStatus[counter][9] & 0x3);
+        msg.payload[1] = canData.cellVoltage[counter][6] >> 5;
+        msg.payload[2] = ((canData.cellVoltage[counter][6] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][7] & 0x3);
+        msg.payload[3] = canData.cellVoltage[counter][7] >> 5;
+        msg.payload[4] = ((canData.cellVoltage[counter][7] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][8] & 0x3);
+        msg.payload[5] = canData.cellVoltage[counter][8] >> 5;
+        msg.payload[6] = ((canData.cellVoltage[counter][8] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][9] & 0x3);
         //Send message
         can_send(CAN0, &msg);
 
@@ -270,12 +260,12 @@ static void can_send_task(void *p) {
         msg.ID = 0x00A;
         msg.DLC = 7;
         msg.payload[0] = counter << 4;
-        msg.payload[1] = stacksData.cellVoltage[counter][9] >> 5;
-        msg.payload[2] = ((stacksData.cellVoltage[counter][9] & 0x1F) << 3) | (stacksData.cellVoltageStatus[counter][10] & 0x3);
-        msg.payload[3] = stacksData.cellVoltage[counter][10] >> 5;
-        msg.payload[4] = ((stacksData.cellVoltage[counter][10] & 0x1F) << 3) | (stacksData.cellVoltageStatus[counter][11] & 0x3);
-        msg.payload[5] = stacksData.cellVoltage[counter][11] >> 5;
-        msg.payload[6] = ((stacksData.cellVoltage[counter][11] & 0x1F) << 3) | (stacksData.cellVoltageStatus[counter][12] & 0x3);
+        msg.payload[1] = canData.cellVoltage[counter][9] >> 5;
+        msg.payload[2] = ((canData.cellVoltage[counter][9] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][10] & 0x3);
+        msg.payload[3] = canData.cellVoltage[counter][10] >> 5;
+        msg.payload[4] = ((canData.cellVoltage[counter][10] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][11] & 0x3);
+        msg.payload[5] = canData.cellVoltage[counter][11] >> 5;
+        msg.payload[6] = ((canData.cellVoltage[counter][11] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][12] & 0x3);
         //Send message
         can_send(CAN0, &msg);
 
@@ -283,10 +273,10 @@ static void can_send_task(void *p) {
         msg.ID = 0x00B;
         msg.DLC = 5;
         msg.payload[0] = counter << 4;
-        msg.payload[1] = stacksData.UID[counter] >> 24;
-        msg.payload[2] = stacksData.UID[counter] >> 16;
-        msg.payload[3] = stacksData.UID[counter] >> 8;
-        msg.payload[4] = stacksData.UID[counter] & 0xFF;
+        msg.payload[1] = canData.UID[counter] >> 24;
+        msg.payload[2] = canData.UID[counter] >> 16;
+        msg.payload[3] = canData.UID[counter] >> 8;
+        msg.payload[4] = canData.UID[counter] & 0xFF;
         //Send message
         can_send(CAN0, &msg);
 
@@ -298,74 +288,6 @@ static void can_send_task(void *p) {
 
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
-}
-
-static uint16_t max_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks) {
-    uint16_t volt = 0;
-    for (uint8_t stack = 0; stack < stacks; stack++) {
-        for (uint8_t cell = 0; cell < MAXCELLS; cell++) {
-            if (voltage[stack][cell] > volt) {
-                volt = voltage[stack][cell];
-            }
-        }
-    }
-    return volt;
-}
-
-static uint16_t min_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks) {
-    uint16_t volt = -1;
-    for (uint8_t stack = 0; stack < stacks; stack++) {
-        for (uint8_t cell = 0; cell < MAXCELLS; cell++) {
-            if (voltage[stack][cell] < volt) {
-                volt = voltage[stack][cell];
-            }
-        }
-    }
-    return volt;
-}
-
-static uint16_t avg_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks) {
-    double volt = 0.0;
-    for (uint8_t stack = 0; stack < stacks; stack++) {
-        for (uint8_t cell = 0; cell < MAXCELLS; cell++) {
-            volt += (double)voltage[stack][cell];
-        }
-    }
-    return (uint16_t)(volt / (MAXCELLS * stacks));
-}
-
-static uint16_t max_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stacks) {
-    uint16_t temp = 0;
-    for (uint8_t stack = 0; stack < stacks; stack++) {
-        for (uint8_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
-            if (temperature[stack][tempsens] > temp) {
-                temp = temperature[stack][tempsens];
-            }
-        }
-    }
-    return temp;
-}
-
-static uint16_t min_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stacks) {
-    uint16_t temp = -1;
-    for (uint8_t stack = 0; stack < stacks; stack++) {
-        for (uint8_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
-            if (temperature[stack][tempsens] < temp) {
-                temp = temperature[stack][tempsens];
-            }
-        }
-    }
-    return temp;
-}
-
-static uint16_t avg_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stacks) {
-    double temp = 0.0;
-    for (uint8_t stack = 0; stack < stacks; stack++) {
-        for (uint8_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
-            temp += (double)temperature[stack][tempsens];
-        }
-    }
-    return (uint16_t)(temp / (MAXTEMPSENS * stacks));
 }
 
 static void can_rec_task(void *p) {
@@ -384,12 +306,83 @@ static void can_rec_task(void *p) {
                     }
                     break;
                 case 0xC:
-                    PRINTF("New Message from ID 0xC!\n");
+                    handle_diag_request(&msg);
                     break;
                 default:
                     break;
             }
         }
     }
+}
+
+static void handle_diag_request(can_msg_t *msg) {
+    can_msg_t resp;
+    switch(msg->payload[0]) {
+    case 0x01: // Firmware version
+        resp.DLC = 6;
+        resp.ID = 0xD;
+        resp.payload[0] = 0x01;
+        resp.payload[1] = 0x00;
+        resp.payload[2] = 0x03;
+        resp.payload[3] = VERS_MAJOR;
+        resp.payload[4] = VERS_MINOR;
+        resp.payload[5] = VERS_BUILD;
+        send_diag_response(&resp);
+        break;
+    case 0x02: //SOC lookup
+        soc_lookup();
+        resp.DLC = 4;
+        resp.ID = 0xD;
+        resp.payload[0] = 0x02;
+        resp.payload[1] = 0x00;
+        resp.payload[2] = 0x01;
+        resp.payload[3] = 0x00;
+        send_diag_response(&resp);
+        break;
+    case 0x03: //Get balancing
+        {
+            uint8_t balance[NUMBEROFSLAVES][MAXCELLS];
+            get_balancing_status(balance);
+            resp.DLC = 5;
+            resp.ID = 0xD;
+            resp.payload[0] = 0x03;
+            resp.payload[1] = 0x00;
+            resp.payload[2] = 0x02;
+            resp.payload[3] = 0;
+            for (size_t i = 0; i < 8; i++) {
+                resp.payload[3] |= (balance[0][i] & 0x01) << (7 - i);
+            }
+            resp.payload[4] = 0;
+            for (size_t i = 0; i < 4; i++) {
+                resp.payload[4] |= (balance[0][i + 8] & 0x01) << (7 - i);
+            }
+            send_diag_response(&resp);
+        }
+        break;
+    case 0x04: // Set balancing
+        {
+        if (msg->payload[2] == 0x0) {
+            control_balancing(false);
+        } else {
+            control_balancing(true);
+        }
+        resp.DLC = 4;
+        resp.ID = 0xD;
+        resp.payload[0] = 0x04;
+        resp.payload[1] = 0x00;
+        resp.payload[2] = 0x01;
+        resp.payload[3] = 0x00;
+        send_diag_response(&resp);
+        break;
+        }
+    }
+}
+
+static void send_diag_response(can_msg_t *msg) {
+    can_send(CAN0, msg);
+}
+
+static void soc_lookup(void) {
+
 }
 

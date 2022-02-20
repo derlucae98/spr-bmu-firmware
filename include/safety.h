@@ -32,8 +32,7 @@ void safety_task(void *p);
 BaseType_t batteryStatus_mutex_take(TickType_t blocktime);
 void batteryStatus_mutex_give(void);
 extern battery_status_t batteryStatus;
-bool check_voltage_validity(uint8_t voltageStatus[][MAXCELLS+1], uint8_t stacks);
-bool check_temperature_validity(uint8_t temperatureStatus[][MAXTEMPSENS], uint8_t stacks);
+
 
 
 #endif /* SAFETY_H_ */

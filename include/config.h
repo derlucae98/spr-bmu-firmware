@@ -10,6 +10,11 @@
 
 #include "can.h"
 
+#define VERS_MAJOR 0
+#define VERS_MINOR 1
+#define VERS_BUILD 0
+
+
 #define NUMBEROFSLAVES 1
 #define CELL_UNDERVOLTAGE 2700
 #define CELL_OVERVOLTAGE  4200
@@ -18,7 +23,7 @@
 #define MAXSTACKS 12
 #define MAXCELLS  12
 #define MAXTEMPSENS 14
-#define MAXCELLTEMP 540 //54.0 deg C
+#define MAXCELLTEMP 1000 //100.0 deg C
 
 #define BMU_Q_HANDLE can0RxQueueHandle
 
