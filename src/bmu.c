@@ -84,7 +84,7 @@ static void can_send_task(void *p) {
 
     while (1) {
         if (stacks_mutex_take(portMAX_DELAY)) {
-            memcpy(canData.UID, stacksData.UID, sizeof(canData.UID));
+            memcpy(canData.UID, stacksUID, sizeof(stacksUID));
             memcpy(canData.cellVoltage, stacksData.cellVoltage, sizeof(canData.cellVoltage));
             memcpy(canData.cellVoltageStatus, stacksData.cellVoltageStatus, sizeof(canData.cellVoltageStatus));
             memcpy(canData.temperature, stacksData.temperature, sizeof(canData.temperature));

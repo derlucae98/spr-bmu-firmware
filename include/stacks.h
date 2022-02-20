@@ -17,7 +17,6 @@
 
 
 typedef struct {
-    uint32_t UID[MAXSTACKS];
     uint16_t cellVoltage[MAXSTACKS][MAXCELLS];
     uint8_t cellVoltageStatus[MAXSTACKS][MAXCELLS+1];
     uint16_t temperature[MAXSTACKS][MAXTEMPSENS];
@@ -29,6 +28,8 @@ typedef struct {
     float maxSoc;
     bool maxSocValid;
 } stacks_data_t;
+
+extern uint32_t stacksUID[MAXSTACKS];
 
 uint16_t max_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks);
 uint16_t min_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks);

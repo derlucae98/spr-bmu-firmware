@@ -12,7 +12,7 @@
 
 #define VERS_MAJOR 0
 #define VERS_MINOR 1
-#define VERS_BUILD 0
+#define VERS_BUILD 1
 
 
 #define NUMBEROFSLAVES 1

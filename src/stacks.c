@@ -14,7 +14,9 @@ static bool _balanceEnable = false;
 
 static SemaphoreHandle_t _balancingGatesMutex = NULL;
 static bool balancingGatesMutex_take(TickType_t blocktime);
-static bool balancingGatesMutex_give(void);
+static void balancingGatesMutex_give(void);
+
+uint32_t stacksUID[MAXSTACKS];
 
 void init_stacks(void) {
     _stacksDataMutex = xSemaphoreCreateMutex();
@@ -25,16 +27,7 @@ void init_stacks(void) {
     configASSERT(_balancingGatesMutex);
     memset(_balancingGates, 0, sizeof(_balancingGates));
 
-    uint32_t UID[NUMBEROFSLAVES];
-    ltc6811_init(UID);
-    if (stacks_mutex_take(portMAX_DELAY)) {
-        memcpy(&stacksData.UID, UID, sizeof(UID));
-        stacks_mutex_give();
-    }
-
-    for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
-        PRINTF("UID %d: %08X\n", slave+1, UID[slave]);
-    }
+    ltc6811_init(stacksUID);
 }
 
 void stacks_worker_task(void *p) {
@@ -176,7 +169,7 @@ static bool balancingGatesMutex_take(TickType_t blocktime) {
     return xSemaphoreTake(_balancingGatesMutex, blocktime);
 }
 
-static bool balancingGatesMutex_give(void) {
+static void balancingGatesMutex_give(void) {
     xSemaphoreGive(_balancingGatesMutex);
 }
 
