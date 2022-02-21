@@ -65,11 +65,11 @@ void init_bmu(void) {
     init_safety();
     init_stacks();
 
-    xTaskCreate(can_send_task, "CAN", 1000, NULL, 3, NULL);
+    xTaskCreate(can_send_task, "CAN", 600, NULL, 3, NULL);
     xTaskCreate(can_rec_task, "CAN rec", 600, NULL, 2, NULL);
-    xTaskCreate(stacks_worker_task, "LTC", 2000, NULL, 3, NULL);
+    xTaskCreate(stacks_worker_task, "LTC", 1100, NULL, 3, NULL);
     xTaskCreate(balancing_task, "balance", 500, NULL, 2, NULL);
-    xTaskCreate(safety_task, "status", 500, NULL, 3, NULL);
+    xTaskCreate(safety_task, "status", 300, NULL, 3, NULL);
 }
 
 static void can_send_task(void *p) {

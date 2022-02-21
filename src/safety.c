@@ -93,6 +93,7 @@ void safety_task(void *p) {
             batteryStatus.hvPreState = get_pin(HV_PRE_STAT_PORT, HV_PRE_STAT_PIN);
             batteryStatus_mutex_give();
         }
+
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
 }

@@ -118,18 +118,12 @@ void balancing_task(void *p) {
             uint16_t minCellVoltage = min_cell_voltage(cellVoltage, NUMBEROFSLAVES);
             uint16_t avgCellVoltage = avg_cell_voltage(cellVoltage, NUMBEROFSLAVES);
             uint16_t delta = maxCellVoltage - minCellVoltage;
-            PRINTF("Max: %u\n", maxCellVoltage);
-            PRINTF("Min: %u\n", minCellVoltage);
-            PRINTF("Avg: %u\n", avgCellVoltage);
-            PRINTF("Delta: %u\n", delta);
-            PRINTF("\n");
             bool valid = check_voltage_validity(cellVoltageStatus, NUMBEROFSLAVES);
             if (delta > 5 && valid) {
                 //Balance only, if difference is greater than 5 mV
                 for (size_t stack = 0; stack < NUMBEROFSLAVES; stack++) {
                     for (size_t cell = 0; cell < MAXCELLS; cell++) {
                         if (cellVoltage[stack][cell] > (avgCellVoltage + 5)) {
-                            PRINTF("Balancing cell %u\n", cell + 1);
                             balancingGates[stack][cell] = 1;
                         } else {
                             balancingGates[stack][cell] = 0;

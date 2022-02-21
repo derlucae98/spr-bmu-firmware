@@ -127,7 +127,7 @@ static void error(void) {
 
 void init_contactor(void) {
     _stateMachine.current = STATE_STANDBY;
-    xTaskCreate(contactor_control_task, "contactor", 500, NULL, 2, &contactor_control_task_handle);
+    xTaskCreate(contactor_control_task, "contactor", 300, NULL, 2, &contactor_control_task_handle);
 }
 
 static void contactor_control_task(void *p) {
@@ -243,15 +243,16 @@ static void contactor_control_task(void *p) {
         }
 
         for(size_t i = 0; i < sizeof(stateArray)/sizeof(stateArray[0]); i++) {
-               if(stateArray[i].current == _stateMachine.current) {
-                   if((stateArray[i].event == _contactorEvent)) {
+           if(stateArray[i].current == _stateMachine.current) {
+                if((stateArray[i].event == _contactorEvent)) {
 
-                       _stateMachine.current =  stateArray[i].next;
+                    _stateMachine.current =  stateArray[i].next;
 
-                       stateFunction[_stateMachine.current].function();
-                   }
-               }
-           }
+                    stateFunction[_stateMachine.current].function();
+                }
+            }
+        }
+
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
 }

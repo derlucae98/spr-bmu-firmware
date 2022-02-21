@@ -110,15 +110,13 @@ static void uart_rec(char* s) {
 void led_blink_task(void *pvParameters) {
 	(void) pvParameters;
 
-
-
     TickType_t xLastWakeTime;
     const TickType_t xPeriod = pdMS_TO_TICKS(1000);
     xLastWakeTime = xTaskGetTickCount();
 
     while (1) {
         toggle_pin(LED_WARNING_PORT, LED_WARNING_PIN);
-
+        //PRINTF("%lu\n", xPortGetMinimumEverFreeHeapSize());
 
 		vTaskDelayUntil(&xLastWakeTime, xPeriod);
 	}
@@ -194,9 +192,9 @@ void gpio_init(void) {
 void init_task(void *p) {
     (void) p;
     while (1) {
-        xTaskCreate(uart_rec_task, "uart_rec", 1000, NULL, 2, &uartRecTaskHandle);
+        //xTaskCreate(uart_rec_task, "uart_rec", 1000, NULL, 2, &uartRecTaskHandle);
         init_bmu();
-        xTaskCreate(led_blink_task, "LED blink", 1000, NULL, 1, NULL);
+        xTaskCreate(led_blink_task, "LED blink", 300, NULL, 1, NULL);
         vTaskDelete(NULL);
     }
 }
