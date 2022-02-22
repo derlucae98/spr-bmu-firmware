@@ -13,9 +13,108 @@
 #include <stdarg.h>
 #include <alloca.h>
 #include <stdlib.h>
+#include "ff.h"
+#include "logger.h"
 
+volatile bool sdInitPending = true;
+static TaskHandle_t _sdInitTaskHandle = NULL;
+static TaskHandle_t _housekeepingTaskHandle = NULL;
+static FATFS FatFs;
+static FIL file;
 
+void sd_init_task(void *p) {
+    (void) p;
+    while (1) {
+        if (ulTaskNotifyTake(pdFALSE, portMAX_DELAY)) {
+            //Check if logs directory exists and if not, create it
+            FILINFO fileInfo;
+            FRESULT status = f_stat("logs/", &fileInfo);
+            if (status == FR_NO_FILE) {
+                PRINTF("Logs directory does not exist!\n");
+                status = f_mkdir("logs");
+                if (status != FR_OK) {
+                    PRINTF("Could not create directory!\n");
+                } else {
+                    PRINTF("Directory created!\n");
+                }
+            } else {
+                PRINTF("Logs directory exists!\n");
+            }
 
+            char path[32];
+            PRINTF("Creating file...\n");
+
+            uint16_t counter = 0;
+            do {
+                snprintf(path, 32, "logs/%4u.csv", counter);
+                status = f_open(&file, path, FA_WRITE | FA_OPEN_APPEND | FA_CREATE_NEW);
+                counter++;
+            } while (status != FR_OK);
+
+            if (status == FR_OK) {
+                logger_set_file(&file);
+                PRINTF("Logger ready!\n");
+                sdInitPending = false;
+                logger_start();
+            }
+        }
+    }
+}
+
+void housekeeping_task(void *p) {
+
+    (void)p;
+
+    TickType_t lastWakeTime;
+    const TickType_t period = pdMS_TO_TICKS(50);
+    lastWakeTime = xTaskGetTickCount();
+    uint64_t counter = 0;
+
+    while (1) {
+        if ((counter % 2) == 0) {
+            //100ms
+
+        }
+
+        if ((counter % 20) == 0) {
+            //One second counter
+            toggle_pin(LED_WARNING_PORT, LED_WARNING_PIN);
+            logger_tick_hook();
+        }
+
+        //SD insertion or removal detection
+        static bool sdAvailableLast = false;
+        bool sdAvailable = !get_pin(CARD_DETECT_PORT, CARD_DETECT_PIN);
+        if (sdAvailable && !sdAvailableLast) {
+            sd_available(true);
+            PRINTF("SD inserted!\n");
+            sdAvailableLast = true;
+            FRESULT status = f_mount(&FatFs, "", 1);
+            if (status == FR_OK) {
+                PRINTF("SD ready!\n");
+                if (_sdInitTaskHandle) {
+                    xTaskNotifyGive(_sdInitTaskHandle);
+                }
+            } else {
+                PRINTF("SD initialization failed!\n");
+                sdInitPending = true;
+            }
+        } else if (!sdAvailable && sdAvailableLast) {
+            sd_available(false);
+            PRINTF("SD removed!\n");
+            sdAvailableLast = false;
+            logger_stop();
+            if (!disk_status(0)) {
+                f_unmount("");
+            }
+            sdInitPending = true;
+        }
+
+        counter++;
+
+        vTaskDelayUntil(&lastWakeTime, period);
+    }
+}
 
 void wdog_disable (void)
 {
@@ -107,21 +206,6 @@ static void uart_rec(char* s) {
 
 }
 
-void led_blink_task(void *pvParameters) {
-	(void) pvParameters;
-
-    TickType_t xLastWakeTime;
-    const TickType_t xPeriod = pdMS_TO_TICKS(1000);
-    xLastWakeTime = xTaskGetTickCount();
-
-    while (1) {
-        toggle_pin(LED_WARNING_PORT, LED_WARNING_PIN);
-        //PRINTF("%lu\n", xPortGetMinimumEverFreeHeapSize());
-
-		vTaskDelayUntil(&xLastWakeTime, xPeriod);
-	}
-}
-
 void gpio_init(void) {
     //Enable clocks for GPIO modules
     PCC->PCCn[PCC_PORTA_INDEX] = PCC_PCCn_CGC_MASK;
@@ -194,7 +278,9 @@ void init_task(void *p) {
     while (1) {
         //xTaskCreate(uart_rec_task, "uart_rec", 1000, NULL, 2, &uartRecTaskHandle);
         init_bmu();
-        xTaskCreate(led_blink_task, "LED blink", 300, NULL, 1, NULL);
+        logger_init();
+        xTaskCreate(sd_init_task, "sd init", 400, NULL, 2, &_sdInitTaskHandle);
+        xTaskCreate(housekeeping_task, "housekeeping", 300, NULL, 3, &_housekeepingTaskHandle);
         vTaskDelete(NULL);
     }
 }
@@ -213,7 +299,7 @@ int main(void)
     set_pin(CS_CARD_PORT, CS_CARD_PIN);
     set_pin(CS_CURRENT_PORT, CS_CURRENT_PIN);
     set_pin(CS_EEPROM_PORT, CS_EEPROM_PIN);
-    set_pin(CS_RTC_PORT, CS_RTC_PIN);
+    clear_pin(CS_RTC_PORT, CS_RTC_PIN); //RTC chip enable is active high
     set_pin(CS_SLAVES_PORT, CS_SLAVES_PIN);
     set_pin(CS_UBATT_PORT, CS_UBATT_PIN);
     set_pin(CS_ULINK_PORT, CS_ULINK_PIN);

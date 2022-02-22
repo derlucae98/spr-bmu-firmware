@@ -27,6 +27,18 @@ typedef struct {
     bool minSocValid;
     float maxSoc;
     bool maxSocValid;
+    uint16_t minCellVolt;
+    bool minCellVoltValid;
+    uint16_t maxCellVolt;
+    bool maxCellVoltValid;
+    uint16_t avgCellVolt;
+    bool avgCellVoltValid;
+    uint16_t minTemperature;
+    bool minTemperatureValid;
+    uint16_t maxTemperature;
+    bool maxTemperatureValid;
+    uint16_t avgTemperature;
+    bool avgTemperatureValid;
 } stacks_data_t;
 
 extern uint32_t stacksUID[MAXSTACKS];

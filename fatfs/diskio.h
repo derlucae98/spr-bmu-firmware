@@ -45,6 +45,7 @@ typedef struct {
 #include <stdbool.h>
 #include "FreeRTOS.h"
 #include "task.h"
+#include "config.h"
 #include "gpio.h"
 #include "spi.h"
 #include "interrupts.h"

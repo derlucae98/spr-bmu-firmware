@@ -90,26 +90,26 @@ static void can_send_task(void *p) {
             memcpy(canData.temperature, stacksData.temperature, sizeof(canData.temperature));
             memcpy(canData.temperatureStatus, stacksData.temperatureStatus, sizeof(canData.temperatureStatus));
 
-            bool cellVoltValid = check_voltage_validity(stacksData.cellVoltageStatus, NUMBEROFSLAVES);
-            canData.minCellVolt = min_cell_voltage(stacksData.cellVoltage, NUMBEROFSLAVES);
-            canData.minCellVoltValid = cellVoltValid;
-            canData.maxCellVolt = max_cell_voltage(stacksData.cellVoltage, NUMBEROFSLAVES);
-            canData.maxCellVoltValid = cellVoltValid;
-            canData.avgCellVolt = avg_cell_voltage(stacksData.cellVoltage, NUMBEROFSLAVES);
-            canData.avgCellVoltValid = cellVoltValid;
+
+            canData.minCellVolt = stacksData.minCellVolt;
+            canData.minCellVoltValid = stacksData.minCellVoltValid;
+            canData.maxCellVolt = stacksData.maxCellVolt;
+            canData.maxCellVoltValid = stacksData.maxCellVoltValid;
+            canData.avgCellVolt = stacksData.avgCellVolt;
+            canData.avgCellVoltValid = stacksData.avgCellVoltValid;
 
             canData.minSoc = (uint16_t)(stacksData.minSoc * 10);
             canData.minSocValid = stacksData.minSocValid;
             canData.maxSoc = (uint16_t)(stacksData.maxSoc * 10);
             canData.maxSocValid = stacksData.maxSocValid;
 
-            bool cellTemperatureValid = check_temperature_validity(stacksData.temperatureStatus, NUMBEROFSLAVES);
-            canData.minTemp = min_cell_temperature(stacksData.temperature, NUMBEROFSLAVES);
-            canData.minTempValid = cellTemperatureValid;
-            canData.maxTemp = max_cell_temperature(stacksData.temperature, NUMBEROFSLAVES);
-            canData.maxTempValid = cellTemperatureValid;
-            canData.avgTemp = avg_cell_temperature(stacksData.temperature, NUMBEROFSLAVES);
-            canData.avgTempValid = cellTemperatureValid;
+
+            canData.minTemp = stacksData.minTemperature;
+            canData.minTempValid = stacksData.minTemperatureValid;
+            canData.maxTemp = stacksData.maxTemperature;
+            canData.maxTempValid = stacksData.maxTemperatureValid;
+            canData.avgTemp = stacksData.avgTemperature;
+            canData.avgTempValid = stacksData.avgTemperatureValid;
             stacks_mutex_give();
         }
 

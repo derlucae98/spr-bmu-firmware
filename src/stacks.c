@@ -86,6 +86,22 @@ void stacks_worker_task(void *p) {
             }
         }
 
+        bool cellVoltValid = check_voltage_validity(stacksDataLocal.cellVoltageStatus, NUMBEROFSLAVES);
+        stacksDataLocal.minCellVolt = min_cell_voltage(stacksDataLocal.cellVoltage, NUMBEROFSLAVES);
+        stacksDataLocal.minCellVoltValid = cellVoltValid;
+        stacksDataLocal.maxCellVolt = max_cell_voltage(stacksDataLocal.cellVoltage, NUMBEROFSLAVES);
+        stacksDataLocal.maxCellVoltValid = cellVoltValid;
+        stacksDataLocal.avgCellVolt = avg_cell_voltage(stacksDataLocal.cellVoltage, NUMBEROFSLAVES);
+        stacksDataLocal.avgCellVoltValid = cellVoltValid;
+
+        bool cellTemperatureValid = check_temperature_validity(stacksDataLocal.temperatureStatus, NUMBEROFSLAVES);
+        stacksDataLocal.minTemperature = min_cell_temperature(stacksDataLocal.temperature, NUMBEROFSLAVES);
+        stacksDataLocal.minTemperatureValid = cellTemperatureValid;
+        stacksDataLocal.maxTemperature = max_cell_temperature(stacksDataLocal.temperature, NUMBEROFSLAVES);
+        stacksDataLocal.maxTemperatureValid = cellTemperatureValid;
+        stacksDataLocal.avgTemperature = avg_cell_temperature(stacksDataLocal.temperature, NUMBEROFSLAVES);
+        stacksDataLocal.avgTemperatureValid = cellTemperatureValid;
+
         if (stacks_mutex_take(portMAX_DELAY)) {
             memcpy(&stacksData, &stacksDataLocal, sizeof(stacks_data_t));
             stacks_mutex_give();
