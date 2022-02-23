@@ -143,7 +143,7 @@ bool init_sensors(void) {
     }
 
     reload_calibration();
-    xTaskCreate(_sensor_task, "sensors", 1000, NULL, 2, NULL);
+    xTaskCreate(_sensor_task, "sensors", 1000, NULL, 4, NULL);
     return true;
 }
 
@@ -212,6 +212,7 @@ static void _sensor_task(void *p) {
     bool dcLinkVoltageError = false;
     while (1) {
 
+        dbg7_set();
         // If an error occurred, try to reset the sensor to clear the error
         if (currentSensorError) {
             mcp356x_reset(&_currentSensor);
@@ -287,7 +288,7 @@ static void _sensor_task(void *p) {
         } else {
             PRINTF("Sensor: Can't get mutex!\n");
         }
-
+        dbg7_clear();
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
 }

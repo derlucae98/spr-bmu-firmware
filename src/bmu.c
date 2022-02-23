@@ -83,6 +83,7 @@ static void can_send_task(void *p) {
     memset(&canData, 0, sizeof(can_data_t));
 
     while (1) {
+        dbg5_set();
         if (stacks_mutex_take(portMAX_DELAY)) {
             memcpy(canData.UID, stacksUID, sizeof(stacksUID));
             memcpy(canData.cellVoltage, stacksData.cellVoltage, sizeof(canData.cellVoltage));
@@ -92,11 +93,11 @@ static void can_send_task(void *p) {
 
 
             canData.minCellVolt = stacksData.minCellVolt;
-            canData.minCellVoltValid = stacksData.minCellVoltValid;
+            canData.minCellVoltValid = stacksData.voltageValid;
             canData.maxCellVolt = stacksData.maxCellVolt;
-            canData.maxCellVoltValid = stacksData.maxCellVoltValid;
+            canData.maxCellVoltValid = stacksData.voltageValid;
             canData.avgCellVolt = stacksData.avgCellVolt;
-            canData.avgCellVoltValid = stacksData.avgCellVoltValid;
+            canData.avgCellVoltValid = stacksData.voltageValid;
 
             canData.minSoc = (uint16_t)(stacksData.minSoc * 10);
             canData.minSocValid = stacksData.minSocValid;
@@ -105,11 +106,11 @@ static void can_send_task(void *p) {
 
 
             canData.minTemp = stacksData.minTemperature;
-            canData.minTempValid = stacksData.minTemperatureValid;
+            canData.minTempValid = stacksData.temperatureValid;
             canData.maxTemp = stacksData.maxTemperature;
-            canData.maxTempValid = stacksData.maxTemperatureValid;
+            canData.maxTempValid = stacksData.temperatureValid;
             canData.avgTemp = stacksData.avgTemperature;
-            canData.avgTempValid = stacksData.avgTemperatureValid;
+            canData.avgTempValid = stacksData.temperatureValid;
             stacks_mutex_give();
         }
 
@@ -286,6 +287,7 @@ static void can_send_task(void *p) {
             counter = 0;
         }
 
+        dbg5_clear();
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
 }

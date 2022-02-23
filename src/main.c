@@ -254,6 +254,16 @@ void gpio_init(void) {
     set_direction(AMS_FAULT_PORT, AMS_FAULT_PIN, GPIO_OUTPUT);
     set_direction(CAN_STBY_PORT, CAN_STBY_PIN, GPIO_OUTPUT);
 
+    set_direction(TP_1_PORT, TP_1_PIN, GPIO_OUTPUT);
+    set_direction(TP_2_PORT, TP_2_PIN, GPIO_OUTPUT);
+    set_direction(TP_3_PORT, TP_3_PIN, GPIO_OUTPUT);
+    set_direction(TP_4_PORT, TP_4_PIN, GPIO_OUTPUT);
+    set_direction(TP_5_PORT, TP_5_PIN, GPIO_OUTPUT);
+    set_direction(TP_6_PORT, TP_6_PIN, GPIO_OUTPUT);
+    set_direction(TP_7_PORT, TP_7_PIN, GPIO_OUTPUT);
+    set_direction(TP_8_PORT, TP_8_PIN, GPIO_OUTPUT);
+
+
     set_pin_mux(UART_PORT, UART_RX, 6);
     set_pin_mux(UART_PORT, UART_TX, 6);
 
@@ -304,7 +314,7 @@ int main(void)
     set_pin(CS_UBATT_PORT, CS_UBATT_PIN);
     set_pin(CS_ULINK_PORT, CS_ULINK_PIN);
 
-    spi_init(LPSPI0, LPSPI_PRESC_8, LPSPI_MODE_0);
+    spi_init(LPSPI0, LPSPI_PRESC_1, LPSPI_MODE_0);
     spi_init(LPSPI1, LPSPI_PRESC_8, LPSPI_MODE_0);
     spi_init(LPSPI2, LPSPI_PRESC_8, LPSPI_MODE_3);
 
@@ -331,6 +341,6 @@ void vApplicationMallocFailedHook(void) {
 }
 
 void vApplicationIdleHook(void) {
-
+    toggle_pin(TP_3_PORT, TP_3_PIN);
 }
 

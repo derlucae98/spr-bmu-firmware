@@ -75,6 +75,7 @@ void logger_task(void *p) {
 
     while (1) {
         if (ulTaskNotifyTake(pdFALSE, pdMS_TO_TICKS(2000))) {
+            dbg4_set();
             if (_loggerActive) {
                 //Get timestamp
 //                if (rtc_date_time_mutex_take(pdMS_TO_TICKS(50))) {
@@ -96,7 +97,7 @@ void logger_task(void *p) {
                     UINT bw;
                     f_write(_file, buffer, strlen(buffer), &bw);
                     f_sync(_file);
-                    PRINTF("Logger: %lu bytes written!\n", bw);
+                    //PRINTF("Logger: %lu bytes written!\n", bw);
                 }
             }
             if (_terminateRequest) {
@@ -107,6 +108,7 @@ void logger_task(void *p) {
                 _loggerActive = false;
                 vTaskSuspend(NULL);
             }
+            dbg4_clear();
         }
     }
 }

@@ -5,6 +5,7 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "S32K146.h"
+#include "config.h"
 
 enum {
     LPSPI_PRESC_1,

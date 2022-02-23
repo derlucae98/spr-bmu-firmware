@@ -41,6 +41,7 @@ void stacks_worker_task(void *p) {
 
     while (1) {
 
+        dbg1_set();
         ltc6811_wake_daisy_chain();
         ltc6811_set_balancing_gates(_balancingGates);
         ltc6811_open_wire_check(stacksDataLocal.cellVoltageStatus);
@@ -88,24 +89,24 @@ void stacks_worker_task(void *p) {
 
         bool cellVoltValid = check_voltage_validity(stacksDataLocal.cellVoltageStatus, NUMBEROFSLAVES);
         stacksDataLocal.minCellVolt = min_cell_voltage(stacksDataLocal.cellVoltage, NUMBEROFSLAVES);
-        stacksDataLocal.minCellVoltValid = cellVoltValid;
         stacksDataLocal.maxCellVolt = max_cell_voltage(stacksDataLocal.cellVoltage, NUMBEROFSLAVES);
-        stacksDataLocal.maxCellVoltValid = cellVoltValid;
         stacksDataLocal.avgCellVolt = avg_cell_voltage(stacksDataLocal.cellVoltage, NUMBEROFSLAVES);
-        stacksDataLocal.avgCellVoltValid = cellVoltValid;
+        stacksDataLocal.voltageValid = cellVoltValid;
 
         bool cellTemperatureValid = check_temperature_validity(stacksDataLocal.temperatureStatus, NUMBEROFSLAVES);
         stacksDataLocal.minTemperature = min_cell_temperature(stacksDataLocal.temperature, NUMBEROFSLAVES);
-        stacksDataLocal.minTemperatureValid = cellTemperatureValid;
         stacksDataLocal.maxTemperature = max_cell_temperature(stacksDataLocal.temperature, NUMBEROFSLAVES);
-        stacksDataLocal.maxTemperatureValid = cellTemperatureValid;
         stacksDataLocal.avgTemperature = avg_cell_temperature(stacksDataLocal.temperature, NUMBEROFSLAVES);
-        stacksDataLocal.avgTemperatureValid = cellTemperatureValid;
+        stacksDataLocal.temperatureValid = cellTemperatureValid;
+
 
         if (stacks_mutex_take(portMAX_DELAY)) {
             memcpy(&stacksData, &stacksDataLocal, sizeof(stacks_data_t));
             stacks_mutex_give();
         }
+        dbg1_clear();
+
+
 
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
@@ -123,18 +124,23 @@ void balancing_task(void *p) {
 
             uint16_t cellVoltage[MAXSTACKS][MAXCELLS];
             uint8_t cellVoltageStatus[MAXSTACKS][MAXCELLS+1];
+            uint16_t maxCellVoltage = 0;
+            uint16_t minCellVoltage = 0;
+            uint16_t avgCellVoltage = 0;
+            bool valid = false;
 
             if (stacks_mutex_take(portMAX_DELAY)) {
                 memcpy(cellVoltage, stacksData.cellVoltage, sizeof(cellVoltage));
                 memcpy(cellVoltageStatus, stacksData.cellVoltageStatus, sizeof(cellVoltageStatus));
+                minCellVoltage = stacksData.minCellVolt;
+                maxCellVoltage = stacksData.maxCellVolt;
+                avgCellVoltage = stacksData.avgCellVolt;
+                valid = stacksData.voltageValid;
                 stacks_mutex_give();
             }
 
-            uint16_t maxCellVoltage = max_cell_voltage(cellVoltage, NUMBEROFSLAVES);
-            uint16_t minCellVoltage = min_cell_voltage(cellVoltage, NUMBEROFSLAVES);
-            uint16_t avgCellVoltage = avg_cell_voltage(cellVoltage, NUMBEROFSLAVES);
+
             uint16_t delta = maxCellVoltage - minCellVoltage;
-            bool valid = check_voltage_validity(cellVoltageStatus, NUMBEROFSLAVES);
             if (delta > 5 && valid) {
                 //Balance only, if difference is greater than 5 mV
                 for (size_t stack = 0; stack < NUMBEROFSLAVES; stack++) {

@@ -138,6 +138,7 @@ static void contactor_control_task(void *p) {
 
     while (1) {
 
+        dbg6_set();
         /*
          * 1) System is healthy if AMS and IMD are not in error state,
          * 2) AMS and IMD power stages are enabled to close the shutdown circuit,
@@ -252,7 +253,7 @@ static void contactor_control_task(void *p) {
                 }
             }
         }
-
+        dbg6_clear();
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
 }

@@ -110,4 +110,85 @@
 #define SPI2_MISO           0
 #define SPI2_MOSI           1
 
+#define TP_1_PORT        PORTC
+#define TP_1_PIN         16
+#define TP_2_PORT        PORTC
+#define TP_2_PIN         17
+#define TP_3_PORT        PORTD
+#define TP_3_PIN         5
+#define TP_4_PORT        PORTD
+#define TP_4_PIN         6
+#define TP_5_PORT        PORTD
+#define TP_5_PIN         7
+#define TP_6_PORT        PORTD
+#define TP_6_PIN         15
+#define TP_7_PORT        PORTD
+#define TP_7_PIN         16
+#define TP_8_PORT        PORTE
+#define TP_8_PIN         3
+
+static inline void dbg1_set(void) {
+    set_pin(TP_1_PORT, TP_1_PIN);
+}
+
+static inline void dbg1_clear(void) {
+    clear_pin(TP_1_PORT, TP_1_PIN);
+}
+
+static inline void dbg2_set(void) {
+    set_pin(TP_2_PORT, TP_2_PIN);
+}
+
+static inline void dbg2_clear(void) {
+    clear_pin(TP_2_PORT, TP_2_PIN);
+}
+
+static inline void dbg3_set(void) {
+    set_pin(TP_3_PORT, TP_3_PIN);
+}
+
+static inline void dbg3_clear(void) {
+    clear_pin(TP_3_PORT, TP_3_PIN);
+}
+
+static inline void dbg4_set(void) {
+    set_pin(TP_4_PORT, TP_4_PIN);
+}
+
+static inline void dbg4_clear(void) {
+    clear_pin(TP_4_PORT, TP_4_PIN);
+}
+
+static inline void dbg5_set(void) {
+    set_pin(TP_5_PORT, TP_5_PIN);
+}
+
+static inline void dbg5_clear(void) {
+    clear_pin(TP_5_PORT, TP_5_PIN);
+}
+
+static inline void dbg6_set(void) {
+    set_pin(TP_6_PORT, TP_6_PIN);
+}
+
+static inline void dbg6_clear(void) {
+    clear_pin(TP_6_PORT, TP_6_PIN);
+}
+
+static inline void dbg7_set(void) {
+    set_pin(TP_7_PORT, TP_7_PIN);
+}
+
+static inline void dbg7_clear(void) {
+    clear_pin(TP_7_PORT, TP_7_PIN);
+}
+
+static inline void dbg8_set(void) {
+    set_pin(TP_8_PORT, TP_8_PIN);
+}
+
+static inline void dbg8_clear(void) {
+    clear_pin(TP_8_PORT, TP_8_PIN);
+}
+
 #endif /* CONFIG_H_ */

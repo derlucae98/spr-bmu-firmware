@@ -34,6 +34,7 @@ void spi_init(LPSPI_Type *spi, uint8_t presc, uint8_t mode) {
 }
 
 uint8_t spi_move(LPSPI_Type *spi, uint8_t b) {
+    dbg2_set();
     uint8_t rec = 0;
     if (spi_mutex_take(spi, pdMS_TO_TICKS(10))) {
         while(!(spi->SR & LPSPI_SR_TDF_MASK)); //Wait for TX-Fifo
@@ -42,6 +43,7 @@ uint8_t spi_move(LPSPI_Type *spi, uint8_t b) {
         rec = (uint8_t)spi->RDR; //Read received data
         spi_mutex_give(spi);
     }
+    dbg2_clear();
     return rec;
 }
 
