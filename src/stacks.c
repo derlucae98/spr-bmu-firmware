@@ -194,7 +194,7 @@ void control_balancing(bool enabled) {
 }
 
 void get_balancing_status(uint8_t gates[NUMBEROFSLAVES][MAXCELLS]) {
-    if (balancingGatesMutex_take(pdMS_TO_TICKS(100))) {
+    if (balancingGatesMutex_take(pdMS_TO_TICKS(portMAX_DELAY))) {
         memcpy(gates, _balancingGates, sizeof(_balancingGates));
         balancingGatesMutex_give();
     }

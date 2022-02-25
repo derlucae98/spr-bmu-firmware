@@ -65,10 +65,10 @@ void init_bmu(void) {
     init_safety();
     init_stacks();
 
-    xTaskCreate(can_send_task, "CAN", 600, NULL, 3, NULL);
-    xTaskCreate(can_rec_task, "CAN rec", 600, NULL, 2, NULL);
-    xTaskCreate(stacks_worker_task, "LTC", 1100, NULL, 3, NULL);
-    xTaskCreate(balancing_task, "balance", 500, NULL, 2, NULL);
+    xTaskCreate(can_send_task, "CAN", 900, NULL, 3, NULL);
+    xTaskCreate(can_rec_task, "CAN rec", 600, NULL, 3, NULL);
+    xTaskCreate(stacks_worker_task, "LTC", 1500, NULL, 3, NULL);
+    xTaskCreate(balancing_task, "balance", 700, NULL, 2, NULL);
     xTaskCreate(safety_task, "status", 300, NULL, 3, NULL);
 }
 
@@ -81,6 +81,7 @@ static void can_send_task(void *p) {
     can_msg_t msg;
     can_data_t canData;
     memset(&canData, 0, sizeof(can_data_t));
+    uint8_t balance[12][MAXCELLS];
 
     while (1) {
         dbg5_set();
@@ -135,6 +136,10 @@ static void can_send_task(void *p) {
             canData.imdStatus = batteryStatus.imdStatus;
             canData.errorCode = (uint8_t)contactorStateMachineError;
             batteryStatus_mutex_give();
+        }
+
+        if (counter == 0) {
+            get_balancing_status(balance);
         }
 
         //BMS_Info_1
@@ -280,6 +285,28 @@ static void can_send_task(void *p) {
         msg.payload[4] = canData.UID[counter] & 0xFF;
         //Send message
         can_send(CAN0, &msg);
+
+        msg.ID = 0x00E;
+        msg.payload[0] = counter;
+        msg.payload[1] = ((balance[counter][11] & 0x01) << 7) | ((balance[counter][10] & 0x01) << 6) | ((balance[counter][9] & 0x01) << 5)
+                | ((balance[counter][8] & 0x01) << 4) | ((balance[counter][7] & 0x01) << 3) | ((balance[counter][6] & 0x01) << 2)
+                | ((balance[counter][5] & 0x01) << 1) | ((balance[counter][4] & 0x01));
+        msg.payload[2] = ((balance[counter][3] & 0x01) << 7) | ((balance[counter][2] & 0x01) << 6) | ((balance[counter][1] & 0x01) << 5) | ((balance[counter][0] & 0x01) << 4);
+        msg.DLC = 3;
+        can_send(CAN0, &msg);
+//        if (counter < 3) {
+//
+//            get_balancing_status(balance);
+//            uint64_t gates[3] = {0ULL};
+//            for (size_t i = 0; i < (12 * MAXCELLS); i++) {
+//                gates[i / 48] |= (balance[i / 12][i % MAXCELLS] & 0x01) << (i % 48);
+//            }
+//                msg.payload[0] = counter;
+//                memcpy(msg.payload + 1, &gates[counter], 6);
+//                msg.ID = 0x00E;
+//                msg.DLC = 7;
+//                can_send(CAN0, &msg);
+//        }
 
         if (counter < MAXSTACKS-1) {
             counter++;
