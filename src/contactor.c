@@ -165,6 +165,8 @@ static void contactor_control_task(void *p) {
             batteryStatus_mutex_give();
         }
 
+        systemIsHealthy = true;
+
         if (sensor_mutex_take(pdMS_TO_TICKS(portMAX_DELAY))) {
             if (fabs(sensorData.batteryVoltage - sensorData.dcLinkVoltage) <= (0.05f * sensorData.batteryVoltage)) {
                 voltageEqual = true;

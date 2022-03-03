@@ -7,9 +7,9 @@ static SemaphoreHandle_t _can0Mutex = NULL;
 static SemaphoreHandle_t _can1Mutex = NULL;
 
 #define CAN_MB_REC_START               0
-#define CAN_MB_REC                     16
-#define CAN_MB_SEND_START              16
-#define CAN_MB_SEND                    16
+#define CAN_MB_REC                     8
+#define CAN_MB_SEND_START              CAN_MB_REC
+#define CAN_MB_SEND                    24
 #define CAN_MB_SIZE                    4
 
 #define CAN_MB_CODE_SHIFT              24
