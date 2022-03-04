@@ -22,6 +22,8 @@ typedef struct {
     bool maxTemperatureValid;
     uint16_t avgTemperature;
     bool avgTemperatureValid;
+    float current;
+    uint16_t temperature[MAXSTACKS][MAXTEMPSENS];
 } logging_data_t;
 
 
@@ -90,7 +92,12 @@ void logger_task(void *p) {
                     loggingData.minCellVolt = stacksData.minCellVolt;
                     loggingData.maxCellVolt = stacksData.maxCellVolt;
                     loggingData.avgCellVolt = stacksData.avgCellVolt;
+                    memcpy(loggingData.temperature, stacksData.temperature, sizeof(stacksData.temperature));
                     stacks_mutex_give();
+                }
+                if (sensor_mutex_take(pdMS_TO_TICKS(50))) {
+                    loggingData.current = sensorData.current;
+                    sensor_mutex_give();
                 }
                 buffer = prepare_data(&dateTime, &loggingData);
                 if (!sdInitPending) {
@@ -128,7 +135,7 @@ char* prepare_data(rtc_date_time_t *dateTime, logging_data_t *loggingData) {
 
     //Cell voltage 1 to 144
     for (size_t cell = 0; cell < NUMBEROFSLAVES * MAXCELLS; cell++) {
-        snprintf(buffer + offset, 7, "%5.3f;", (float)(loggingData->cellVoltage[cell / 12][cell % 12] * 0.001f));
+        snprintf(buffer + offset, 7, "%5.3f;", (float)(loggingData->cellVoltage[cell / MAXCELLS][cell % MAXCELLS] * 0.001f));
         offset += 6;
     }
 
@@ -139,7 +146,14 @@ char* prepare_data(rtc_date_time_t *dateTime, logging_data_t *loggingData) {
     offset += 6;
     snprintf(buffer + offset, 7, "%5.3f;", (float)(loggingData->avgCellVolt * 0.001f));
     offset += 6;
+    snprintf(buffer + offset, 8, "%6.2f;", loggingData->current);
+    offset += 7;
 
+    //Cell temperature
+    for (size_t cell = 0; cell < NUMBEROFSLAVES * MAXTEMPSENS; cell++) {
+        snprintf(buffer + offset, 6, "%4.1f;", (float)(loggingData->temperature[cell / MAXTEMPSENS][cell % MAXTEMPSENS] * 0.1f));
+        offset += 5;
+    }
     snprintf(buffer + offset, 3, "\r\n");
 
     counter++;
@@ -148,22 +162,8 @@ char* prepare_data(rtc_date_time_t *dateTime, logging_data_t *loggingData) {
 
 static void write_header(void) {
     static const char *header = "Count;Cell 1;Cell 2;Cell 3;Cell 4;Cell 5;Cell 6;Cell 7;Cell 8;"
-                                    "Cell 9;Cell 10;Cell 11;Cell 12;Cell 13;Cell 14;Cell 15;Cell 16;Cell 17;"
-                                    "Cell 18;Cell 19;Cell 20;Cell 21;Cell 22;Cell 23;Cell 24;Cell 25;Cell 26;"
-                                    "Cell 27;Cell 28;Cell 29;Cell 30;Cell 31;Cell 32;Cell 33;Cell 34;Cell 35;"
-                                    "Cell 36;Cell 37;Cell 38;Cell 39;Cell 40;Cell 41;Cell 42;Cell 43;Cell 44;"
-                                    "Cell 45;Cell 46;Cell 47;Cell 48;Cell 49;Cell 50;Cell 51;Cell 52;Cell 53;"
-                                    "Cell 54;Cell 55;Cell 56;Cell 57;Cell 58;Cell 59;Cell 60;Cell 61;Cell 62;"
-                                    "Cell 63;Cell 64;Cell 65;Cell 66;Cell 67;Cell 68;Cell 69;Cell 70;Cell 71;"
-                                    "Cell 72;Cell 73;Cell 74;Cell 75;Cell 76;Cell 77;Cell 78;Cell 79;Cell 80;"
-                                    "Cell 81;Cell 82;Cell 83;Cell 84;Cell 85;Cell 86;Cell 87;Cell 88;Cell 89;"
-                                    "Cell 90;Cell 91;Cell 92;Cell 93;Cell 94;Cell 95;Cell 96;Cell 97;Cell 98;"
-                                    "Cell 99;Cell 100;Cell 101;Cell 102;Cell 103;Cell 104;Cell 105;Cell 106;"
-                                    "Cell 107;Cell 108;Cell 109;Cell 110;Cell 111;Cell 112;Cell 113;Cell 114;"
-                                    "Cell 115;Cell 116;Cell 117;Cell 118;Cell 119;Cell 120;Cell 121;Cell 122;"
-                                    "Cell 123;Cell 124;Cell 125;Cell 126;Cell 127;Cell 128;Cell 129;Cell 130;"
-                                    "Cell 131;Cell 132;Cell 133;Cell 134;Cell 135;Cell 136;Cell 137;Cell 138;"
-                                    "Cell 139;Cell 140;Cell 141;Cell 142;Cell 143;Cell 144;Min;Max;Avg\r\n";
+                                    "Cell 9;Cell 10;Cell 11;Cell 12;Min;Max;Avg;curr;Temp 1;Temp 2;Temp 3;Temp 4;Temp 5;Temp 6;Temp 7;Temp 8;"
+                                    "Temp 9;Temp 10;Temp 11;Temp 12;Temp 13;Temp 14\r\n";
 
     UINT bw;
     PRINTF("Writing header...\n");

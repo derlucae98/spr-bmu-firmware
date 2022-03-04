@@ -13,6 +13,7 @@
 #include "rtc.h"
 #include "config.h"
 #include "stacks.h"
+#include "sensors.h"
 
 extern volatile bool sdInitPending;
 void logger_init(void);
