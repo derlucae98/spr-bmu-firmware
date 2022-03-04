@@ -22,8 +22,8 @@ typedef struct {
     bool maxTemperatureValid;
     uint16_t avgTemperature;
     bool avgTemperatureValid;
-    uint16_t current;
-    uint16_t temperature[NUMBEROFSLAVES][MAXTEMPSENS];
+    float current;
+    uint16_t temperature[MAXSTACKS][MAXTEMPSENS];
 } logging_data_t;
 
 
@@ -135,7 +135,7 @@ char* prepare_data(rtc_date_time_t *dateTime, logging_data_t *loggingData) {
 
     //Cell voltage 1 to 144
     for (size_t cell = 0; cell < NUMBEROFSLAVES * MAXCELLS; cell++) {
-        snprintf(buffer + offset, 7, "%5.3f;", (float)(loggingData->cellVoltage[cell / 12][cell % 12] * 0.001f));
+        snprintf(buffer + offset, 7, "%5.3f;", (float)(loggingData->cellVoltage[cell / MAXCELLS][cell % MAXCELLS] * 0.001f));
         offset += 6;
     }
 
@@ -146,12 +146,12 @@ char* prepare_data(rtc_date_time_t *dateTime, logging_data_t *loggingData) {
     offset += 6;
     snprintf(buffer + offset, 7, "%5.3f;", (float)(loggingData->avgCellVolt * 0.001f));
     offset += 6;
-    snprintf(buffer + offset, 8, "%6.2f;", (float)(loggingData->current * 0.01f));
+    snprintf(buffer + offset, 8, "%6.2f;", loggingData->current);
     offset += 7;
 
     //Cell temperature
     for (size_t cell = 0; cell < NUMBEROFSLAVES * MAXTEMPSENS; cell++) {
-        snprintf(buffer + offset, 6, "%4.1f;", (float)(loggingData->temperature[cell / 12][cell % 12] * 0.1f));
+        snprintf(buffer + offset, 6, "%4.1f;", (float)(loggingData->temperature[cell / MAXTEMPSENS][cell % MAXTEMPSENS] * 0.1f));
         offset += 5;
     }
     snprintf(buffer + offset, 3, "\r\n");
@@ -163,7 +163,7 @@ char* prepare_data(rtc_date_time_t *dateTime, logging_data_t *loggingData) {
 static void write_header(void) {
     static const char *header = "Count;Cell 1;Cell 2;Cell 3;Cell 4;Cell 5;Cell 6;Cell 7;Cell 8;"
                                     "Cell 9;Cell 10;Cell 11;Cell 12;Min;Max;Avg;curr;Temp 1;Temp 2;Temp 3;Temp 4;Temp 5;Temp 6;Temp 7;Temp 8;"
-                                    "Temp 9;Temp 10;Temp 11;Temp 12\r\n";
+                                    "Temp 9;Temp 10;Temp 11;Temp 12;Temp 13;Temp 14\r\n";
 
     UINT bw;
     PRINTF("Writing header...\n");
