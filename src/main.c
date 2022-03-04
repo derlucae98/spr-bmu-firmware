@@ -80,6 +80,7 @@ void housekeeping_task(void *p) {
             //One second counter
             toggle_pin(LED_WARNING_PORT, LED_WARNING_PIN);
             logger_tick_hook();
+            //PRINTF("test\n");
         }
 
         //SD insertion or removal detection
@@ -286,7 +287,7 @@ void gpio_init(void) {
 void init_task(void *p) {
     (void) p;
     while (1) {
-        //xTaskCreate(uart_rec_task, "uart_rec", 1000, NULL, 2, &uartRecTaskHandle);
+//        xTaskCreate(uart_rec_task, "uart_rec", 1000, NULL, 2, &uartRecTaskHandle);
         init_bmu();
         logger_init();
         xTaskCreate(sd_init_task, "sd init", 400, NULL, 2, &_sdInitTaskHandle);

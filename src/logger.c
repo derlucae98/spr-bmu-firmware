@@ -8,8 +8,8 @@ static void write_header(void);
 static void logger_task(void *p);
 
 typedef struct {
-    uint16_t cellVoltage[MAXSTACKS][MAXCELLS];
-    uint8_t cellVoltageStatus[MAXSTACKS][MAXCELLS+1];
+    uint16_t cellVoltage[NUMBEROFSLAVES][MAXCELLS];
+    uint8_t cellVoltageStatus[NUMBEROFSLAVES][MAXCELLS+1];
     uint16_t minCellVolt;
     bool minCellVoltValid;
     uint16_t maxCellVolt;
