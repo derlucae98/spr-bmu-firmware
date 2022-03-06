@@ -107,39 +107,39 @@ bool init_sensors(void) {
 
     if (err != MCP356X_ERROR_OK) {
         PRINTF("Current sensor init failed!\n");
-        //return false;
+        return false;
     }
 
     err = mcp356x_set_config(&_currentSensor);
     if (err != MCP356X_ERROR_OK) {
         PRINTF("Current sensor init failed!\n");
-        //return false;
+        return false;
     }
 
     err = mcp356x_reset(&_ubat);
 
     if (err != MCP356X_ERROR_OK) {
         PRINTF("UBATT init failed!\n");
-        //return false;
+        return false;
     }
 
     err = mcp356x_set_config(&_ubat);
     if (err != MCP356X_ERROR_OK) {
         PRINTF("UBATT init failed!\n");
-        //return false;
+        return false;
     }
 
     err = mcp356x_reset(&_ulink);
 
     if (err != MCP356X_ERROR_OK) {
         PRINTF("ULINK init failed!\n");
-        //return false;
+        return false;
     }
 
     err = mcp356x_set_config(&_ulink);
     if (err != MCP356X_ERROR_OK) {
         PRINTF("ULINK init failed!\n");
-        //return false;
+        return false;
     }
 
     reload_calibration();
@@ -267,8 +267,8 @@ static void _sensor_task(void *p) {
         ulinkVolt = ulinkVolt * VOLTAGE_CONVERSION_RATIO;
         ulinkVolt = (ulinkVolt + _cal.ulink_offset) * _cal.ulink_gain;
 
-        PRINTF("Ubat: %.3f V\n", ubatVolt);
-        PRINTF("Ulink: %.3f V\n", ulinkVolt);
+//        PRINTF("Ubat: %.3f V\n", ubatVolt);
+//        PRINTF("Ulink: %.3f V\n", ulinkVolt);
 
         if (!currentSensorError) {
 //            PRINTF("I: %.2f A\n", current);

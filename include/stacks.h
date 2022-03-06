@@ -17,12 +17,12 @@
 
 
 typedef struct {
-    uint16_t cellVoltage[NUMBEROFSLAVES][MAXCELLS];
-    uint8_t cellVoltageStatus[NUMBEROFSLAVES][MAXCELLS+1];
-    uint16_t temperature[NUMBEROFSLAVES][MAXTEMPSENS];
-    uint8_t temperatureStatus[NUMBEROFSLAVES][MAXTEMPSENS];
+    uint16_t cellVoltage[MAXSTACKS][MAXCELLS];
+    uint8_t cellVoltageStatus[MAXSTACKS][MAXCELLS+1];
+    uint16_t temperature[MAXSTACKS][MAXTEMPSENS];
+    uint8_t temperatureStatus[MAXSTACKS][MAXTEMPSENS];
     uint16_t packVoltage;
-    float soc[NUMBEROFSLAVES][MAXCELLS];
+    float soc[MAXSTACKS][MAXCELLS];
     float minSoc;
     bool minSocValid;
     float maxSoc;

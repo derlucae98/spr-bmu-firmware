@@ -51,8 +51,6 @@ void safety_task(void *p) {
         bool imdStatus = get_pin(IMD_STAT_PORT, IMD_STAT_PIN);
         bool scStat = get_pin(SC_STATUS_PORT, SC_STATUS_PIN);
 
-        criticalValue = false;
-
         if (criticalValue) {
             //AMS opens the shutdown circuit in case of critical values
             open_shutdown_circuit();
