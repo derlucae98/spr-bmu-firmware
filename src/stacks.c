@@ -250,6 +250,9 @@ bool check_temperature_validity(uint8_t temperatureStatus[][MAXTEMPSENS], uint8_
     bool critical = false;
     for (uint8_t stack = 0; stack < stacks; stack++) {
         for (uint8_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
+            if (tempsens == 6 || tempsens == 13) {
+                continue; //Don't include PCB temperatures in statistics
+            }
             if (temperatureStatus[stack][tempsens] != NOERROR) {
                 critical |= true;
             }
@@ -262,6 +265,9 @@ uint16_t max_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stack
     uint16_t temp = 0;
     for (uint8_t stack = 0; stack < stacks; stack++) {
         for (uint8_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
+            if (tempsens == 6 || tempsens == 13) {
+                continue; //Don't include PCB temperatures in statistics
+            }
             if (temperature[stack][tempsens] > temp) {
                 temp = temperature[stack][tempsens];
             }
@@ -274,6 +280,9 @@ uint16_t min_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stack
     uint16_t temp = -1;
     for (uint8_t stack = 0; stack < stacks; stack++) {
         for (uint8_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
+            if (tempsens == 6 || tempsens == 13) {
+                continue; //Don't include PCB temperatures in statistics
+            }
             if (temperature[stack][tempsens] < temp) {
                 temp = temperature[stack][tempsens];
             }
@@ -286,8 +295,11 @@ uint16_t avg_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stack
     double temp = 0.0;
     for (uint8_t stack = 0; stack < stacks; stack++) {
         for (uint8_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
+            if (tempsens == 6 || tempsens == 13) {
+                continue; //Don't include PCB temperatures in statistics
+            }
             temp += (double)temperature[stack][tempsens];
         }
     }
-    return (uint16_t)(temp / (MAXTEMPSENS * stacks));
+    return (uint16_t)(temp / ((MAXTEMPSENS - 2) * stacks));
 }
