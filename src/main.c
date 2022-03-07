@@ -224,8 +224,8 @@ void gpio_init(void) {
     set_drive_strength(LED_WARNING_PORT, LED_WARNING_PIN, DRIVE_STRENGTH_HIGH);
     set_direction(LED_AMS_FAULT_PORT, LED_AMS_FAULT_PIN, GPIO_OUTPUT);
     set_drive_strength(LED_AMS_FAULT_PORT, LED_AMS_FAULT_PIN, DRIVE_STRENGTH_HIGH);
-    set_direction(LED_AMS_OK_PORT, LED_AMS_OK_PIN, GPIO_OUTPUT);
-    set_drive_strength(LED_AMS_OK_PORT, LED_AMS_OK_PIN, DRIVE_STRENGTH_HIGH);
+//    set_direction(LED_AMS_OK_PORT, LED_AMS_OK_PIN, GPIO_OUTPUT);
+//    set_drive_strength(LED_AMS_OK_PORT, LED_AMS_OK_PIN, DRIVE_STRENGTH_HIGH);
 
     set_direction(CONT_HV_POS_PORT, CONT_HV_POS_PIN, GPIO_OUTPUT);
     set_direction(CONT_HV_NEG_PORT, CONT_HV_NEG_PIN, GPIO_OUTPUT);
