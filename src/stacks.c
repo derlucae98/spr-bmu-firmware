@@ -123,7 +123,6 @@ void balancing_task(void *p) {
         if (_balanceEnable) {
 
             uint16_t cellVoltage[MAXSTACKS][MAXCELLS];
-            uint8_t cellVoltageStatus[MAXSTACKS][MAXCELLS+1];
             uint16_t maxCellVoltage = 0;
             uint16_t minCellVoltage = 0;
             uint16_t avgCellVoltage = 0;
@@ -131,7 +130,6 @@ void balancing_task(void *p) {
 
             if (stacks_mutex_take(portMAX_DELAY)) {
                 memcpy(cellVoltage, stacksData.cellVoltage, sizeof(cellVoltage));
-                memcpy(cellVoltageStatus, stacksData.cellVoltageStatus, sizeof(cellVoltageStatus));
                 minCellVoltage = stacksData.minCellVolt;
                 maxCellVoltage = stacksData.maxCellVolt;
                 avgCellVoltage = stacksData.avgCellVolt;
@@ -139,8 +137,12 @@ void balancing_task(void *p) {
                 stacks_mutex_give();
             }
 
-
             uint16_t delta = maxCellVoltage - minCellVoltage;
+
+            if (!valid) {
+                PRINTF("Balancing stopped due to invalid values!\n");
+            }
+
             if (delta > 5 && valid) {
                 //Balance only, if difference is greater than 5 mV
                 for (size_t stack = 0; stack < NUMBEROFSLAVES; stack++) {
