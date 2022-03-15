@@ -56,6 +56,7 @@ typedef enum {
     ADAXD_NORM_GPIO2  = 0x05021F20, //!< ADAXD_NORM_GPIO2
     ADAXD_NORM_2NDREF = 0x0506AEBE, //!< ADAXD_NORM_2NDREF
     ADAXD_NORM_ALL    = 0x05008276, //!< ADAXD_NORM_ALL
+    ADAXD_FAST_ALL    = 0x04804E1C, //!< ADAXD_FAST_ALL
     AXST_NORM_ST1     = 0x052793D0, //!< AXST_NORM_ST1
     ADSTAT_NORM_ALL   = 0x05683BAE, //!< ADSTAT_NORM_ALL
     ADSTATD_NORM_ALL  = 0x05086A78, //!< ADSTATD_NORM_ALL
@@ -86,6 +87,7 @@ typedef enum {
 
 static uint16_t _undervoltage_reg;
 static uint16_t _overvoltage_reg;
+static uint8_t temperatureCounter;
 
 
 
@@ -245,6 +247,7 @@ void broadcast(commandLTC_t command, uint8_t sendPayload[][PAYLOADLEN], uint8_t 
     case ADAXD_NORM_GPIO2:
     case ADAXD_NORM_2NDREF:
     case ADAXD_NORM_ALL:
+    case ADAXD_FAST_ALL:
     case AXST_NORM_ST1:
     case ADSTAT_NORM_ALL:
     case ADSTATD_NORM_ALL:
@@ -384,21 +387,11 @@ void ltc6811_wake_daisy_chain(void) {
 }
 
 void set_config(void) {
-    uint8_t payload[NUMBEROFSLAVES][PAYLOADLEN];
+    //Config register and balancing control use the same command.
 
-    _undervoltage_reg = (CELL_UNDERVOLTAGE / (16 * 100E-3)) - 1;
-    _overvoltage_reg = CELL_OVERVOLTAGE / (16 * 100E-3);
-
-    for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++){
-        payload[slave][0] = 0xFC;
-        payload[slave][1] = _undervoltage_reg & 0x00FF;
-        payload[slave][2] = ((_undervoltage_reg & 0x0F00) >> 8)
-                      | ((_overvoltage_reg & 0x000F) << 4);
-        payload[slave][3] = ((_overvoltage_reg & 0x0FF0) >> 4);
-        payload[slave][4] = 0x00;
-        payload[slave][5] = 0x00;
-    }
-    broadcast(WRCFGA, payload, NULL, NULL);
+    uint8_t gates[NUMBEROFSLAVES][MAXCELLS];
+    memset(gates, 0, sizeof(gates));
+    ltc6811_set_balancing_gates(gates);
 }
 
 void ltc6811_get_voltage(uint16_t voltage[][MAXCELLS], uint8_t voltageStatus[][MAXCELLS]) {
@@ -410,6 +403,11 @@ void ltc6811_get_voltage(uint16_t voltage[][MAXCELLS], uint8_t voltageStatus[][M
     vTaskDelay(pdMS_TO_TICKS(3));
 
     read_cell_voltage_registers_and_convert_to_voltage(voltage, voltageStatus);
+    for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
+        for (size_t cell = 0; cell < MAXCELLS; cell++) {
+            voltage[slave][cell] /= 10; //chop off the 100 uV digit
+        }
+    }
 }
 
 void read_cell_voltage_registers_and_convert_to_voltage(uint16_t voltage[][MAXCELLS], uint8_t voltageStatus[][MAXCELLS]) {
@@ -420,9 +418,9 @@ void read_cell_voltage_registers_and_convert_to_voltage(uint16_t voltage[][MAXCE
     broadcast(RDCVA, NULL, payload, pec);
     //Set cell voltages 1 to 3
     for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
-        voltage[slave][0] = ((payload[slave][1] << 8) | payload[slave][0]) / 10;
-        voltage[slave][1] = ((payload[slave][3] << 8) | payload[slave][2]) / 10;
-        voltage[slave][2] = ((payload[slave][5] << 8) | payload[slave][4]) / 10;
+        voltage[slave][0] = ((payload[slave][1] << 8) | payload[slave][0]);
+        voltage[slave][1] = ((payload[slave][3] << 8) | payload[slave][2]);
+        voltage[slave][2] = ((payload[slave][5] << 8) | payload[slave][4]);
 
         voltageStatus[slave][0] = pec[slave];
         voltageStatus[slave][1] = pec[slave];
@@ -433,9 +431,9 @@ void read_cell_voltage_registers_and_convert_to_voltage(uint16_t voltage[][MAXCE
     broadcast(RDCVB, NULL, payload, pec);
     //Set cell voltages 4 to 6
     for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
-        voltage[slave][3] = ((payload[slave][1] << 8) | payload[slave][0]) / 10;
-        voltage[slave][4] = ((payload[slave][3] << 8) | payload[slave][2]) / 10;
-        voltage[slave][5] = ((payload[slave][5] << 8) | payload[slave][4]) / 10;
+        voltage[slave][3] = ((payload[slave][1] << 8) | payload[slave][0]);
+        voltage[slave][4] = ((payload[slave][3] << 8) | payload[slave][2]);
+        voltage[slave][5] = ((payload[slave][5] << 8) | payload[slave][4]);
 
         voltageStatus[slave][3] = pec[slave];
         voltageStatus[slave][4] = pec[slave];
@@ -446,9 +444,9 @@ void read_cell_voltage_registers_and_convert_to_voltage(uint16_t voltage[][MAXCE
     broadcast(RDCVC, NULL, payload, pec);
     //Set cell voltages 7 to 9
     for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
-        voltage[slave][6] = ((payload[slave][1] << 8) | payload[slave][0]) / 10;
-        voltage[slave][7] = ((payload[slave][3] << 8) | payload[slave][2]) / 10;
-        voltage[slave][8] = ((payload[slave][5] << 8) | payload[slave][4]) / 10;
+        voltage[slave][6] = ((payload[slave][1] << 8) | payload[slave][0]);
+        voltage[slave][7] = ((payload[slave][3] << 8) | payload[slave][2]);
+        voltage[slave][8] = ((payload[slave][5] << 8) | payload[slave][4]);
 
         voltageStatus[slave][6] = pec[slave];
         voltageStatus[slave][7] = pec[slave];
@@ -459,9 +457,9 @@ void read_cell_voltage_registers_and_convert_to_voltage(uint16_t voltage[][MAXCE
     broadcast(RDCVD, NULL, payload, pec);
     //Set cell voltages 10 to 12
     for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
-        voltage[slave][9] = ((payload[slave][1] << 8) | payload[slave][0]) / 10;
-        voltage[slave][10] = ((payload[slave][3] << 8) | payload[slave][2]) / 10;
-        voltage[slave][11] = ((payload[slave][5] << 8) | payload[slave][4]) / 10;
+        voltage[slave][9] = ((payload[slave][1] << 8) | payload[slave][0]);
+        voltage[slave][10] = ((payload[slave][3] << 8) | payload[slave][2]);
+        voltage[slave][11] = ((payload[slave][5] << 8) | payload[slave][4]);
 
         voltageStatus[slave][9]  = pec[slave];
         voltageStatus[slave][10] = pec[slave];
@@ -498,9 +496,9 @@ inline uint8_t return_mux_command_byte(uint8_t channel) {
 void get_gpio_voltage(uint16_t voltGPIO[][2], uint8_t *voltGPIOStatus) {
     uint8_t payload_auxa[NUMBEROFSLAVES][PAYLOADLEN];
     uint8_t pec[NUMBEROFSLAVES];
-    broadcast(ADAXD_NORM_ALL, NULL, NULL, NULL);
+    broadcast(ADAXD_FAST_ALL, NULL, NULL, NULL);
 
-    vTaskDelay(pdMS_TO_TICKS(3));
+    vTaskDelay(pdMS_TO_TICKS(2));
 
     broadcast(RDAUXA, NULL, payload_auxa, pec);
 
@@ -515,13 +513,30 @@ void ltc6811_get_temperatures_in_degC(uint16_t temperature[][MAXTEMPSENS], uint8
     uint16_t voltGPIO[NUMBEROFSLAVES][2]; //GPIO1 and GPIO2 are converted simultaneously
     uint8_t status[NUMBEROFSLAVES];
 
-    for (size_t channel = 0; channel < 7; channel++) {
-        set_mux_channel(channel); //Select channels channel+1 and channel+9
-        get_gpio_voltage(voltGPIO, status); //Get channel+1 and channel+9
-        //PRINTF("%u\n", voltGPIO[2][1]);
+    size_t channelOffset = 0;
+    static const size_t NUMBEROFCHANNELS = 4; //Channels per run. Note that we sample 2 channels at once
+    if (temperatureCounter == 0) {
+        //First half of temperature sensors
+        channelOffset = 0;
+        temperatureCounter = 1;
+    } else {
+        //Second half of temperature sensors
+        channelOffset = 4;
+        temperatureCounter = 0;
+    }
+
+    for (size_t channel = channelOffset; channel < (channelOffset + NUMBEROFCHANNELS); channel++) {
+        set_mux_channel(channel);
+        get_gpio_voltage(voltGPIO, status);
+
+        if (channel >= 7) {
+            //We only have 14 temperature sensors but we sample 16 channels. Ignore the highest channel.
+            break;
+        }
+
         for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
             temperatureStatus[slave][channel] = status[slave];
-            temperatureStatus[slave][channel+7] = status[slave];
+            temperatureStatus[slave][channel + 7] = status[slave];
             if (channel == 6) { //PCB Sensor
                 temperature[slave][channel] = calc_temperature_from_voltage(NTC_PCB, voltGPIO[slave][0]);
                 temperature[slave][channel + 7] = calc_temperature_from_voltage(NTC_PCB, voltGPIO[slave][1]);
@@ -634,8 +649,7 @@ void ltc6811_open_wire_check(uint8_t result[][MAXCELLS+1]) {
     uint8_t pec_pup[NUMBEROFSLAVES][MAXCELLS];
     uint16_t voltage_pdn[NUMBEROFSLAVES][MAXCELLS];
     uint8_t pec_pdn[NUMBEROFSLAVES][MAXCELLS];
-    int32_t  volt_diff[NUMBEROFSLAVES][MAXCELLS];
-
+    int32_t volt_diff[NUMBEROFSLAVES][MAXCELLS];
 
     //Algorithm described in LTC6811 datasheet
 
@@ -645,6 +659,7 @@ void ltc6811_open_wire_check(uint8_t result[][MAXCELLS+1]) {
     vTaskDelay(pdMS_TO_TICKS(3));
     broadcast(ADOW_NORM_PUP_ALL, NULL, NULL, NULL);
     vTaskDelay(pdMS_TO_TICKS(3));
+
     read_cell_voltage_registers_and_convert_to_voltage(voltage_pup, pec_pup);
 
     broadcast(ADOW_NORM_PDN_ALL, NULL, NULL, NULL);
@@ -653,6 +668,7 @@ void ltc6811_open_wire_check(uint8_t result[][MAXCELLS+1]) {
     vTaskDelay(pdMS_TO_TICKS(3));
     broadcast(ADOW_NORM_PDN_ALL, NULL, NULL, NULL);
     vTaskDelay(pdMS_TO_TICKS(3));
+
     read_cell_voltage_registers_and_convert_to_voltage(voltage_pdn, pec_pdn);
 
     for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
@@ -662,7 +678,7 @@ void ltc6811_open_wire_check(uint8_t result[][MAXCELLS+1]) {
         }
 
         for (size_t cell = 0; cell < MAXCELLS - 1; cell++) {
-            if (volt_diff[slave][cell + 1] < - 400) {
+            if (volt_diff[slave][cell + 1] + 4000 < 0) {
                 result[slave][cell + 1] = OPENCELLWIRE;
             } else {
                 result[slave][cell + 1] = NOERROR;
@@ -681,7 +697,6 @@ void ltc6811_open_wire_check(uint8_t result[][MAXCELLS+1]) {
             result[slave][12] = NOERROR;
         }
     }
-
 }
 
 void ltc6811_set_balancing_gates(uint8_t gates[][MAXCELLS]) {
@@ -705,9 +720,3 @@ void ltc6811_set_balancing_gates(uint8_t gates[][MAXCELLS]) {
     }
     broadcast(WRCFGA, payload, NULL, NULL);
 }
-
-
-
-
-
-
