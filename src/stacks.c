@@ -47,7 +47,9 @@ void stacks_worker_task(void *p) {
 
         ltc6811_wake_daisy_chain();
 
+
         ltc6811_set_balancing_gates(_balancingGates);
+
 
         switch (cycle) {
         case 0:
@@ -124,6 +126,7 @@ void stacks_worker_task(void *p) {
             stacks_mutex_give();
         }
         dbg1_clear();
+
 
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }

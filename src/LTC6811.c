@@ -24,6 +24,15 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #define PAYLOADLEN 6
 
+#define CFGR0_GPIO5     (1 << 7)
+#define CFGR0_GPIO4     (1 << 6)
+#define CFGR0_GPIO3     (1 << 5)
+#define CFGR0_GPIO2     (1 << 4)
+#define CFGR0_GPIO1     (1 << 3)
+#define CFGR0_REFON     (1 << 2)
+#define CFGR0_DTEN      (1 << 1)
+#define CFGR0_ADCOPT    (1 << 0)
+
 /*!
  * @enum Enumerator for the LTC6811 commands
  * @details Commands also contain the pre-computed 16 Bit PEC
@@ -85,100 +94,19 @@ typedef enum {
 #define NTC_CELL 3960
 #define NTC_PCB  3900
 
-static uint16_t _undervoltage_reg;
-static uint16_t _overvoltage_reg;
 static uint8_t _temperatureCounter;
+static uint8_t _config;
 
-
-
-//Helper functions, only used in this file!
-//############################################################################################
-
-/*!
- * @brief LTC6811 helper function
- * @details Pulls the /CS pin low
- */
 static inline void select_bms(void);
-
-/*!
- * @brief LTC6811 helper function
- * @details Releases the /CS pin
- */
 static inline void deselect_bms(void);
-
-/*!
- * @brief LTC6811 helper function
- * @details Send a command to all slaves.
- * @param command Command of type commandLTC_t
- * @param payload For commands which send or receive a payload, the payload can be specified.\n
- * Set to NULL if the commands does not have a payload.
- */
 static void broadcast(commandLTC_t command, uint8_t sendPayload[][PAYLOADLEN], uint8_t recPayload[][PAYLOADLEN], uint8_t *recPEC);
-
-/*!
- * @brief LTC6811 helper function
- * @details Calculates the PEC for a payload
- * @param len Number of bytes used to calculate the PEC
- * @param data Payload data for which the PEC is calculated
- * @return Two PEC bytes combined in a 16 bit integer, big endian
- */
 static inline uint16_t calc_pec(uint8_t len, const uint8_t *data);
-
-/*!
- * @brief LTC6811 helper function
- * @details Compares the transmitted PEC with the calculated PEC.
- * @param payload Data to check
- * @param result Stores the result for every payload blob (see enum LTCError_t for possible values)
- */
 static void check_pec(uint8_t payload[][8], uint8_t *result);
-
-/*!
- * @brief LTC6811 helper function
- * @details Set the LTC configuration. The configuration is fixed.
- */
-static void set_config(void);
-
-/*!
- * @brief LTC6811 helper function
- * @details Reads the cell voltage registers after an ADC conversion and converts the register values to voltages
- * @param voltage Array in which the voltages will be stored.\n
- * An error code is stored in the lower byte if an error occurs @see LTCError_t
- * @see convertCellVoltageRegisterToVoltage(), getVoltage()
- */
+static void set_config(uint8_t CFGR0, uint8_t gates[][MAXCELLS]);
 static void read_cell_voltage_registers_and_convert_to_voltage(uint16_t voltage[][MAXCELLS], uint8_t voltageStatus[][MAXCELLS]);
-
-/*!
- * @brief LTC6811 helper function
- * @details Sets the multiplexer channel for the NTC conversion to a specific channel.
- * @param temperature_channel ADC channel. Both multiplexers are set to the same channel.
- */
 static void set_mux_channel(uint8_t temperature_channel);
-
-/*!
- * @brief LTC6811 helper function
- * @details Returns the command byte for the NTC multiplexers based on the channel.
- * @param channel Mux channel (0..6)
- * @return Command byte
- */
 static inline uint8_t return_mux_command_byte(uint8_t channel);
-
-/*!
- * @brief LTC6811 helper function
- * @details Performs an ADC conversion of a specific GPIO pin.
- * @param gpio GPIO pin of type LTCGPIO_t
- * @param voltGPIO Array in which the voltages will be stored.
- * @param channel Position in the voltGPIO array where the voltage will be placed
- */
 static void get_gpio_voltage(uint16_t voltGPIO[][2], uint8_t *voltGPIOStatus);
-
-/*!
- * @brief LTC6811 helper function
- * @details Calculates the NTC temperature based on the measured voltage
- * @param ntc NTC type. @see NTC_Type_t
- * @param temp_voltage Voltage which is converted to a temperature
- * @param ref_volt Measured reference voltage for each slave.
- * @return Temperature as fixed point integer value with one decimal place
- */
 static uint16_t calc_temperature_from_voltage(uint16_t B, uint16_t temp_voltage);
 
 
@@ -202,9 +130,11 @@ enum {
 //############################################################################################
 
 void ltc6811_init(uint32_t UID[]) {
+    _config = CFGR0_GPIO5 | CFGR0_GPIO4 | CFGR0_GPIO3 | CFGR0_GPIO2 | CFGR0_GPIO1 | CFGR0_REFON;
+
     if(spi_mutex_take(LTC6811_SPI, portMAX_DELAY)) {
         ltc6811_wake_daisy_chain();
-        set_config();
+        set_config(_config, NULL);
         ltc6811_get_uid(UID);
         spi_mutex_give(LTC6811_SPI);
     }
@@ -385,21 +315,38 @@ void ltc6811_wake_daisy_chain(void) {
 
 }
 
-void set_config(void) {
+void set_config(uint8_t CFGR0, uint8_t gates[][MAXCELLS]) {
     //Config register and balancing control use the same command.
 
-    uint8_t gates[NUMBEROFSLAVES][MAXCELLS];
-    memset(gates, 0, sizeof(gates));
-    ltc6811_set_balancing_gates(gates);
+    uint8_t payload[NUMBEROFSLAVES][PAYLOADLEN];
+    memset(payload, 0, sizeof(payload));
+    bool setBalancing = true;
+    if (gates == NULL) {
+        setBalancing = false;
+    }
+
+    for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++){
+        payload[slave][0] = CFGR0;
+
+        if (setBalancing) {
+            for (size_t cell = 0; cell < 8; cell++) {
+                payload[slave][4] |= ((gates[slave][cell] & 0x1) << cell);
+            }
+            payload[slave][5] = ((gates[slave][8] & 0x1) << 0) | ((gates[slave][9] & 0x1) << 1) |
+                                ((gates[slave][10] & 0x1) << 2) | ((gates[slave][11] & 0x1) << 3);
+        }
+    }
+    broadcast(WRCFGA, payload, NULL, NULL);
 }
 
 void ltc6811_get_voltage(uint16_t voltage[][MAXCELLS], uint8_t voltageStatus[][MAXCELLS]) {
-
+    //Change the ADCOPT bit to enable 3 kHz mode
+    set_config(_config | CFGR0_ADCOPT, NULL);
     //Start ADC conversion
     broadcast(ADCV_NORM_ALL, NULL, NULL, NULL);
 
     //Wait for conversion done
-    vTaskDelay(pdMS_TO_TICKS(3));
+    vTaskDelay(pdMS_TO_TICKS(4));
 
     read_cell_voltage_registers_and_convert_to_voltage(voltage, voltageStatus);
     for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
@@ -699,23 +646,5 @@ void ltc6811_open_wire_check(uint8_t result[][MAXCELLS+1]) {
 }
 
 void ltc6811_set_balancing_gates(uint8_t gates[][MAXCELLS]) {
-    uint8_t payload[NUMBEROFSLAVES][PAYLOADLEN];
-
-    for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++){
-        payload[slave][0] = 0xFC;
-        payload[slave][1] = _undervoltage_reg & 0x00FF;
-        payload[slave][2] = ((_undervoltage_reg & 0x0F00) >> 8)
-                      | ((_overvoltage_reg & 0x000F) << 4);
-        payload[slave][3] = ((_overvoltage_reg & 0x0FF0) >> 4);
-
-        payload[slave][4] = 0;
-        payload[slave][5] = 0;
-        for (size_t cell = 0; cell < 8; cell++) {
-            payload[slave][4] |= ((gates[slave][cell] & 0x1) << cell);
-        }
-        payload[slave][5] = ((gates[slave][8] & 0x1) << 0) | ((gates[slave][9] & 0x1) << 1) |
-                            ((gates[slave][10] & 0x1) << 2) | ((gates[slave][11] & 0x1) << 3);
-
-    }
-    broadcast(WRCFGA, payload, NULL, NULL);
+    set_config(_config, gates);
 }
