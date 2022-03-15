@@ -87,8 +87,7 @@ typedef enum {
 
 static uint16_t _undervoltage_reg;
 static uint16_t _overvoltage_reg;
-static uint8_t temperatureCounter;
-
+static uint8_t _temperatureCounter;
 
 
 
@@ -515,14 +514,14 @@ void ltc6811_get_temperatures_in_degC(uint16_t temperature[][MAXTEMPSENS], uint8
 
     size_t channelOffset = 0;
     static const size_t NUMBEROFCHANNELS = 4; //Channels per run. Note that we sample 2 channels at once
-    if (temperatureCounter == 0) {
+    if (_temperatureCounter == 0) {
         //First half of temperature sensors
         channelOffset = 0;
-        temperatureCounter = 1;
+        _temperatureCounter = 1;
     } else {
         //Second half of temperature sensors
         channelOffset = 4;
-        temperatureCounter = 0;
+        _temperatureCounter = 0;
     }
 
     for (size_t channel = channelOffset; channel < (channelOffset + NUMBEROFCHANNELS); channel++) {
