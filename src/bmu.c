@@ -85,57 +85,61 @@ static void can_send_task(void *p) {
 
     while (1) {
         dbg5_set();
-        if (stacks_mutex_take(portMAX_DELAY)) {
+        stacks_data_t* stacksData = get_stacks_data(portMAX_DELAY);
+        if (stacksData != NULL) {
             memcpy(canData.UID, stacksUID, sizeof(stacksUID));
-            memcpy(canData.cellVoltage, stacksData.cellVoltage, sizeof(canData.cellVoltage));
-            memcpy(canData.cellVoltageStatus, stacksData.cellVoltageStatus, sizeof(canData.cellVoltageStatus));
-            memcpy(canData.temperature, stacksData.temperature, sizeof(canData.temperature));
-            memcpy(canData.temperatureStatus, stacksData.temperatureStatus, sizeof(canData.temperatureStatus));
+            memcpy(canData.cellVoltage, stacksData->cellVoltage, sizeof(canData.cellVoltage));
+            memcpy(canData.cellVoltageStatus, stacksData->cellVoltageStatus, sizeof(canData.cellVoltageStatus));
+            memcpy(canData.temperature, stacksData->temperature, sizeof(canData.temperature));
+            memcpy(canData.temperatureStatus, stacksData->temperatureStatus, sizeof(canData.temperatureStatus));
 
 
-            canData.minCellVolt = stacksData.minCellVolt;
-            canData.minCellVoltValid = stacksData.voltageValid;
-            canData.maxCellVolt = stacksData.maxCellVolt;
-            canData.maxCellVoltValid = stacksData.voltageValid;
-            canData.avgCellVolt = stacksData.avgCellVolt;
-            canData.avgCellVoltValid = stacksData.voltageValid;
+            canData.minCellVolt = stacksData->minCellVolt;
+            canData.minCellVoltValid = stacksData->voltageValid;
+            canData.maxCellVolt = stacksData->maxCellVolt;
+            canData.maxCellVoltValid = stacksData->voltageValid;
+            canData.avgCellVolt = stacksData->avgCellVolt;
+            canData.avgCellVoltValid = stacksData->voltageValid;
 
-            canData.minSoc = (uint16_t)(stacksData.minSoc * 10);
-            canData.minSocValid = stacksData.minSocValid;
-            canData.maxSoc = (uint16_t)(stacksData.maxSoc * 10);
-            canData.maxSocValid = stacksData.maxSocValid;
+            canData.minSoc = (uint16_t)(stacksData->minSoc * 10);
+            canData.minSocValid = stacksData->minSocValid;
+            canData.maxSoc = (uint16_t)(stacksData->maxSoc * 10);
+            canData.maxSocValid = stacksData->maxSocValid;
 
 
-            canData.minTemp = stacksData.minTemperature;
-            canData.minTempValid = stacksData.temperatureValid;
-            canData.maxTemp = stacksData.maxTemperature;
-            canData.maxTempValid = stacksData.temperatureValid;
-            canData.avgTemp = stacksData.avgTemperature;
-            canData.avgTempValid = stacksData.temperatureValid;
-            stacks_mutex_give();
+            canData.minTemp = stacksData->minTemperature;
+            canData.minTempValid = stacksData->temperatureValid;
+            canData.maxTemp = stacksData->maxTemperature;
+            canData.maxTempValid = stacksData->temperatureValid;
+            canData.avgTemp = stacksData->avgTemperature;
+            canData.avgTempValid = stacksData->temperatureValid;
+
+            release_stacks_data();
         }
 
-        if (sensor_mutex_take(portMAX_DELAY)) {
-            canData.current = (int16_t)(sensorData.current * 160);
-            canData.currentValid = sensorData.currentValid;
-            canData.batteryVoltage = (uint16_t)(sensorData.batteryVoltage * 10);
-            canData.batteryVoltageValid = sensorData.batteryVoltageValid;
-            canData.dcLinkVoltage = (uint16_t)(sensorData.dcLinkVoltage * 10);
-            canData.dcLinkVoltageValid = sensorData.dcLinkVoltageValid;
-            sensor_mutex_give();
+        sensor_data_t *sensorData = get_sensor_data(portMAX_DELAY);
+        if (sensorData != NULL) {
+            canData.current = (int16_t)(sensorData->current * 160);
+            canData.currentValid = sensorData->currentValid;
+            canData.batteryVoltage = (uint16_t)(sensorData->batteryVoltage * 10);
+            canData.batteryVoltageValid = sensorData->batteryVoltageValid;
+            canData.dcLinkVoltage = (uint16_t)(sensorData->dcLinkVoltage * 10);
+            canData.dcLinkVoltageValid = sensorData->dcLinkVoltageValid;
+            release_sensor_data();
         }
 
-        if (batteryStatus_mutex_take(portMAX_DELAY)) {
+        battery_status_t *batteryStatus = get_battery_status(portMAX_DELAY);
+        if (batteryStatus != NULL) {
             canData.isolationResistance = 0; //TODO isolation resistance CAN
             canData.isolationResistanceValid = false; //TODO isolation resistance CAN validity
-            canData.shutdownStatus = batteryStatus.shutdownCircuit;
-            canData.tsState = (uint8_t)contactorStateMachineState;
-            canData.amsResetStatus = batteryStatus.amsResetStatus;
-            canData.amsStatus = batteryStatus.amsStatus;
-            canData.imdResetStatus = batteryStatus.imdResetStatus;
-            canData.imdStatus = batteryStatus.imdStatus;
-            canData.errorCode = (uint8_t)contactorStateMachineError;
-            batteryStatus_mutex_give();
+            canData.shutdownStatus = batteryStatus->shutdownCircuit;
+            canData.tsState = get_contactor_state();
+            canData.amsResetStatus = batteryStatus->amsResetStatus;
+            canData.amsStatus = batteryStatus->amsStatus;
+            canData.imdResetStatus = batteryStatus->imdResetStatus;
+            canData.imdStatus = batteryStatus->imdStatus;
+            canData.errorCode = get_contactor_error();
+            release_battery_status();
         }
 
         if (counter == 0) {

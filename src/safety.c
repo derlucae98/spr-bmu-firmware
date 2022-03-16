@@ -8,16 +8,18 @@
 #include "safety.h"
 
 static SemaphoreHandle_t _batteryStatusMutex = NULL;
-battery_status_t batteryStatus;
+static battery_status_t _batteryStatus;
 
 static inline void open_shutdown_circuit(void);
 static inline void close_shutdown_circuit(void);
+
+static BaseType_t batteryStatus_mutex_take(TickType_t blocktime);
 
 
 void init_safety(void) {
     _batteryStatusMutex = xSemaphoreCreateMutex();
     configASSERT(_batteryStatusMutex);
-    memset(&batteryStatus, 0, sizeof(batteryStatus));
+    memset(&_batteryStatus, 0, sizeof(_batteryStatus));
 }
 
 void safety_task(void *p) {
@@ -31,18 +33,20 @@ void safety_task(void *p) {
     while (1) {
 
         bool criticalValue = false;
-        if (stacks_mutex_take(portMAX_DELAY)) {
+        stacks_data_t* stacksData = get_stacks_data(portMAX_DELAY);
+        if (stacksData != NULL) {
             //Check for critical AMS values. This represents the AMS status.
-            criticalValue |= !check_voltage_validity(stacksData.cellVoltageStatus, NUMBEROFSLAVES);
-            criticalValue |= !check_temperature_validity(stacksData.temperatureStatus, NUMBEROFSLAVES);
-            stacks_mutex_give();
+            criticalValue |= !check_voltage_validity(stacksData->cellVoltageStatus, NUMBEROFSLAVES);
+            criticalValue |= !check_temperature_validity(stacksData->temperatureStatus, NUMBEROFSLAVES);
+            release_stacks_data();
         }
 
-        if (sensor_mutex_take(portMAX_DELAY)) {
-            criticalValue |= !sensorData.currentValid;
-            criticalValue |= !sensorData.batteryVoltageValid;
-            criticalValue |= !sensorData.dcLinkVoltageValid;
-            sensor_mutex_give();
+        sensor_data_t *sensorData = get_sensor_data(portMAX_DELAY);
+        if (sensorData != NULL) {
+            criticalValue |= !sensorData->currentValid;
+            criticalValue |= !sensorData->batteryVoltageValid;
+            criticalValue |= !sensorData->dcLinkVoltageValid;
+            release_sensor_data();
         }
 
         //Poll external status pins
@@ -81,17 +85,18 @@ void safety_task(void *p) {
             clear_pin(LED_IMD_OK_PORT, LED_IMD_OK_PIN);
         }
 
-        if (batteryStatus_mutex_take(portMAX_DELAY)) {
-            batteryStatus.amsStatus = !criticalValue;
-            batteryStatus.amsResetStatus = amsResetStatus;
-            batteryStatus.imdStatus = imdStatus;
-            batteryStatus.imdResetStatus = imdResetStatus;
-            batteryStatus.shutdownCircuit = scStat;
+        battery_status_t *batteryStatus = get_battery_status(portMAX_DELAY);
+        if (batteryStatus != NULL) {
+            batteryStatus->amsStatus = !criticalValue;
+            batteryStatus->amsResetStatus = amsResetStatus;
+            batteryStatus->imdStatus = imdStatus;
+            batteryStatus->imdResetStatus = imdResetStatus;
+            batteryStatus->shutdownCircuit = scStat;
             // Get contactor states reported by TSAL
-            batteryStatus.hvPosState = get_pin(HV_POS_STAT_PORT, HV_POS_STAT_PIN);
-            batteryStatus.hvNegState = get_pin(HV_NEG_STAT_PORT, HV_NEG_STAT_PIN);
-            batteryStatus.hvPreState = get_pin(HV_PRE_STAT_PORT, HV_PRE_STAT_PIN);
-            batteryStatus_mutex_give();
+            batteryStatus->hvPosState = get_pin(HV_POS_STAT_PORT, HV_POS_STAT_PIN);
+            batteryStatus->hvNegState = get_pin(HV_NEG_STAT_PORT, HV_NEG_STAT_PIN);
+            batteryStatus->hvPreState = get_pin(HV_PRE_STAT_PORT, HV_PRE_STAT_PIN);
+            release_battery_status();
         }
 
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
@@ -107,8 +112,27 @@ BaseType_t batteryStatus_mutex_take(TickType_t blocktime) {
     return xSemaphoreTake(_batteryStatusMutex, blocktime);
 }
 
-void batteryStatus_mutex_give(void) {
+void release_battery_status(void) {
     xSemaphoreGive(_batteryStatusMutex);
+}
+
+battery_status_t* get_battery_status(TickType_t blocktime) {
+    if (batteryStatus_mutex_take(blocktime)) {
+        return &_batteryStatus;
+    } else {
+        return NULL;
+    }
+}
+
+bool copy_battery_status(battery_status_t *dest, TickType_t blocktime) {
+    battery_status_t *src = get_battery_status(blocktime);
+    if (src != NULL) {
+        memcpy(dest, src, sizeof(battery_status_t));
+        release_battery_status();
+        return true;
+    } else {
+        return false;
+    }
 }
 
 static inline void open_shutdown_circuit(void) {

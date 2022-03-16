@@ -51,9 +51,11 @@ uint16_t avg_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stack
 void init_stacks(void);
 void stacks_worker_task(void *p);
 void balancing_task(void *p);
-BaseType_t stacks_mutex_take(TickType_t blocktime);
-void stacks_mutex_give(void);
-extern stacks_data_t stacksData;
+
+stacks_data_t* get_stacks_data(TickType_t blocktime);
+bool copy_stacks_data(stacks_data_t *dest, TickType_t blocktime);
+void release_stacks_data(void);
+
 
 void control_balancing(bool enabled);
 void get_balancing_status(uint8_t gates[NUMBEROFSLAVES][MAXCELLS]);

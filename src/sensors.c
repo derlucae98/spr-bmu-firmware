@@ -17,18 +17,37 @@ static mcp356x_obj_t _ulink;
 static volatile sensor_calibration_t _cal;
 
 static SemaphoreHandle_t _sensorDataMutex = NULL;
-sensor_data_t sensorData;
+static sensor_data_t _sensorData;
 
 extern void PRINTF(const char *format, ...);
-static void _sensor_task(void *p);
+static void sensor_task(void *p);
 static sensor_calibration_t default_calibration(void);
 
-BaseType_t sensor_mutex_take(TickType_t blocktime) {
+static BaseType_t sensor_mutex_take(TickType_t blocktime) {
     return xSemaphoreTake(_sensorDataMutex, blocktime);
 }
 
-void sensor_mutex_give(void) {
+void release_sensor_data(void) {
     xSemaphoreGive(_sensorDataMutex);
+}
+
+sensor_data_t* get_sensor_data(TickType_t blocktime) {
+    if (sensor_mutex_take(blocktime)) {
+        return &_sensorData;
+    } else {
+        return NULL;
+    }
+}
+
+bool copy_sensor_data(sensor_data_t *dest, TickType_t blocktime) {
+    sensor_data_t *src = get_sensor_data(blocktime);
+    if (src != NULL) {
+        memcpy(dest, src, sizeof(sensor_data_t));
+        release_sensor_data();
+        return true;
+    } else {
+        return false;
+    }
 }
 
 static inline void sensor_spi(uint8_t *a, size_t len) {
@@ -62,7 +81,7 @@ static inline void ulink_deassert(void) {
 bool init_sensors(void) {
     _sensorDataMutex = xSemaphoreCreateMutex();
     configASSERT(_sensorDataMutex);
-    memset(&sensorData, 0, sizeof(sensor_data_t));
+    memset(&_sensorData, 0, sizeof(sensor_data_t));
 
     mcp356x_error_t err;
 
@@ -143,7 +162,7 @@ bool init_sensors(void) {
     }
 
     reload_calibration();
-    xTaskCreate(_sensor_task, "sensors", 1000, NULL, 4, NULL);
+    xTaskCreate(sensor_task, "sensors", 1000, NULL, 4, NULL);
     return true;
 }
 
@@ -198,7 +217,7 @@ bool write_calibration(sensor_calibration_t cal) {
     return true;
 }
 
-static void _sensor_task(void *p) {
+static void sensor_task(void *p) {
     (void) p;
 
     TickType_t xLastWakeTime;
@@ -277,17 +296,19 @@ static void _sensor_task(void *p) {
         }
 
 
-        if (sensor_mutex_take(pdMS_TO_TICKS(4))) {
-            sensorData.current = current;
-            sensorData.batteryVoltage = ubatVolt;
-            sensorData.dcLinkVoltage = ulinkVolt;
-            sensorData.currentValid = !currentSensorError;
-            sensorData.batteryVoltageValid = !batteryVoltageError;
-            sensorData.dcLinkVoltageValid = !dcLinkVoltageError;
-            sensor_mutex_give();
+        sensor_data_t *sensorData = get_sensor_data(pdMS_TO_TICKS(4));
+        if (sensorData != NULL) {
+            sensorData->current = current;
+            sensorData->batteryVoltage = ubatVolt;
+            sensorData->dcLinkVoltage = ulinkVolt;
+            sensorData->currentValid = !currentSensorError;
+            sensorData->batteryVoltageValid = !batteryVoltageError;
+            sensorData->dcLinkVoltageValid = !dcLinkVoltageError;
+            release_sensor_data();
         } else {
             PRINTF("Sensor: Can't get mutex!\n");
         }
+
         dbg7_clear();
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }

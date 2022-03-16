@@ -9,7 +9,6 @@
 
 extern void PRINTF(const char *format, ...);
 
-TaskHandle_t contactor_control_task_handle = NULL;
 static void contactor_control_task(void *p);
 
 static void standby(void);
@@ -19,8 +18,8 @@ static void error(void);
 
 static bool _tsActive = false;
 static uint8_t _tsRequestTimeout = 0;
-state_t contactorStateMachineState = STATE_STANDBY;
-error_t contactorStateMachineError = ERROR_NO_ERROR;
+static state_t _contactorStateMachineState = STATE_STANDBY;
+static error_t _contactorStateMachineError = ERROR_NO_ERROR;
 
 
 typedef struct {
@@ -127,7 +126,7 @@ static void error(void) {
 
 void init_contactor(void) {
     _stateMachine.current = STATE_STANDBY;
-    xTaskCreate(contactor_control_task, "contactor", 300, NULL, 2, &contactor_control_task_handle);
+    xTaskCreate(contactor_control_task, "contactor", 300, NULL, 2, NULL);
 }
 
 static void contactor_control_task(void *p) {
@@ -151,25 +150,26 @@ static void contactor_control_task(void *p) {
 
         uint8_t contactorState = 0; //bit-coded: 00000xyz, x=pos, y=neg, z=pre
 
-        contactorStateMachineState = _stateMachine.current;
+        _contactorStateMachineState = _stateMachine.current;
 
+        battery_status_t *batteryStatus = get_battery_status(portMAX_DELAY);
+        if (batteryStatus != NULL) {
+            systemIsHealthy &= batteryStatus->amsStatus;
+            systemIsHealthy &= batteryStatus->amsResetStatus;
+            systemIsHealthy &= batteryStatus->imdStatus;
+            systemIsHealthy &= batteryStatus->imdResetStatus;
+            systemIsHealthy &= batteryStatus->shutdownCircuit;
 
-        if (batteryStatus_mutex_take(portMAX_DELAY)) {
-            systemIsHealthy &= batteryStatus.amsStatus;
-            systemIsHealthy &= batteryStatus.amsResetStatus;
-            systemIsHealthy &= batteryStatus.imdStatus;
-            systemIsHealthy &= batteryStatus.imdResetStatus;
-            systemIsHealthy &= batteryStatus.shutdownCircuit;
-
-            contactorState = ((batteryStatus.hvPosState & 0x01) << 2) | ((batteryStatus.hvNegState & 0x01) << 1) | ((batteryStatus.hvPreState & 0x01));
-            batteryStatus_mutex_give();
+            contactorState = ((batteryStatus->hvPosState & 0x01) << 2) | ((batteryStatus->hvNegState & 0x01) << 1) | ((batteryStatus->hvPreState & 0x01));
+            release_battery_status();
         }
 
-        if (sensor_mutex_take(pdMS_TO_TICKS(portMAX_DELAY))) {
-            if (fabs(sensorData.batteryVoltage - sensorData.dcLinkVoltage) <= (0.05f * sensorData.batteryVoltage)) {
+        sensor_data_t *sensorData = get_sensor_data(portMAX_DELAY);
+        if (sensorData != NULL) {
+            if (fabs(sensorData->batteryVoltage - sensorData->dcLinkVoltage) <= (0.05f * sensorData->batteryVoltage)) {
                 voltageEqual = true;
             }
-            sensor_mutex_give();
+            release_sensor_data();
         }
 
         switch (_stateMachine.current) {
@@ -231,16 +231,16 @@ static void contactor_control_task(void *p) {
         //Clear error if TS request clears and errors are gone
         if (_stateMachine.current == STATE_ERROR && !_tsActive) {
             _contactorEvent = EVENT_ERROR_CLEARED;
-            contactorStateMachineError = ERROR_NO_ERROR;
+            _contactorStateMachineError = ERROR_NO_ERROR;
         }
 
         if (!systemIsHealthy) {
             _contactorEvent = EVENT_ERROR;
-            contactorStateMachineError = ERROR_SYSTEM_NOT_HEALTHY;
+            _contactorStateMachineError = ERROR_SYSTEM_NOT_HEALTHY;
         }
         if (!relayPlausible) {
             _contactorEvent = EVENT_ERROR;
-            contactorStateMachineError = ERROR_CONTACTOR_IMPLAUSIBLE;
+            _contactorStateMachineError = ERROR_CONTACTOR_IMPLAUSIBLE;
         }
 
         for(size_t i = 0; i < sizeof(stateArray)/sizeof(stateArray[0]); i++) {
@@ -263,6 +263,13 @@ void request_tractive_system(bool active) {
     if (active) {
         _tsRequestTimeout = 0;
     }
+}
+
+state_t get_contactor_state(void) {
+    return _contactorStateMachineState;
+}
+error_t get_contactor_error(void) {
+    return _contactorStateMachineError;
 }
 
 
