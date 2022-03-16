@@ -58,12 +58,31 @@ typedef struct {
     bool avgTempValid;
 } can_data_t;
 
+void tick_hook(void) {
+    char* timestamp = NULL;
+    timestamp = rtc_get_timestamp(pdMS_TO_TICKS(1000));
+    if (timestamp != NULL) {
+        PRINTF("%s\n", timestamp);
+    }
+}
+
 void init_bmu(void) {
     init_sensors();
     init_contactor();
 
     init_safety();
     init_stacks();
+
+    rtc_date_time_t dateTime;
+    dateTime.second = 33;
+    dateTime.minute = 15;
+    dateTime.hour = 20;
+    dateTime.day = 16;
+    dateTime.month = 3;
+    dateTime.year = 2022;
+    rtc_register_tick_hook(tick_hook);
+    init_rtc();
+    rtc_set_date_time(&dateTime);
 
     xTaskCreate(can_send_task, "CAN", 900, NULL, 3, NULL);
     xTaskCreate(can_rec_task, "CAN rec", 600, NULL, 3, NULL);

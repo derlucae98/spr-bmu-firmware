@@ -1,3 +1,8 @@
+
+/* RTC: Microcrystal RV-3149-C3
+ * https://www.microcrystal.com/fileadmin/Media/Products/RTC/App.Manual/RV-3149-C3_App-Manual.pdf
+ */
+
 #ifndef RTC_H_
 #define RTC_H_
 #include <stdint.h>
@@ -10,7 +15,7 @@
 #include "gpio.h"
 #include "interrupts.h"
 
-#define RTC_SPI LPSPI1
+#define RTC_SPI LPSPI0
 
 typedef struct {
 	uint8_t day;
@@ -23,16 +28,16 @@ typedef struct {
 
 typedef void (*rtc_tick_hook_t)(void); //Function pointer for the tick hook
 
-extern rtc_date_time_t rtcDateTime;
-
 void rtc_register_tick_hook(rtc_tick_hook_t rtcTickHook);
-void rtc_init(void);
+void init_rtc(void);
 void rtc_sync(void);
-BaseType_t rtc_date_time_mutex_take(TickType_t blocktime);
-void rtc_date_time_mutex_give(void);
+
+rtc_date_time_t* get_rtc_date_time(TickType_t blocktime);
+void release_rtc_date_time(void);
+bool copy_rtc_date_time(rtc_date_time_t *dest, TickType_t blocktime);
+
 void rtc_set_date_time(rtc_date_time_t *dateTime);
 char* rtc_get_timestamp(TickType_t blocktime);
 void rtc_tick_task(void *p);
-
 
 #endif /* RTC_H_ */
