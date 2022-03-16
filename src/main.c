@@ -45,11 +45,18 @@ void sd_init_task(void *p) {
             char path[32];
             PRINTF("Creating file...\n");
 
-            uint16_t counter = 0;
+            uint8_t timeout = 10;
             do {
-                snprintf(path, 32, "logs/%4u.csv", counter);
+                rtc_date_time_t *dateTime = get_rtc_date_time(pdMS_TO_TICKS(1000));
+                if (dateTime != NULL) {
+                    snprintf(path, 32, "logs/%04u%02u%02u_%02u%02u%02u.csv", dateTime->year, dateTime->month, dateTime->day, dateTime->hour, dateTime->minute, dateTime->second);
+                    release_rtc_date_time();
+                }
                 status = f_open(&file, path, FA_WRITE | FA_OPEN_APPEND | FA_CREATE_NEW);
-                counter++;
+
+                if (--timeout == 0) {
+                    break;
+                }
             } while (status != FR_OK);
 
             if (status == FR_OK) {
@@ -301,9 +308,28 @@ void gpio_init(void) {
     set_pin_mux(SPI2_PORT, SPI2_SCK,  3);
 }
 
+void tick_hook(void) {
+    char* timestamp = NULL;
+    timestamp = rtc_get_timestamp(pdMS_TO_TICKS(1000));
+    if (timestamp != NULL) {
+        PRINTF("%s\n", timestamp);
+    }
+}
+
 void init_task(void *p) {
     (void) p;
     while (1) {
+        rtc_date_time_t dateTime;
+        dateTime.second = 33;
+        dateTime.minute = 15;
+        dateTime.hour = 20;
+        dateTime.day = 16;
+        dateTime.month = 3;
+        dateTime.year = 2022;
+        rtc_register_tick_hook(tick_hook);
+        init_rtc();
+        rtc_set_date_time(&dateTime);
+
         xTaskCreate(uart_rec_task, "uart_rec", 1000, NULL, 2, &uartRecTaskHandle);
         init_bmu();
         logger_init();
