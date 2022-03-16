@@ -29,9 +29,10 @@ typedef struct {
 
 void init_safety(void);
 void safety_task(void *p);
-BaseType_t batteryStatus_mutex_take(TickType_t blocktime);
-void batteryStatus_mutex_give(void);
-extern battery_status_t batteryStatus;
+battery_status_t* get_battery_status(TickType_t blocktime);
+void release_battery_status(void);
+bool copy_battery_status(battery_status_t *dest, TickType_t blocktime);
+
 
 
 

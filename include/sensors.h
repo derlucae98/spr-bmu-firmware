@@ -45,9 +45,9 @@ typedef struct {
     bool dcLinkVoltageValid;
 } sensor_data_t;
 
-BaseType_t sensor_mutex_take(TickType_t blocktime);
-void sensor_mutex_give(void);
-extern sensor_data_t sensorData;
+sensor_data_t* get_sensor_data(TickType_t blocktime);
+void release_sensor_data(void);
+bool copy_sensor_data(sensor_data_t *dest, TickType_t blocktime);
 
 bool init_sensors(void);
 sensor_calibration_t load_calibration(void);

@@ -42,9 +42,8 @@ typedef enum {
     ERROR_PRE_CHARGE_TIMEOUT
 } error_t;
 
-extern TaskHandle_t contactor_control_task_handle;
-extern state_t contactorStateMachineState;
-extern error_t contactorStateMachineError;
+state_t get_contactor_state(void);
+error_t get_contactor_error(void);
 void init_contactor(void);
 void request_tractive_system(bool active);
 

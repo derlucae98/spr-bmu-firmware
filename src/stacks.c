@@ -8,20 +8,21 @@
 #include "stacks.h"
 
 static SemaphoreHandle_t _stacksDataMutex = NULL;
-stacks_data_t stacksData;
+static stacks_data_t _stacksData;
 static uint8_t _balancingGates[NUMBEROFSLAVES][MAXCELLS];
 static bool _balanceEnable = false;
 
 static SemaphoreHandle_t _balancingGatesMutex = NULL;
-static bool balancingGatesMutex_take(TickType_t blocktime);
+static BaseType_t balancingGatesMutex_take(TickType_t blocktime);
 static void balancingGatesMutex_give(void);
+static BaseType_t stacks_mutex_take(TickType_t blocktime);
 
 uint32_t stacksUID[MAXSTACKS];
 
 void init_stacks(void) {
     _stacksDataMutex = xSemaphoreCreateMutex();
     configASSERT(_stacksDataMutex);
-    memset(&stacksData, 0, sizeof(stacks_data_t));
+    memset(&_stacksData, 0, sizeof(stacks_data_t));
 
     _balancingGatesMutex = xSemaphoreCreateMutex();
     configASSERT(_balancingGatesMutex);
@@ -121,10 +122,12 @@ void stacks_worker_task(void *p) {
         stacksDataLocal.temperatureValid = cellTemperatureValid;
 
 
-        if (stacks_mutex_take(portMAX_DELAY)) {
-            memcpy(&stacksData, &stacksDataLocal, sizeof(stacks_data_t));
-            stacks_mutex_give();
+        stacks_data_t *stacksData = get_stacks_data(portMAX_DELAY);
+        if (stacksData != NULL) {
+            memcpy(stacksData, &stacksDataLocal, sizeof(stacks_data_t));
+            release_stacks_data();
         }
+
         dbg1_clear();
 
 
@@ -148,13 +151,14 @@ void balancing_task(void *p) {
             uint16_t avgCellVoltage = 0;
             bool valid = false;
 
-            if (stacks_mutex_take(portMAX_DELAY)) {
-                memcpy(cellVoltage, stacksData.cellVoltage, sizeof(cellVoltage));
-                minCellVoltage = stacksData.minCellVolt;
-                maxCellVoltage = stacksData.maxCellVolt;
-                avgCellVoltage = stacksData.avgCellVolt;
-                valid = stacksData.voltageValid;
-                stacks_mutex_give();
+            stacks_data_t *stacksData = get_stacks_data(portMAX_DELAY);
+            if (stacksData != NULL) {
+                memcpy(cellVoltage, stacksData->cellVoltage, sizeof(cellVoltage));
+                minCellVoltage = stacksData->minCellVolt;
+                maxCellVoltage = stacksData->maxCellVolt;
+                avgCellVoltage = stacksData->avgCellVolt;
+                valid = stacksData->voltageValid;
+                release_stacks_data();
             }
 
             uint16_t delta = maxCellVoltage - minCellVoltage;
@@ -196,11 +200,30 @@ BaseType_t stacks_mutex_take(TickType_t blocktime) {
     return xSemaphoreTake(_stacksDataMutex, blocktime);
 }
 
-void stacks_mutex_give(void) {
+void release_stacks_data(void) {
     xSemaphoreGive(_stacksDataMutex);
 }
 
-static bool balancingGatesMutex_take(TickType_t blocktime) {
+stacks_data_t* get_stacks_data(TickType_t blocktime) {
+    if (stacks_mutex_take(blocktime)) {
+        return &_stacksData;
+    } else {
+        return NULL;
+    }
+}
+
+bool copy_stacks_data(stacks_data_t *dest, TickType_t blocktime) {
+    stacks_data_t *src = get_stacks_data(blocktime);
+    if (src != NULL) {
+        memcpy(dest, src, sizeof(stacks_data_t));
+        release_stacks_data();
+        return true;
+    } else {
+        return false;
+    }
+}
+
+static BaseType_t balancingGatesMutex_take(TickType_t blocktime) {
     if (!_balancingGatesMutex) {
         return pdFALSE;
     }

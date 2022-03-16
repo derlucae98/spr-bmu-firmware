@@ -85,20 +85,24 @@ void logger_task(void *p) {
 //                    rtc_date_time_mutex_give();
 //                }
                 //Get battery Data
-                if (stacks_mutex_take(pdMS_TO_TICKS(500))) {
-                    memcpy(loggingData.cellVoltage, stacksData.cellVoltage, sizeof(stacksData.cellVoltage));
-                    memcpy(loggingData.cellVoltageStatus, stacksData.cellVoltageStatus, sizeof(stacksData.cellVoltageStatus));
+                stacks_data_t* stacksData = get_stacks_data(pdMS_TO_TICKS(500));
+                if (stacksData != NULL) {
+                    memcpy(loggingData.cellVoltage, stacksData->cellVoltage, sizeof(stacksData->cellVoltage));
+                    memcpy(loggingData.cellVoltageStatus, stacksData->cellVoltageStatus, sizeof(stacksData->cellVoltageStatus));
 
-                    loggingData.minCellVolt = stacksData.minCellVolt;
-                    loggingData.maxCellVolt = stacksData.maxCellVolt;
-                    loggingData.avgCellVolt = stacksData.avgCellVolt;
-                    memcpy(loggingData.temperature, stacksData.temperature, sizeof(stacksData.temperature));
-                    stacks_mutex_give();
+                    loggingData.minCellVolt = stacksData->minCellVolt;
+                    loggingData.maxCellVolt = stacksData->maxCellVolt;
+                    loggingData.avgCellVolt = stacksData->avgCellVolt;
+                    memcpy(loggingData.temperature, stacksData->temperature, sizeof(stacksData->temperature));
+                    release_stacks_data();
                 }
-                if (sensor_mutex_take(pdMS_TO_TICKS(50))) {
-                    loggingData.current = sensorData.current;
-                    sensor_mutex_give();
+
+                sensor_data_t *sensorData = get_sensor_data(portMAX_DELAY);
+                if (sensorData != NULL) {
+                    loggingData.current = sensorData->current;
+                    release_sensor_data();
                 }
+
                 buffer = prepare_data(&dateTime, &loggingData);
                 if (!sdInitPending) {
                     UINT bw;
