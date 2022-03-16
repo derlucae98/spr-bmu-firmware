@@ -37,16 +37,37 @@ void stacks_worker_task(void *p) {
     memset(&stacksDataLocal, 0, sizeof(stacks_data_t));
     static uint8_t pecVoltage[MAXSTACKS][MAXCELLS];
     TickType_t xLastWakeTime = xTaskGetTickCount();
-    const TickType_t xPeriod = pdMS_TO_TICKS(200);
+    const TickType_t xPeriod = pdMS_TO_TICKS(100);
+
+    uint8_t cycle = 0;
 
     while (1) {
 
         dbg1_set();
+
         ltc6811_wake_daisy_chain();
+
+
         ltc6811_set_balancing_gates(_balancingGates);
-        ltc6811_open_wire_check(stacksDataLocal.cellVoltageStatus);
+
+
+        switch (cycle) {
+        case 0:
+            ltc6811_get_temperatures_in_degC(stacksDataLocal.temperature, stacksDataLocal.temperatureStatus);
+            cycle = 1;
+            break;
+        case 1:
+            ltc6811_get_temperatures_in_degC(stacksDataLocal.temperature, stacksDataLocal.temperatureStatus);
+            cycle = 2;
+            break;
+        case 2:
+            ltc6811_open_wire_check(stacksDataLocal.cellVoltageStatus);
+            cycle = 0;
+            break;
+        }
+
         ltc6811_get_voltage(stacksDataLocal.cellVoltage, pecVoltage);
-        ltc6811_get_temperatures_in_degC(stacksDataLocal.temperature, stacksDataLocal.temperatureStatus);
+
 
         // Error priority:
         // PEC error
@@ -105,7 +126,6 @@ void stacks_worker_task(void *p) {
             stacks_mutex_give();
         }
         dbg1_clear();
-
 
 
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
