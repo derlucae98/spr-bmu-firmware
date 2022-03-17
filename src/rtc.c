@@ -47,7 +47,7 @@
 #define CLOCK_WEEKDAYS          (0x0C)
 #define CLOCK_MONTHS            (0x0D)
 #define CLOCK_YEARS             (0x0E)
-#define CLOCK_24_HOUR_MODE      (1 << 6)
+#define CLOCK_12_HOUR_MODE      (1 << 6)
 #define CLOCK_AM_PM             (1 << 5)
 
 #define ALARM_SECOND            (0x10)
@@ -173,7 +173,7 @@ void rtc_set_date_time(rtc_date_time_t *dateTime) {
     buffer[0] = COMMAND_WRITE(CLOCK_SECONDS);
     buffer[1] = DECTOSEC(dateTime->second);
     buffer[2] = DECTOMIN(dateTime->minute);
-    buffer[3] = DECTOHOUR(dateTime->hour) | CLOCK_24_HOUR_MODE;
+    buffer[3] = DECTOHOUR(dateTime->hour);
     buffer[4] = DECTODAY(dateTime->day);
     buffer[5] = 0; //Weekday
     buffer[6] = DECTOMON(dateTime->month);
