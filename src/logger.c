@@ -8,24 +8,21 @@ static void write_header(void);
 static void logger_task(void *p);
 
 typedef struct {
+    rtc_date_time_t timestamp;
     uint16_t cellVoltage[MAXSTACKS][MAXCELLS];
-    uint8_t cellVoltageStatus[MAXSTACKS][MAXCELLS+1];
-    uint16_t minCellVolt;
-    bool minCellVoltValid;
-    uint16_t maxCellVolt;
-    bool maxCellVoltValid;
-    uint16_t avgCellVolt;
-    bool avgCellVoltValid;
-    uint16_t minTemperature;
-    bool minTemperatureValid;
-    uint16_t maxTemperature;
-    bool maxTemperatureValid;
-    uint16_t avgTemperature;
-    bool avgTemperatureValid;
-    float current;
     uint16_t temperature[MAXSTACKS][MAXTEMPSENS];
+    float current;
+    float batteryVoltage;
+    float dcLinkVoltage;
+    uint16_t minCellVolt;
+    uint16_t maxCellVolt;
+    uint16_t avgCellVolt;
+    uint16_t minTemperature;
+    uint16_t maxTemperature;
+    uint16_t avgTemperature;
+    error_t stateMachineError;
+    state_t stateMachineState;
 } logging_data_t;
-
 
 static char* prepare_data(rtc_date_time_t *dateTime, logging_data_t *loggingData);
 
@@ -88,7 +85,7 @@ void logger_task(void *p) {
                 stacks_data_t* stacksData = get_stacks_data(pdMS_TO_TICKS(500));
                 if (stacksData != NULL) {
                     memcpy(loggingData.cellVoltage, stacksData->cellVoltage, sizeof(stacksData->cellVoltage));
-                    memcpy(loggingData.cellVoltageStatus, stacksData->cellVoltageStatus, sizeof(stacksData->cellVoltageStatus));
+
 
                     loggingData.minCellVolt = stacksData->minCellVolt;
                     loggingData.maxCellVolt = stacksData->maxCellVolt;

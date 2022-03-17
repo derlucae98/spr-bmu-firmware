@@ -1,6 +1,8 @@
 #ifndef LOGGER_H_
 #define LOGGER_H_
 
+
+
 #include <stdio.h>
 #include <stdbool.h>
 #include "S32K146.h"
@@ -14,6 +16,9 @@
 #include "config.h"
 #include "stacks.h"
 #include "sensors.h"
+#include "base64.h"
+#include "contactor.h"
+
 
 extern volatile bool sdInitPending;
 void logger_init(void);
