@@ -319,16 +319,8 @@ void tick_hook(void) {
 void init_task(void *p) {
     (void) p;
     while (1) {
-        rtc_date_time_t dateTime;
-        dateTime.second = 33;
-        dateTime.minute = 15;
-        dateTime.hour = 20;
-        dateTime.day = 16;
-        dateTime.month = 3;
-        dateTime.year = 2022;
         rtc_register_tick_hook(tick_hook);
         init_rtc();
-        rtc_set_date_time(&dateTime);
 
         xTaskCreate(uart_rec_task, "uart_rec", 1000, NULL, 2, &uartRecTaskHandle);
         init_bmu();
