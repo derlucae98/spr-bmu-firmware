@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include "ff.h"
 #include "logger.h"
+#include "rtc.h"
 
 volatile bool sdInitPending = true;
 static TaskHandle_t _sdInitTaskHandle = NULL;
@@ -44,11 +45,18 @@ void sd_init_task(void *p) {
             char path[32];
             PRINTF("Creating file...\n");
 
-            uint16_t counter = 0;
+            uint8_t timeout = 10;
             do {
-                snprintf(path, 32, "logs/%4u.csv", counter);
+                rtc_date_time_t *dateTime = get_rtc_date_time(pdMS_TO_TICKS(1000));
+                if (dateTime != NULL) {
+                    snprintf(path, 32, "logs/%04u%02u%02u_%02u%02u%02u.csv", dateTime->year, dateTime->month, dateTime->day, dateTime->hour, dateTime->minute, dateTime->second);
+                    release_rtc_date_time();
+                }
                 status = f_open(&file, path, FA_WRITE | FA_OPEN_APPEND | FA_CREATE_NEW);
-                counter++;
+
+                if (--timeout == 0) {
+                    break;
+                }
             } while (status != FR_OK);
 
             if (status == FR_OK) {
@@ -79,7 +87,6 @@ void housekeeping_task(void *p) {
         if ((counter % 20) == 0) {
             //One second counter
             toggle_pin(LED_WARNING_PORT, LED_WARNING_PIN);
-            logger_tick_hook();
         }
 
         //SD insertion or removal detection
@@ -201,6 +208,23 @@ static void uart_rec(char* s) {
     if (strcmp(tokens[0], "help") == 0) {
         PRINTF("cal <curr,ubatt,ulink> <ref,gain,offset> <val>\n");
     }
+
+    unsigned int input[6];
+    if (strcmp(tokens[0], "time") == 0) {
+        if (strcmp(tokens[1], "set") == 0) {
+            sscanf(tokens[2], "%u-%u-%u", &input[0], &input[1], &input[2]);
+            sscanf(tokens[3], "%u:%u:%u", &input[3], &input[4], &input[5]);
+            PRINTF("Setting date and time to %04u-%02u-%02u %02u:%02u:%02u\n", input[0], input[1], input[2], input[3], input[4], input[5]);
+            rtc_date_time_t dateTime;
+            dateTime.year = input[0];
+            dateTime.month = input[1];
+            dateTime.day = input[2];
+            dateTime.hour = input[3];
+            dateTime.minute = input[4];
+            dateTime.second = input[5];
+            rtc_set_date_time(&dateTime);
+        }
+    }
     write_calibration(calibration);
     reload_calibration();
 
@@ -283,10 +307,22 @@ void gpio_init(void) {
     set_pin_mux(SPI2_PORT, SPI2_SCK,  3);
 }
 
+void tick_hook(void) {
+    char* timestamp = NULL;
+    timestamp = rtc_get_timestamp(pdMS_TO_TICKS(1000));
+    if (timestamp != NULL) {
+        PRINTF("%s\n", timestamp);
+        logger_tick_hook();
+    }
+}
+
 void init_task(void *p) {
     (void) p;
     while (1) {
-        //xTaskCreate(uart_rec_task, "uart_rec", 1000, NULL, 2, &uartRecTaskHandle);
+        rtc_register_tick_hook(tick_hook);
+        init_rtc();
+
+        xTaskCreate(uart_rec_task, "uart_rec", 1000, NULL, 2, &uartRecTaskHandle);
         init_bmu();
         logger_init();
         xTaskCreate(sd_init_task, "sd init", 400, NULL, 2, &_sdInitTaskHandle);
@@ -314,7 +350,7 @@ int main(void)
     set_pin(CS_UBATT_PORT, CS_UBATT_PIN);
     set_pin(CS_ULINK_PORT, CS_ULINK_PIN);
 
-    spi_init(LPSPI0, LPSPI_PRESC_1, LPSPI_MODE_0);
+    spi_init(LPSPI0, LPSPI_PRESC_2, LPSPI_MODE_0);
     spi_init(LPSPI1, LPSPI_PRESC_8, LPSPI_MODE_0);
     spi_init(LPSPI2, LPSPI_PRESC_8, LPSPI_MODE_3);
 

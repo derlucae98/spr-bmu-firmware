@@ -4,30 +4,26 @@ static TaskHandle_t _loggerTaskHandle = NULL;
 static volatile bool _loggerActive = false;
 static bool _terminateRequest = false;
 static bool _terminated = false;
-static void write_header(void);
 static void logger_task(void *p);
 
 typedef struct {
+    rtc_date_time_t timestamp;
     uint16_t cellVoltage[MAXSTACKS][MAXCELLS];
-    uint8_t cellVoltageStatus[MAXSTACKS][MAXCELLS+1];
-    uint16_t minCellVolt;
-    bool minCellVoltValid;
-    uint16_t maxCellVolt;
-    bool maxCellVoltValid;
-    uint16_t avgCellVolt;
-    bool avgCellVoltValid;
-    uint16_t minTemperature;
-    bool minTemperatureValid;
-    uint16_t maxTemperature;
-    bool maxTemperatureValid;
-    uint16_t avgTemperature;
-    bool avgTemperatureValid;
-    float current;
     uint16_t temperature[MAXSTACKS][MAXTEMPSENS];
-} logging_data_t;
-
-
-static char* prepare_data(rtc_date_time_t *dateTime, logging_data_t *loggingData);
+    float current;
+    float batteryVoltage;
+    float dcLinkVoltage;
+    uint16_t minCellVolt;
+    uint16_t maxCellVolt;
+    uint16_t avgCellVolt;
+    uint16_t minTemperature;
+    uint16_t maxTemperature;
+    uint16_t avgTemperature;
+    uint8_t stateMachineError;
+    uint8_t stateMachineState;
+    uint16_t minSoc;
+    uint16_t maxSoc;
+} __attribute__((packed)) logging_data_t;
 
 static FIL *_file = NULL;
 
@@ -47,7 +43,6 @@ void logger_stop(void) {
 
 void logger_set_file(FIL *file) {
     _file = file;
-    write_header();
 }
 
 bool logger_is_active(void) {
@@ -69,46 +64,53 @@ void logger_tick_hook(void) {
 
 void logger_task(void *p) {
     (void) p;
-    char *buffer;
-    rtc_date_time_t dateTime;
     logging_data_t loggingData;
     memset(&loggingData, 0, sizeof(logging_data_t));
-    memset(&dateTime, 0, sizeof(rtc_date_time_t));
+
 
     while (1) {
         if (ulTaskNotifyTake(pdFALSE, pdMS_TO_TICKS(2000))) {
             dbg4_set();
             if (_loggerActive) {
-                //Get timestamp
-//                if (rtc_date_time_mutex_take(pdMS_TO_TICKS(50))) {
-//                    memcpy(&dateTime, &rtcDateTime, sizeof(rtc_date_time_t));
-//                    rtc_date_time_mutex_give();
-//                }
-                //Get battery Data
+
+                copy_rtc_date_time(&loggingData.timestamp, pdMS_TO_TICKS(5));
+
                 stacks_data_t* stacksData = get_stacks_data(pdMS_TO_TICKS(500));
                 if (stacksData != NULL) {
-                    memcpy(loggingData.cellVoltage, stacksData->cellVoltage, sizeof(stacksData->cellVoltage));
-                    memcpy(loggingData.cellVoltageStatus, stacksData->cellVoltageStatus, sizeof(stacksData->cellVoltageStatus));
-
+                    memcpy(loggingData.cellVoltage, stacksData->cellVoltage, sizeof(loggingData.cellVoltage));
+                    memcpy(loggingData.temperature, stacksData->temperature, sizeof(loggingData.temperature));
+                    loggingData.minSoc = stacksData->minSoc;
+                    loggingData.maxSoc = stacksData->maxSoc;
                     loggingData.minCellVolt = stacksData->minCellVolt;
                     loggingData.maxCellVolt = stacksData->maxCellVolt;
                     loggingData.avgCellVolt = stacksData->avgCellVolt;
-                    memcpy(loggingData.temperature, stacksData->temperature, sizeof(stacksData->temperature));
+                    loggingData.minTemperature = stacksData->minTemperature;
+                    loggingData.maxTemperature = stacksData->maxTemperature;
+                    loggingData.avgTemperature = stacksData->avgTemperature;
                     release_stacks_data();
                 }
 
                 sensor_data_t *sensorData = get_sensor_data(portMAX_DELAY);
                 if (sensorData != NULL) {
                     loggingData.current = sensorData->current;
+                    loggingData.batteryVoltage = sensorData->batteryVoltage;
+                    loggingData.dcLinkVoltage = sensorData->dcLinkVoltage;
                     release_sensor_data();
                 }
 
-                buffer = prepare_data(&dateTime, &loggingData);
+                loggingData.stateMachineState = get_contactor_state();
+                loggingData.stateMachineError = get_contactor_error();
+
+                size_t len;
+                char *buf = base64_encode((unsigned char*)&loggingData, sizeof(loggingData), &len);
+
                 if (!sdInitPending) {
                     UINT bw;
-                    f_write(_file, buffer, strlen(buffer), &bw);
+                    volatile TickType_t start = xTaskGetTickCount();
+                    f_write(_file, buf, len, &bw);
                     f_sync(_file);
-                    //PRINTF("Logger: %lu bytes written!\n", bw);
+                    volatile TickType_t end = xTaskGetTickCount();
+                    PRINTF("Logger: %lu bytes written! Took %lu ms\n", bw, end - start);
                 }
             }
             if (_terminateRequest) {
@@ -124,54 +126,3 @@ void logger_task(void *p) {
     }
 }
 
-char* prepare_data(rtc_date_time_t *dateTime, logging_data_t *loggingData) {
-    static char buffer[2500]; // Large enough to hold all values
-    memset(buffer, 0xFF, sizeof(buffer)); //Clear buffer
-
-    uint16_t offset = 0;
-
-    //Counter
-    static uint32_t counter;
-
-    snprintf(buffer, 8, "%6lu;", counter);
-    offset += 7; // Length - 1, following string overrides termination character to build one long string
-
-
-    //Cell voltage 1 to 144
-    for (size_t cell = 0; cell < NUMBEROFSLAVES * MAXCELLS; cell++) {
-        snprintf(buffer + offset, 7, "%5.3f;", (float)(loggingData->cellVoltage[cell / MAXCELLS][cell % MAXCELLS] * 0.001f));
-        offset += 6;
-    }
-
-    //Min, Max, Avg cell volt
-    snprintf(buffer + offset, 7, "%5.3f;", (float)(loggingData->minCellVolt * 0.001f));
-    offset += 6;
-    snprintf(buffer + offset, 7, "%5.3f;", (float)(loggingData->maxCellVolt * 0.001f));
-    offset += 6;
-    snprintf(buffer + offset, 7, "%5.3f;", (float)(loggingData->avgCellVolt * 0.001f));
-    offset += 6;
-    snprintf(buffer + offset, 8, "%6.2f;", loggingData->current);
-    offset += 7;
-
-    //Cell temperature
-    for (size_t cell = 0; cell < NUMBEROFSLAVES * MAXTEMPSENS; cell++) {
-        snprintf(buffer + offset, 6, "%4.1f;", (float)(loggingData->temperature[cell / MAXTEMPSENS][cell % MAXTEMPSENS] * 0.1f));
-        offset += 5;
-    }
-    snprintf(buffer + offset, 3, "\r\n");
-
-    counter++;
-    return buffer;
-}
-
-static void write_header(void) {
-    static const char *header = "Count;Cell 1;Cell 2;Cell 3;Cell 4;Cell 5;Cell 6;Cell 7;Cell 8;"
-                                    "Cell 9;Cell 10;Cell 11;Cell 12;Min;Max;Avg;curr;Temp 1;Temp 2;Temp 3;Temp 4;Temp 5;Temp 6;Temp 7;Temp 8;"
-                                    "Temp 9;Temp 10;Temp 11;Temp 12;Temp 13;Temp 14\r\n";
-
-    UINT bw;
-    PRINTF("Writing header...\n");
-    DSTATUS stat = f_write(_file, header, strlen(header), &bw);
-    f_sync(_file);
-    PRINTF("Status: %u, %u bytes written!\n", stat, bw);
-}

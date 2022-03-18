@@ -18,8 +18,8 @@ static void error(void);
 
 static bool _tsActive = false;
 static uint8_t _tsRequestTimeout = 0;
-static state_t _contactorStateMachineState = STATE_STANDBY;
-static error_t _contactorStateMachineError = ERROR_NO_ERROR;
+static uint8_t _contactorStateMachineState = STATE_STANDBY;
+static uint8_t _contactorStateMachineError = ERROR_NO_ERROR;
 
 
 typedef struct {
