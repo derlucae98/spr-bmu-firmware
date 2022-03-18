@@ -49,7 +49,7 @@ void sd_init_task(void *p) {
             do {
                 rtc_date_time_t *dateTime = get_rtc_date_time(pdMS_TO_TICKS(1000));
                 if (dateTime != NULL) {
-                    snprintf(path, 32, "logs/%04u%02u%02u_%02u%02u%02u.csv", dateTime->year, dateTime->month, dateTime->day, dateTime->hour, dateTime->minute, dateTime->second);
+                    snprintf(path, 32, "logs/%04u%02u%02u_%02u%02u%02u.log", dateTime->year, dateTime->month, dateTime->day, dateTime->hour, dateTime->minute, dateTime->second);
                     release_rtc_date_time();
                 }
                 status = f_open(&file, path, FA_WRITE | FA_OPEN_APPEND | FA_CREATE_NEW);
