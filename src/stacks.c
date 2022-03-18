@@ -47,10 +47,8 @@ void stacks_worker_task(void *p) {
         dbg1_set();
 
         ltc6811_wake_daisy_chain();
-
-
+        ltc6811_get_voltage(stacksDataLocal.cellVoltage, pecVoltage);
         ltc6811_set_balancing_gates(_balancingGates);
-
 
         switch (cycle) {
         case 0:
@@ -66,9 +64,6 @@ void stacks_worker_task(void *p) {
             cycle = 0;
             break;
         }
-
-        ltc6811_get_voltage(stacksDataLocal.cellVoltage, pecVoltage);
-
 
         // Error priority:
         // PEC error
@@ -148,7 +143,6 @@ void balancing_task(void *p) {
             uint16_t cellVoltage[MAXSTACKS][MAXCELLS];
             uint16_t maxCellVoltage = 0;
             uint16_t minCellVoltage = 0;
-            uint16_t avgCellVoltage = 0;
             bool valid = false;
 
             stacks_data_t *stacksData = get_stacks_data(portMAX_DELAY);
@@ -156,7 +150,6 @@ void balancing_task(void *p) {
                 memcpy(cellVoltage, stacksData->cellVoltage, sizeof(cellVoltage));
                 minCellVoltage = stacksData->minCellVolt;
                 maxCellVoltage = stacksData->maxCellVolt;
-                avgCellVoltage = stacksData->avgCellVolt;
                 valid = stacksData->voltageValid;
                 release_stacks_data();
             }
@@ -171,7 +164,7 @@ void balancing_task(void *p) {
                 //Balance only, if difference is greater than 5 mV
                 for (size_t stack = 0; stack < NUMBEROFSLAVES; stack++) {
                     for (size_t cell = 0; cell < MAXCELLS; cell++) {
-                        if (cellVoltage[stack][cell] > (avgCellVoltage + 5)) {
+                        if (cellVoltage[stack][cell] > (minCellVoltage + 5)) {
                             balancingGates[stack][cell] = 1;
                         } else {
                             balancingGates[stack][cell] = 0;
