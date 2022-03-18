@@ -87,7 +87,6 @@ void housekeeping_task(void *p) {
         if ((counter % 20) == 0) {
             //One second counter
             toggle_pin(LED_WARNING_PORT, LED_WARNING_PIN);
-            logger_tick_hook();
         }
 
         //SD insertion or removal detection
@@ -313,6 +312,7 @@ void tick_hook(void) {
     timestamp = rtc_get_timestamp(pdMS_TO_TICKS(1000));
     if (timestamp != NULL) {
         PRINTF("%s\n", timestamp);
+        logger_tick_hook();
     }
 }
 

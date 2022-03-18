@@ -19,11 +19,11 @@ typedef struct {
     uint16_t minTemperature;
     uint16_t maxTemperature;
     uint16_t avgTemperature;
-    error_t stateMachineError;
-    state_t stateMachineState;
+    uint8_t stateMachineError;
+    uint8_t stateMachineState;
     uint16_t minSoc;
     uint16_t maxSoc;
-} logging_data_t;
+} __attribute__((packed)) logging_data_t;
 
 static FIL *_file = NULL;
 
@@ -97,6 +97,9 @@ void logger_task(void *p) {
                     loggingData.dcLinkVoltage = sensorData->dcLinkVoltage;
                     release_sensor_data();
                 }
+
+                loggingData.stateMachineState = get_contactor_state();
+                loggingData.stateMachineError = get_contactor_error();
 
                 size_t len;
                 char *buf = base64_encode((unsigned char*)&loggingData, sizeof(loggingData), &len);
