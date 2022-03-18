@@ -82,6 +82,7 @@ static void can_send_task(void *p) {
     can_data_t canData;
     memset(&canData, 0, sizeof(can_data_t));
     uint8_t balance[12][MAXCELLS];
+    memset(balance, 0, sizeof(balance));
 
     while (1) {
         dbg5_set();
@@ -298,19 +299,6 @@ static void can_send_task(void *p) {
         msg.payload[2] = ((balance[counter][3] & 0x01) << 7) | ((balance[counter][2] & 0x01) << 6) | ((balance[counter][1] & 0x01) << 5) | ((balance[counter][0] & 0x01) << 4);
         msg.DLC = 3;
         can_send(CAN0, &msg);
-//        if (counter < 3) {
-//
-//            get_balancing_status(balance);
-//            uint64_t gates[3] = {0ULL};
-//            for (size_t i = 0; i < (12 * MAXCELLS); i++) {
-//                gates[i / 48] |= (balance[i / 12][i % MAXCELLS] & 0x01) << (i % 48);
-//            }
-//                msg.payload[0] = counter;
-//                memcpy(msg.payload + 1, &gates[counter], 6);
-//                msg.ID = 0x00E;
-//                msg.DLC = 7;
-//                can_send(CAN0, &msg);
-//        }
 
         if (counter < MAXSTACKS-1) {
             counter++;
