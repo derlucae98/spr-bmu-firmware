@@ -129,7 +129,7 @@ soc_stats_t get_soc_stats(void) {
 static void soc_task(void *p) {
     (void) p;
     const TickType_t period = pdMS_TO_TICKS(25);
-    const float chargeTimeDelta = (period / 1000.0f); //Seconds
+
     TickType_t lastWakeTime = xTaskGetTickCount();
 
     while (1) {
@@ -146,7 +146,7 @@ static void soc_task(void *p) {
         cellSoc_t* soc = get_soc(pdMS_TO_TICKS(15));
         if (currentValid && soc != NULL) {
 
-            float chargeDelta = current * chargeTimeDelta;
+            float chargeDelta = current * period * 2.7777E-4; //Charge delta in mAh
             float socDelta = chargeDelta / NOMINAL_CELL_CAPACITY_mAh;
 
             for (size_t stack = 0; stack < NUMBEROFSLAVES; stack++) {
