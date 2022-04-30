@@ -102,12 +102,6 @@ static void can_send_task(void *p) {
             canData.avgCellVolt = stacksData->avgCellVolt;
             canData.avgCellVoltValid = stacksData->voltageValid;
 
-            canData.minSoc = (uint16_t)(stacksData->minSoc * 10);
-            canData.minSocValid = stacksData->minSocValid;
-            canData.maxSoc = (uint16_t)(stacksData->maxSoc * 10);
-            canData.maxSocValid = stacksData->maxSocValid;
-
-
             canData.minTemp = stacksData->minTemperature;
             canData.minTempValid = stacksData->temperatureValid;
             canData.maxTemp = stacksData->maxTemperature;

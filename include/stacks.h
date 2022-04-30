@@ -22,11 +22,6 @@ typedef struct {
     uint16_t temperature[MAXSTACKS][MAXTEMPSENS];
     uint8_t temperatureStatus[MAXSTACKS][MAXTEMPSENS];
     uint16_t packVoltage;
-    float soc[MAXSTACKS][MAXCELLS];
-    float minSoc;
-    bool minSocValid;
-    float maxSoc;
-    bool maxSocValid;
 
     uint16_t minCellVolt;
     uint16_t maxCellVolt;

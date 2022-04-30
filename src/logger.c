@@ -79,8 +79,7 @@ void logger_task(void *p) {
                 if (stacksData != NULL) {
                     memcpy(loggingData.cellVoltage, stacksData->cellVoltage, sizeof(loggingData.cellVoltage));
                     memcpy(loggingData.temperature, stacksData->temperature, sizeof(loggingData.temperature));
-                    loggingData.minSoc = stacksData->minSoc;
-                    loggingData.maxSoc = stacksData->maxSoc;
+
                     loggingData.minCellVolt = stacksData->minCellVolt;
                     loggingData.maxCellVolt = stacksData->maxCellVolt;
                     loggingData.avgCellVolt = stacksData->avgCellVolt;
