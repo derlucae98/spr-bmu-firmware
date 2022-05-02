@@ -23,6 +23,7 @@
 #include "stacks.h"
 #include "safety.h"
 #include "rtc.h"
+#include "soc.h"
 
 
 
