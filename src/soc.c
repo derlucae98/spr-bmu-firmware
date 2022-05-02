@@ -10,6 +10,7 @@
 static void soc_task(void *p);
 static void load_soc(void);
 static void store_soc(void);
+static void init_nvm(void);
 static float max_soc(float cellSoc[][MAXCELLS], uint8_t stacks);
 static float min_soc(float cellSoc[][MAXCELLS], uint8_t stacks);
 static float avg_soc(float cellSoc[][MAXCELLS], uint8_t stacks);
@@ -27,12 +28,12 @@ static SemaphoreHandle_t _socMutex = NULL;
 static const float socLookup[SOC_LOOKUP_SIZE][2];
 
 
-void soc_init(void) {
-    xTaskCreate(soc_task, "soc", SOC_TASK_STACK, NULL, SOC_TASK_PRIO, NULL);
-    memset(_soc, 0, sizeof(_soc));
+void init_soc(void) {
+    memset(&_soc, 0, sizeof(cellSoc_t));
     _socMutex = xSemaphoreCreateMutex();
     configASSERT(_socMutex);
     load_soc();
+    xTaskCreate(soc_task, "soc", SOC_TASK_STACK, NULL, SOC_TASK_PRIO, NULL);
 }
 
 bool soc_lookup(void) {
@@ -69,7 +70,7 @@ bool soc_lookup(void) {
 
             lutIndex = find_lut_element(voltage);
             socCurrent = linear_interpolate(voltage, lutIndex);
-            *soc[stack][cell] = socCurrent;
+            soc->cellSoc[stack][cell] = socCurrent;
         }
     }
 
@@ -112,9 +113,9 @@ soc_stats_t get_soc_stats(void) {
         return stats;
     }
 
-    float minSoc = min_soc(*soc, NUMBEROFSLAVES);
-    float maxSoc = max_soc(*soc, NUMBEROFSLAVES);
-    float avgSoc = avg_soc(*soc, NUMBEROFSLAVES);
+    float minSoc = min_soc(soc->cellSoc, NUMBEROFSLAVES);
+    float maxSoc = max_soc(soc->cellSoc, NUMBEROFSLAVES);
+    float avgSoc = avg_soc(soc->cellSoc, NUMBEROFSLAVES);
 
     release_soc();
 
@@ -129,6 +130,9 @@ soc_stats_t get_soc_stats(void) {
 static void soc_task(void *p) {
     (void) p;
     const TickType_t period = pdMS_TO_TICKS(25);
+    const TickType_t savePeriod = pdMS_TO_TICKS(180000); //3 minutes
+    TickType_t saveCounter = 0;
+
 
     TickType_t lastWakeTime = xTaskGetTickCount();
 
@@ -144,25 +148,38 @@ static void soc_task(void *p) {
         }
 
         cellSoc_t* soc = get_soc(pdMS_TO_TICKS(15));
-        if (currentValid && soc != NULL) {
+        if (soc != NULL) {
+            if (currentValid) {
+                current = 100.0f;
+                float chargeDelta = current * period * 2.7777E-4; //Charge delta in mAh
+                float socDelta = 100.0f * chargeDelta / NOMINAL_CELL_CAPACITY_mAh; //in percent
 
-            float chargeDelta = current * period * 2.7777E-4; //Charge delta in mAh
-            float socDelta = chargeDelta / NOMINAL_CELL_CAPACITY_mAh;
-
-            for (size_t stack = 0; stack < NUMBEROFSLAVES; stack++) {
-                for (size_t cell = 0; cell < MAXCELLS; cell++) {
-                    *soc[stack][cell] += socDelta;
-                    //Limit values to 0 to 100 percent
-                    if (*soc[stack][cell] < 0.0f) {
-                        *soc[stack][cell] = 0.0f;
-                    }
-                    if (*soc[stack][cell] > 100.0f) {
-                        *soc[stack][cell] = 100.0f;
+                for (size_t stack = 0; stack < NUMBEROFSLAVES; stack++) {
+                    for (size_t cell = 0; cell < MAXCELLS; cell++) {
+                        soc->cellSoc[stack][cell] += socDelta;
+                        //Limit values to 0 to 100 percent
+                        if (soc->cellSoc[stack][cell] < 0.0f) {
+                            soc->cellSoc[stack][cell] = 0.0f;
+                        }
+                        if (soc->cellSoc[stack][cell] > 100.0f) {
+                            soc->cellSoc[stack][cell] = 100.0f;
+                        }
                     }
                 }
+            } else {
+                PRINTF("Current invalid!\n");
             }
 
             release_soc();
+
+            saveCounter++;
+            if (saveCounter >= (savePeriod / period)) {
+                saveCounter = 0;
+                store_soc();
+            }
+
+        } else {
+            PRINTF("Couldn't obtain SOC mutex!\n");
         }
 
         vTaskDelayUntil(&lastWakeTime, period);
@@ -172,6 +189,7 @@ static void soc_task(void *p) {
 static void load_soc(void) {
     uint8_t pageBuffer[EEPROM_PAGESIZE];
     uint16_t crcShould;
+    bool crcError = false;
 
     cellSoc_t* soc = get_soc(pdMS_TO_TICKS(300));
 
@@ -180,81 +198,121 @@ static void load_soc(void) {
         configASSERT(0);
     }
 
-    eeprom_read_array(pageBuffer, EEPROM_SOC_PAGE_1, EEPROM_PAGESIZE);
-    crcShould = (pageBuffer[254] << 8) | pageBuffer[255];
+    if (eeprom_mutex_take(pdMS_TO_TICKS(1000))) {
+        eeprom_read_array(pageBuffer, EEPROM_SOC_PAGE_1, EEPROM_PAGESIZE);
+        crcShould = (pageBuffer[254] << 8) | pageBuffer[255];
 
-    if (!eeprom_check_crc(pageBuffer, sizeof(pageBuffer) - sizeof(uint16_t), crcShould)) {
-        PRINTF("CRC error while loading SOC data!\n");
-        configASSERT(0);
+        crcError |= !eeprom_check_crc(pageBuffer, sizeof(pageBuffer) - sizeof(uint16_t), crcShould);
+
+        memcpy(&soc->cellSoc[0][0], pageBuffer, 48 * sizeof(float));
+
+        eeprom_read_array(pageBuffer, EEPROM_SOC_PAGE_2, EEPROM_PAGESIZE);
+        crcShould = (pageBuffer[254] << 8) | pageBuffer[255];
+
+        crcError |= !eeprom_check_crc(pageBuffer, sizeof(pageBuffer) - sizeof(uint16_t), crcShould);
+
+        memcpy(&soc->cellSoc[4][0], pageBuffer, 48 * sizeof(float));
+
+        eeprom_read_array(pageBuffer, EEPROM_SOC_PAGE_3, EEPROM_PAGESIZE);
+        crcShould = (pageBuffer[254] << 8) | pageBuffer[255];
+
+        crcError |= !eeprom_check_crc(pageBuffer, sizeof(pageBuffer) - sizeof(uint16_t), crcShould);
+
+        memcpy(&soc->cellSoc[8][0], pageBuffer, 48 * sizeof(float));
+        eeprom_mutex_give();
     }
-
-    memcpy(*soc, pageBuffer, 48 * sizeof(float));
-
-    eeprom_read_array(pageBuffer, EEPROM_SOC_PAGE_2, EEPROM_PAGESIZE);
-    crcShould = (pageBuffer[254] << 8) | pageBuffer[255];
-
-    if (!eeprom_check_crc(pageBuffer, sizeof(pageBuffer) - sizeof(uint16_t), crcShould)) {
-        PRINTF("CRC error while loading SOC data!\n");
-        configASSERT(0);
-    }
-
-    memcpy(*soc + 48, pageBuffer, 48 * sizeof(float));
-
-    eeprom_read_array(pageBuffer, EEPROM_SOC_PAGE_3, EEPROM_PAGESIZE);
-    crcShould = (pageBuffer[254] << 8) | pageBuffer[255];
-
-    if (!eeprom_check_crc(pageBuffer, sizeof(pageBuffer) - sizeof(uint16_t), crcShould)) {
-        PRINTF("CRC error while loading SOC data!\n");
-        configASSERT(0);
-    }
-
-    memcpy(*soc + 96, pageBuffer, 48 * sizeof(float));
 
     release_soc();
+
+    if (crcError) {
+        PRINTF("CRC error while loading SOC data! Restoring with default values...\n");
+        init_nvm();
+        PRINTF("Restoring done!\n");
+        load_soc(); //Let's hope that the CRC error does not persist.
+    } else {
+        PRINTF("Loading SOC data successful!\n");
+    }
 }
 
 static void store_soc(void) {
+    PRINTF("Storing SOC data...\n");
     uint8_t pageBuffer[EEPROM_PAGESIZE];
     uint16_t crc;
 
     cellSoc_t* soc = get_soc(pdMS_TO_TICKS(300));
 
     if (soc == NULL) {
-        PRINTF("Could not lock EEPROM mutex!\n");
+        PRINTF("Could not lock SOC mutex!\n");
         return;
     }
 
     memset(pageBuffer, 0xFF, EEPROM_PAGESIZE);
-    memcpy(pageBuffer, *soc, 48 * sizeof(float));
+    memcpy(pageBuffer, &soc->cellSoc[0][0], 48 * sizeof(float));
     crc = eeprom_get_crc16(pageBuffer, EEPROM_PAGESIZE - 2);
-    pageBuffer[254] = crc << 8;
+    pageBuffer[254] = crc >> 8;
     pageBuffer[255] = crc & 0xFF;
-    eeprom_write_page(pageBuffer, EEPROM_SOC_PAGE_1, EEPROM_PAGESIZE);
-    while(!eeprom_has_write_finished()) {
-        vTaskDelay(pdMS_TO_TICKS(2));
-    }
 
-    memset(pageBuffer, 0xFF, EEPROM_PAGESIZE);
-    memcpy(pageBuffer, *soc + 48, 48 * sizeof(float));
-    crc = eeprom_get_crc16(pageBuffer, EEPROM_PAGESIZE - 2);
-    pageBuffer[254] = crc << 8;
-    pageBuffer[255] = crc & 0xFF;
-    eeprom_write_page(pageBuffer, EEPROM_SOC_PAGE_2, EEPROM_PAGESIZE);
-    while(!eeprom_has_write_finished()) {
-        vTaskDelay(pdMS_TO_TICKS(2));
-    }
+    if (eeprom_mutex_take(pdMS_TO_TICKS(1000))) {
+        eeprom_write_page(pageBuffer, EEPROM_SOC_PAGE_1, EEPROM_PAGESIZE);
+        while(!eeprom_has_write_finished()) {
+            vTaskDelay(pdMS_TO_TICKS(2));
+        }
 
-    memset(pageBuffer, 0xFF, EEPROM_PAGESIZE);
-    memcpy(pageBuffer, *soc + 96, 48 * sizeof(float));
-    crc = eeprom_get_crc16(pageBuffer, EEPROM_PAGESIZE - 2);
-    pageBuffer[254] = crc << 8;
-    pageBuffer[255] = crc & 0xFF;
-    eeprom_write_page(pageBuffer, EEPROM_SOC_PAGE_3, EEPROM_PAGESIZE);
-    while(!eeprom_has_write_finished()) {
-        vTaskDelay(pdMS_TO_TICKS(2));
+        memset(pageBuffer, 0xFF, EEPROM_PAGESIZE);
+        memcpy(pageBuffer, &soc->cellSoc[4][0], 48 * sizeof(float));
+        crc = eeprom_get_crc16(pageBuffer, EEPROM_PAGESIZE - 2);
+        pageBuffer[254] = crc >> 8;
+        pageBuffer[255] = crc & 0xFF;
+        eeprom_write_page(pageBuffer, EEPROM_SOC_PAGE_2, EEPROM_PAGESIZE);
+        while(!eeprom_has_write_finished()) {
+            vTaskDelay(pdMS_TO_TICKS(2));
+        }
+
+        memset(pageBuffer, 0xFF, EEPROM_PAGESIZE);
+        memcpy(pageBuffer, &soc->cellSoc[8][0], 48 * sizeof(float));
+        crc = eeprom_get_crc16(pageBuffer, EEPROM_PAGESIZE - 2);
+        pageBuffer[254] = crc >> 8;
+        pageBuffer[255] = crc & 0xFF;
+        eeprom_write_page(pageBuffer, EEPROM_SOC_PAGE_3, EEPROM_PAGESIZE);
+        while(!eeprom_has_write_finished()) {
+            vTaskDelay(pdMS_TO_TICKS(2));
+        }
+
+        eeprom_mutex_give();
+    } else {
+        PRINTF("Could not lock EEPROM mutex!\n");
     }
 
     release_soc();
+    PRINTF("Done!\n");
+}
+
+static void init_nvm(void) {
+    //Initialize EEPROM with default values
+    uint8_t pageBuffer[EEPROM_PAGESIZE];
+    uint16_t crc;
+
+    memset(pageBuffer, 0xFF, EEPROM_PAGESIZE);
+    memset(pageBuffer, 0,    48 * sizeof(float));
+    crc = eeprom_get_crc16(pageBuffer, EEPROM_PAGESIZE - 2);
+    pageBuffer[254] = crc >> 8;
+    pageBuffer[255] = crc & 0xFF;
+
+    if (eeprom_mutex_take(pdMS_TO_TICKS(1000))) {
+        eeprom_write_page(pageBuffer, EEPROM_SOC_PAGE_1, EEPROM_PAGESIZE);
+
+        while(!eeprom_has_write_finished());
+
+        eeprom_write_page(pageBuffer, EEPROM_SOC_PAGE_2, EEPROM_PAGESIZE);
+        while(!eeprom_has_write_finished());
+
+        eeprom_write_page(pageBuffer, EEPROM_SOC_PAGE_3, EEPROM_PAGESIZE);
+        while(!eeprom_has_write_finished());
+
+        eeprom_mutex_give();
+    } else {
+        PRINTF("Could not lock EEPROM mutex!\n");
+    }
 }
 
 static uint16_t find_lut_element(float voltage) {

@@ -11,7 +11,6 @@ static void can_send_task(void *p);
 static void can_rec_task(void *p);
 static void handle_diag_request(can_msg_t *msg);
 static void send_diag_response(can_msg_t *msg);
-static void soc_lookup(void);
 
 typedef struct {
     uint32_t UID[MAXSTACKS];
@@ -64,6 +63,7 @@ void init_bmu(void) {
 
     init_safety();
     init_stacks();
+    init_soc();
 
     xTaskCreate(can_send_task, "CAN", 900, NULL, 3, NULL);
     xTaskCreate(can_rec_task, "CAN rec", 600, NULL, 3, NULL);
@@ -397,7 +397,4 @@ static void send_diag_response(can_msg_t *msg) {
     can_send(CAN0, msg);
 }
 
-static void soc_lookup(void) {
-
-}
 

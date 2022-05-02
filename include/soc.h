@@ -24,9 +24,11 @@ typedef struct {
     bool valid;
 } soc_stats_t;
 
-typedef float cellSoc_t[MAXSTACKS][MAXCELLS];
+typedef struct {
+    float cellSoc[MAXSTACKS][MAXCELLS];
+} cellSoc_t;
 
-void soc_init(void);
+void init_soc(void);
 bool soc_lookup(void);
 cellSoc_t* get_soc(TickType_t blocktime);
 bool copy_soc(cellSoc_t *dest, TickType_t blocktime);
