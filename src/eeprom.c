@@ -29,6 +29,22 @@ static inline void deassert_cs(void);
 static void set_status_register(uint8_t val);
 static void set_write_enable_latch(void);
 
+static SemaphoreHandle_t _eepromMutex = NULL;
+
+BaseType_t eeprom_mutex_take(TickType_t blocktime) {
+    if (_eepromMutex == NULL) {
+        _eepromMutex = xSemaphoreCreateMutex();
+        configASSERT(_eepromMutex)
+    }
+    return xSemaphoreTake(_eepromMutex, blocktime);
+}
+
+void eeprom_mutex_give(void) {
+    if (_eepromMutex) {
+        xSemaphoreGive(_eepromMutex);
+    }
+}
+
 void eeprom_write_page(uint8_t *data, size_t startAddress, size_t len) {
     if (spi_mutex_take(EEPROM_SPI, pdMS_TO_TICKS(1000))) {
         uint8_t cmd[4];
@@ -36,13 +52,15 @@ void eeprom_write_page(uint8_t *data, size_t startAddress, size_t len) {
         cmd[1] = (startAddress >> 16) & 0xFF;
         cmd[2] = (startAddress >> 8) & 0xFF;
         cmd[3] = startAddress & 0xFF;
-        set_status_register(SR_BP_QUARTER | SR_WEL);
+        set_status_register(SR_BP_NONE | SR_WEL);
         set_write_enable_latch();
         assert_cs();
-        spi_move_array(EEPROM_SPI, cmd, 4);
-        spi_move_array(EEPROM_SPI, data, len);
+        spi_send_array(EEPROM_SPI, cmd, 4);
+        spi_send_array(EEPROM_SPI, data, len);
         deassert_cs();
         spi_mutex_give(EEPROM_SPI);
+    } else {
+        configASSERT(0);
     }
 }
 
@@ -54,10 +72,12 @@ void eeprom_read_array(uint8_t *data, size_t startAddress, size_t len) {
         cmd[2] = (startAddress >> 8) & 0xFF;
         cmd[3] = startAddress & 0xFF;
         assert_cs();
-        spi_move_array(EEPROM_SPI, cmd, 4);
+        spi_send_array(EEPROM_SPI, cmd, 4);
         spi_move_array(EEPROM_SPI, data, len);
         deassert_cs();
         spi_mutex_give(EEPROM_SPI);
+    } else {
+        configASSERT(0);
     }
 }
 
@@ -68,8 +88,8 @@ eeprom_status_t eeprom_get_status(void) {
         assert_cs();
         spi_move_array(EEPROM_SPI, cmd, 2);
         deassert_cs();
-        return cmd[1];
         spi_mutex_give(EEPROM_SPI);
+        return cmd[1];
     }
     return eeprom_comm_error;
 }
@@ -83,7 +103,7 @@ bool eeprom_has_write_finished(void) {
         deassert_cs();
         spi_mutex_give(EEPROM_SPI);
 
-        if (cmd[1] == 0) {
+        if ((cmd[1] & SR_BUSY) == 0) {
             return true;
         }
     }
@@ -103,14 +123,14 @@ static void set_status_register(uint8_t val) {
     cmd[0] = CMD_WRSR;
     cmd[1] = val;
     assert_cs();
-    spi_move_array(EEPROM_SPI, cmd, 2);
+    spi_send_array(EEPROM_SPI, cmd, 2);
     deassert_cs();
 }
 
 static void set_write_enable_latch(void) {
     uint8_t val = CMD_WREN;
     assert_cs();
-    spi_move_array(EEPROM_SPI, &val, 1);
+    spi_send_array(EEPROM_SPI, &val, 1);
     deassert_cs();
 }
 
