@@ -81,7 +81,7 @@ static void can_send_task(void *p) {
     can_msg_t msg;
     can_data_t canData;
     memset(&canData, 0, sizeof(can_data_t));
-    uint8_t balance[12][MAXCELLS];
+    uint8_t balance[MAXSTACKS][MAXCELLS];
     memset(balance, 0, sizeof(balance));
 
     while (1) {
@@ -137,6 +137,13 @@ static void can_send_task(void *p) {
             release_battery_status();
         }
 
+        soc_stats_t socStats;
+        socStats = get_soc_stats();
+        canData.minSoc = (uint16_t) (socStats.minSoc * 10.0f);
+        canData.maxSoc = (uint16_t) (socStats.maxSoc * 10.0f);
+        canData.minSocValid = socStats.valid;
+        canData.maxSocValid = socStats.valid;
+
         if (counter == 0) {
             get_balancing_status(balance);
         }
@@ -151,7 +158,7 @@ static void can_send_task(void *p) {
         msg.payload[4] = ((canData.avgCellVolt & 0x1FFF) >> 1);
         msg.payload[5] = ((canData.avgCellVolt & 0x1FFF) << 7) | ((canData.avgCellVoltValid & 0x01) << 6) | ((canData.minSoc & 0x3FF) >> 4);
         msg.payload[6] = ((canData.minSoc & 0x3FF) << 4) | ((canData.minSocValid & 0x01) << 3) | ((canData.maxSoc & 0x3FF) >> 7);
-        msg.payload[7] = ((canData.maxSoc & 0x3FF) << 1) | ((canData.maxCellVoltValid & 0x01));
+        msg.payload[7] = ((canData.maxSoc & 0x3FF) << 1) | ((canData.maxSocValid & 0x01));
         can_send(CAN0, &msg);
 
         //BMS_Info_2
@@ -345,18 +352,21 @@ static void handle_diag_request(can_msg_t *msg) {
         send_diag_response(&resp);
         break;
     case 0x02: //SOC lookup
-        soc_lookup();
-        resp.DLC = 4;
-        resp.ID = 0xD;
-        resp.payload[0] = 0x02;
-        resp.payload[1] = 0x00;
-        resp.payload[2] = 0x01;
-        resp.payload[3] = 0x00;
-        send_diag_response(&resp);
-        break;
+        {
+            bool ret;
+            ret = soc_lookup();
+            resp.DLC = 4;
+            resp.ID = 0xD;
+            resp.payload[0] = 0x02;
+            resp.payload[1] = 0x00;
+            resp.payload[2] = (uint8_t) ret;
+            resp.payload[3] = 0x00;
+            send_diag_response(&resp);
+            break;
+        }
     case 0x03: //Get balancing
         {
-            uint8_t balance[NUMBEROFSLAVES][MAXCELLS];
+            uint8_t balance[MAXSTACKS][MAXCELLS];
             get_balancing_status(balance);
             resp.DLC = 5;
             resp.ID = 0xD;
