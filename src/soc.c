@@ -122,7 +122,7 @@ soc_stats_t get_soc_stats(void) {
     stats.minSoc = minSoc;
     stats.maxSoc = maxSoc;
     stats.avgSoc = avgSoc;
-    stats.valid = true;
+    stats.valid = true; //TODO: Find a way to check the validity of the SOC values
 
     return stats;
 }
@@ -150,7 +150,6 @@ static void soc_task(void *p) {
         cellSoc_t* soc = get_soc(pdMS_TO_TICKS(15));
         if (soc != NULL) {
             if (currentValid) {
-                current = 100.0f;
                 float chargeDelta = current * period * 2.7777E-4; //Charge delta in mAh
                 float socDelta = 100.0f * chargeDelta / NOMINAL_CELL_CAPACITY_mAh; //in percent
 
