@@ -110,7 +110,7 @@ void logger_task(void *p) {
                     f_write(_file, buf, len, &bw);
                     f_sync(_file);
                     volatile TickType_t end = xTaskGetTickCount();
-                    PRINTF("Logger: %lu bytes written! Took %lu ms\n", bw, end - start);
+//                    PRINTF("Logger: %lu bytes written! Took %lu ms\n", bw, end - start);
                 }
             }
             if (_terminateRequest) {

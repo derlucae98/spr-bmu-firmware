@@ -311,7 +311,7 @@ void tick_hook(void) {
     char* timestamp = NULL;
     timestamp = rtc_get_timestamp(pdMS_TO_TICKS(1000));
     if (timestamp != NULL) {
-        PRINTF("%s\n", timestamp);
+//        PRINTF("%s\n", timestamp);
         logger_tick_hook();
     }
 }
