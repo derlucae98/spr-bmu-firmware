@@ -337,7 +337,7 @@ int main(void)
     clock_init();
     gpio_init();
     can_init(CAN0);
-    uart_init();
+    uart_init(false);
     uart_register_receive_hook(uart_rec);
 
     clear_pin(CAN_STBY_PORT, CAN_STBY_PIN);

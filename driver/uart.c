@@ -15,7 +15,7 @@ void uart_register_receive_hook(uart_receive_hook_t uartRecHook) {
     _uartReceiveHook = uartRecHook;
 }
 
-void uart_init(void) {
+void uart_init(bool enableRecv) {
 
     PCC->PCCn[PCC_LPUART0_INDEX] &= ~PCC_PCCn_CGC_MASK; //Disable clock
     PCC->PCCn[PCC_LPUART0_INDEX] |= PCC_PCCn_PCS(1)     //SOSCDIV2_CLK as clock source
@@ -23,12 +23,14 @@ void uart_init(void) {
 
     LPUART0->BAUD = 0x09000007;     // Initialize for 115200 baud
 
-    LPUART0->CTRL = LPUART_CTRL_RIE_MASK;
+    if (enableRecv) {
+        LPUART0->CTRL = LPUART_CTRL_RIE_MASK | LPUART_CTRL_RE_MASK;
 
-    nvic_set_priority(LPUART0_RxTx_IRQn, 0xFF);
-    nvic_enable_irq(LPUART0_RxTx_IRQn);
+        nvic_set_priority(LPUART0_RxTx_IRQn, 0xFF);
+        nvic_enable_irq(LPUART0_RxTx_IRQn);
+    }
 
-    LPUART0->CTRL |= LPUART_CTRL_TE_MASK | LPUART_CTRL_RE_MASK;
+    LPUART0->CTRL |= LPUART_CTRL_TE_MASK;
 
     _uartMutex = xSemaphoreCreateMutex();
     configASSERT(_uartMutex);
