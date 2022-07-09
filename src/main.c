@@ -322,6 +322,7 @@ void init_task(void *p) {
         rtc_register_tick_hook(tick_hook);
         init_rtc();
 
+        PRINTF("INIT...\n");
         xTaskCreate(uart_rec_task, "uart_rec", 1000, NULL, 2, &uartRecTaskHandle);
         init_bmu();
         logger_init();
