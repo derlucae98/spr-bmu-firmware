@@ -23,7 +23,7 @@
 #define MAXSTACKS 12
 #define MAXCELLS  12
 #define MAXTEMPSENS 14
-#define MAXCELLTEMP 560 //200.0 deg C ONLY FOR TESTING DUE TO EMC PROBLEMS!!!!!!!11
+#define MAXCELLTEMP 560 //56 deg C
 
 #define BMU_Q_HANDLE can0RxQueueHandle
 
