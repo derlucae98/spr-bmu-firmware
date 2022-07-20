@@ -292,6 +292,7 @@ static void sensor_task(void *p) {
 
         current = (current / SHUNT) * CURRENT_CONVERSION_RATIO;
         current = (current + _cal.current_1_offset) * _cal.current_1_gain;
+        current = current * (-1); //Reverse current direction
 
         ubatVolt = ubatVolt * VOLTAGE_CONVERSION_RATIO;
         ubatVolt = (ubatVolt + _cal.ubatt_offset) * _cal.ubatt_gain;
