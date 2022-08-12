@@ -11,8 +11,8 @@
 #include "can.h"
 
 #define VERS_MAJOR 0
-#define VERS_MINOR 2
-#define VERS_BUILD 2
+#define VERS_MINOR 3
+#define VERS_BUILD 0
 
 
 #define NUMBEROFSLAVES 12
