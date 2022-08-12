@@ -168,25 +168,32 @@ bool init_sensors(void) {
 
 sensor_calibration_t load_calibration(void) {
     uint8_t pageBuffer[EEPROM_PAGESIZE];
-    eeprom_read_array(pageBuffer, 0, EEPROM_PAGESIZE);
-    uint16_t crcShould = (pageBuffer[254] << 8) | pageBuffer[255];
-    sensor_calibration_t cal;
-    bool uncal = true;
 
-    for (size_t i = 0; i < EEPROM_PAGESIZE; i++) {
-        if (pageBuffer[i] != 0xFF) {
-            uncal = false;
+    bool uncal = true;
+    sensor_calibration_t cal;
+
+    if (eeprom_mutex_take(pdMS_TO_TICKS(500))) {
+        eeprom_read_array(pageBuffer, 0, EEPROM_PAGESIZE);
+        uint16_t crcShould = (pageBuffer[254] << 8) | pageBuffer[255];
+
+
+        for (size_t i = 0; i < EEPROM_PAGESIZE; i++) {
+            if (pageBuffer[i] != 0xFF) {
+                uncal = false;
+            }
         }
+
+        if (!eeprom_check_crc(pageBuffer, sizeof(pageBuffer) - sizeof(uint16_t), crcShould)) {
+            PRINTF("CRC error while loading calibration data!\n");
+            configASSERT(0);
+        }
+
+        eeprom_mutex_give();
     }
 
     if (uncal) {
         PRINTF("No calibration data found!\n");
         return default_calibration();
-    }
-
-    if (!eeprom_check_crc(pageBuffer, sizeof(pageBuffer) - sizeof(uint16_t), crcShould)) {
-        PRINTF("CRC error while loading calibration data!\n");
-        configASSERT(0);
     }
 
     memcpy(&cal, &pageBuffer[0], sizeof(sensor_calibration_t));
@@ -204,24 +211,30 @@ bool write_calibration(sensor_calibration_t cal) {
     uint16_t crc = eeprom_get_crc16(pageBuffer, sizeof(pageBuffer) - sizeof(uint16_t));
     pageBuffer[254] = crc >> 8;
     pageBuffer[255] = crc & 0xFF;
-    eeprom_write_page(pageBuffer, 0x0, sizeof(pageBuffer));
-    uint8_t timeout = 200; //2 seconds
-    while(!eeprom_has_write_finished()) {
-        if (--timeout > 0) {
-            vTaskDelay(pdMS_TO_TICKS(10));
-        } else {
-            PRINTF("Writing calibration data to EEPROM timed out!\n");
-            return false;
+
+    if (eeprom_mutex_take(pdMS_TO_TICKS(500))) {
+        eeprom_write_page(pageBuffer, 0x0, sizeof(pageBuffer));
+        uint8_t timeout = 200; //2 seconds
+        while(!eeprom_has_write_finished()) {
+            if (--timeout > 0) {
+                vTaskDelay(pdMS_TO_TICKS(10));
+            } else {
+                PRINTF("Writing calibration data to EEPROM timed out!\n");
+                eeprom_mutex_give();
+                return false;
+            }
         }
+        eeprom_mutex_give();
+        return true;
     }
-    return true;
+    return false;
 }
 
 static void sensor_task(void *p) {
     (void) p;
 
     TickType_t xLastWakeTime;
-    const TickType_t xPeriod = pdMS_TO_TICKS(10);
+    const TickType_t xPeriod = pdMS_TO_TICKS(25);
     xLastWakeTime = xTaskGetTickCount();
     float current = 0.0f;
     float ubatVolt = 0.0f;
@@ -279,6 +292,7 @@ static void sensor_task(void *p) {
 
         current = (current / SHUNT) * CURRENT_CONVERSION_RATIO;
         current = (current + _cal.current_1_offset) * _cal.current_1_gain;
+        current = current * (-1); //Reverse current direction
 
         ubatVolt = ubatVolt * VOLTAGE_CONVERSION_RATIO;
         ubatVolt = (ubatVolt + _cal.ubatt_offset) * _cal.ubatt_gain;

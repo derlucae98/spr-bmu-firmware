@@ -20,12 +20,15 @@
 #define EEPROM_SPI LPSPI0
 #define EEPROM_PAGESIZE 256
 
+
 typedef enum {
     eeprom_comm_error,
     eeprom_write_pending,
     eeprom_write_finished
 } eeprom_status_t;
 
+BaseType_t eeprom_mutex_take(TickType_t blocktime);
+void eeprom_mutex_give(void);
 void eeprom_write_page(uint8_t *data, size_t startAddress, size_t len);
 void eeprom_read_array(uint8_t *data, size_t startAddress, size_t len);
 eeprom_status_t eeprom_get_status(void);

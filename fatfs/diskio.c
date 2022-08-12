@@ -239,6 +239,7 @@ BYTE send_cmd (     /* Returns command response (bit7==1:Send failed)*/
         /* Select the card and wait for ready except to stop multiple block read */
         if (cmd != CMD12) {
             deselect_card();
+            spi_mutex_give(SD_SPI);
             if (!select_card()) return 0xFF;
         }
 

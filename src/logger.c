@@ -79,8 +79,7 @@ void logger_task(void *p) {
                 if (stacksData != NULL) {
                     memcpy(loggingData.cellVoltage, stacksData->cellVoltage, sizeof(loggingData.cellVoltage));
                     memcpy(loggingData.temperature, stacksData->temperature, sizeof(loggingData.temperature));
-                    loggingData.minSoc = stacksData->minSoc;
-                    loggingData.maxSoc = stacksData->maxSoc;
+
                     loggingData.minCellVolt = stacksData->minCellVolt;
                     loggingData.maxCellVolt = stacksData->maxCellVolt;
                     loggingData.avgCellVolt = stacksData->avgCellVolt;
@@ -110,7 +109,7 @@ void logger_task(void *p) {
                     f_write(_file, buf, len, &bw);
                     f_sync(_file);
                     volatile TickType_t end = xTaskGetTickCount();
-                    PRINTF("Logger: %lu bytes written! Took %lu ms\n", bw, end - start);
+//                    PRINTF("Logger: %lu bytes written! Took %lu ms\n", bw, end - start);
                 }
             }
             if (_terminateRequest) {

@@ -16,6 +16,7 @@
 #include "ff.h"
 #include "logger.h"
 #include "rtc.h"
+#include "wdt.h"
 
 volatile bool sdInitPending = true;
 static TaskHandle_t _sdInitTaskHandle = NULL;
@@ -79,6 +80,8 @@ void housekeeping_task(void *p) {
     uint64_t counter = 0;
 
     while (1) {
+        refresh_wdt(); //Refresh watchdog within 50 ms
+
         if ((counter % 2) == 0) {
             //100ms
 
@@ -121,13 +124,6 @@ void housekeeping_task(void *p) {
 
         vTaskDelayUntil(&lastWakeTime, period);
     }
-}
-
-void wdog_disable (void)
-{
-  WDOG->CNT = 0xD928C520;
-  WDOG->TOVAL = 0x0000FFFF;
-  WDOG->CS = 0x00002100;
 }
 
 static void uart_rec(char* s) {
@@ -311,7 +307,7 @@ void tick_hook(void) {
     char* timestamp = NULL;
     timestamp = rtc_get_timestamp(pdMS_TO_TICKS(1000));
     if (timestamp != NULL) {
-        PRINTF("%s\n", timestamp);
+//        PRINTF("%s\n", timestamp);
         logger_tick_hook();
     }
 }
@@ -322,22 +318,51 @@ void init_task(void *p) {
         rtc_register_tick_hook(tick_hook);
         init_rtc();
 
+        uint32_t resetReason = RCM->SRS;
+        PRINTF("Reset reason: 0x%X\n", resetReason);
+        if (resetReason & 0x0002) {
+            PRINTF("Reset due to brown-out\n");
+        } else if (resetReason & 0x0004) {
+            PRINTF("Reset due to loss of clock\n");
+        } else if (resetReason & 0x0008) {
+            PRINTF("Reset due to loss of lock\n");
+        } else if (resetReason & 0x0010) {
+            PRINTF("Reset due to CMU loss of clock\n");
+        } else if (resetReason & 0x0020) {
+            PRINTF("Reset due to watchdog\n");
+        } else if (resetReason & 0x0040) {
+            PRINTF("Reset due to reset pin\n");
+        } else if (resetReason & 0x0080) {
+            PRINTF("Reset due to power cycle\n");
+        } else if (resetReason & 0x0100) {
+            PRINTF("Reset due to JTAG\n");
+        } else if (resetReason & 0x0200) {
+            PRINTF("Reset due to core lockup\n");
+        } else if (resetReason & 0x0400) {
+            PRINTF("Reset due to software\n");
+        } else if (resetReason & 0x0800) {
+            PRINTF("Reset due to host debugger\n");
+        } else if (resetReason & 0x2000) {
+            PRINTF("Reset due to stop ack error\n");
+        }
+
+
         xTaskCreate(uart_rec_task, "uart_rec", 1000, NULL, 2, &uartRecTaskHandle);
         init_bmu();
         logger_init();
         xTaskCreate(sd_init_task, "sd init", 400, NULL, 2, &_sdInitTaskHandle);
-        xTaskCreate(housekeeping_task, "housekeeping", 300, NULL, 3, &_housekeepingTaskHandle);
+        xTaskCreate(housekeeping_task, "housekeeping", 300, NULL, 4, &_housekeepingTaskHandle);
         vTaskDelete(NULL);
     }
 }
 
 int main(void)
 {
-	wdog_disable();
     clock_init();
+    init_wdt();
     gpio_init();
     can_init(CAN0);
-    uart_init();
+    uart_init(false);
     uart_register_receive_hook(uart_rec);
 
     clear_pin(CAN_STBY_PORT, CAN_STBY_PIN);
