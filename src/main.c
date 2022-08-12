@@ -16,6 +16,7 @@
 #include "ff.h"
 #include "logger.h"
 #include "rtc.h"
+#include "wdt.h"
 
 volatile bool sdInitPending = true;
 static TaskHandle_t _sdInitTaskHandle = NULL;
@@ -79,6 +80,8 @@ void housekeeping_task(void *p) {
     uint64_t counter = 0;
 
     while (1) {
+        refresh_wdt(); //Refresh watchdog within 50 ms
+
         if ((counter % 2) == 0) {
             //100ms
 
@@ -121,13 +124,6 @@ void housekeeping_task(void *p) {
 
         vTaskDelayUntil(&lastWakeTime, period);
     }
-}
-
-void wdog_disable (void)
-{
-  WDOG->CNT = 0xD928C520;
-  WDOG->TOVAL = 0x0000FFFF;
-  WDOG->CS = 0x00002100;
 }
 
 static void uart_rec(char* s) {
@@ -355,15 +351,15 @@ void init_task(void *p) {
         init_bmu();
         logger_init();
         xTaskCreate(sd_init_task, "sd init", 400, NULL, 2, &_sdInitTaskHandle);
-        xTaskCreate(housekeeping_task, "housekeeping", 300, NULL, 3, &_housekeepingTaskHandle);
+        xTaskCreate(housekeeping_task, "housekeeping", 300, NULL, 4, &_housekeepingTaskHandle);
         vTaskDelete(NULL);
     }
 }
 
 int main(void)
 {
-	wdog_disable();
     clock_init();
+    init_wdt();
     gpio_init();
     can_init(CAN0);
     uart_init(false);
