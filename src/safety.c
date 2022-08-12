@@ -29,7 +29,7 @@ void safety_task(void *p) {
     (void)p;
     TickType_t xLastWakeTime = xTaskGetTickCount();
     const TickType_t xPeriod = pdMS_TO_TICKS(100);
-    uint8_t errorCounter = 0;
+
     while (1) {
 
         bool criticalValue = false;
@@ -39,16 +39,6 @@ void safety_task(void *p) {
             criticalValue |= !check_voltage_validity(stacksData->cellVoltageStatus, NUMBEROFSLAVES);
             criticalValue |= !check_temperature_validity(stacksData->temperatureStatus, NUMBEROFSLAVES);
             release_stacks_data();
-        }
-
-        if (criticalValue) {
-            errorCounter++;
-        } else {
-            errorCounter = 0;
-        }
-
-        if (errorCounter <= 5) {
-            criticalValue = false;
         }
 
         sensor_data_t *sensorData = get_sensor_data(portMAX_DELAY);

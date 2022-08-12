@@ -322,7 +322,35 @@ void init_task(void *p) {
         rtc_register_tick_hook(tick_hook);
         init_rtc();
 
-        PRINTF("INIT...\n");
+        uint32_t resetReason = RCM->SRS;
+        PRINTF("Reset reason: 0x%X\n", resetReason);
+        if (resetReason & 0x0002) {
+            PRINTF("Reset due to brown-out\n");
+        } else if (resetReason & 0x0004) {
+            PRINTF("Reset due to loss of clock\n");
+        } else if (resetReason & 0x0008) {
+            PRINTF("Reset due to loss of lock\n");
+        } else if (resetReason & 0x0010) {
+            PRINTF("Reset due to CMU loss of clock\n");
+        } else if (resetReason & 0x0020) {
+            PRINTF("Reset due to watchdog\n");
+        } else if (resetReason & 0x0040) {
+            PRINTF("Reset due to reset pin\n");
+        } else if (resetReason & 0x0080) {
+            PRINTF("Reset due to power cycle\n");
+        } else if (resetReason & 0x0100) {
+            PRINTF("Reset due to JTAG\n");
+        } else if (resetReason & 0x0200) {
+            PRINTF("Reset due to core lockup\n");
+        } else if (resetReason & 0x0400) {
+            PRINTF("Reset due to software\n");
+        } else if (resetReason & 0x0800) {
+            PRINTF("Reset due to host debugger\n");
+        } else if (resetReason & 0x2000) {
+            PRINTF("Reset due to stop ack error\n");
+        }
+
+
         xTaskCreate(uart_rec_task, "uart_rec", 1000, NULL, 2, &uartRecTaskHandle);
         init_bmu();
         logger_init();
