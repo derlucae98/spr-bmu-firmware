@@ -85,7 +85,7 @@ static void can_send_task(void *p) {
     memset(balance, 0, sizeof(balance));
 
     while (1) {
-        dbg5_set();
+
         stacks_data_t* stacksData = get_stacks_data(portMAX_DELAY);
         if (stacksData != NULL) {
             memcpy(canData.UID, stacksUID, sizeof(stacksUID));
@@ -307,7 +307,7 @@ static void can_send_task(void *p) {
             counter = 0;
         }
 
-        dbg5_clear();
+
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
 }

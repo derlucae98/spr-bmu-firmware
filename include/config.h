@@ -186,20 +186,4 @@ static inline void dbg6_clear(void) {
     clear_pin(TP_6_PORT, TP_6_PIN);
 }
 
-static inline void dbg7_set(void) {
-    set_pin(TP_7_PORT, TP_7_PIN);
-}
-
-static inline void dbg7_clear(void) {
-    clear_pin(TP_7_PORT, TP_7_PIN);
-}
-
-static inline void dbg8_set(void) {
-    set_pin(TP_8_PORT, TP_8_PIN);
-}
-
-static inline void dbg8_clear(void) {
-    clear_pin(TP_8_PORT, TP_8_PIN);
-}
-
 #endif /* CONFIG_H_ */

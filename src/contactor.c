@@ -136,9 +136,11 @@ static void contactor_control_task(void *p) {
     const TickType_t xPeriod = pdMS_TO_TICKS(100);
     xLastWakeTime = xTaskGetTickCount();
 
+    static size_t tsalCounter = 0;
+    static float dcLinkVoltage = 0.0f;
+
     while (1) {
 
-        dbg6_set();
         /*
          * 1) System is healthy if AMS and IMD are not in error state,
          * 2) AMS and IMD power stages are enabled to close the shutdown circuit,
@@ -167,6 +169,7 @@ static void contactor_control_task(void *p) {
 
         sensor_data_t *sensorData = get_sensor_data(portMAX_DELAY);
         if (sensorData != NULL) {
+            dcLinkVoltage = sensorData->dcLinkVoltage;
             if (fabs(sensorData->batteryVoltage - sensorData->dcLinkVoltage) <= (0.05f * sensorData->batteryVoltage)) {
                 voltageEqual = true;
             }
@@ -176,32 +179,49 @@ static void contactor_control_task(void *p) {
         switch (_stateMachine.current) {
         case STATE_STANDBY:
             // All contactors must be off
-            if (contactorState != 0x0) {
-                relayPlausible = false;
+            if (contactorState == 0x0) {
+                set_pin(TP_7_PORT, TP_7_PIN); //turn on green
+                clear_pin(TP_8_PORT, TP_8_PIN); //plausible
+                if (dcLinkVoltage > 60.0f && ++tsalCounter >= 70) {
+                    set_pin(TP_8_PORT, TP_8_PIN); //implausible
+                    systemIsHealthy = false; //Force error state in case of TSAL error
+                    tsalCounter = 70; //Limit value
+                }
+            } else {
+                clear_pin(TP_7_PORT, TP_7_PIN); //turn off green
+                set_pin(TP_8_PORT, TP_8_PIN); //implausible
             }
             break;
         case STATE_PRE_CHARGE:
             // Only pre-charge and neg AIR active
-            if (contactorState != 0x3) {
-                relayPlausible = false;
-            }
+            clear_pin(TP_7_PORT, TP_7_PIN); //clear green
+            clear_pin(TP_8_PORT, TP_8_PIN); //plausible
             break;
         case STATE_OPERATE:
             // Only pos AIR and neg AIR active
-            if (contactorState != 0x6) {
-                relayPlausible = false;
-            }
+            clear_pin(TP_7_PORT, TP_7_PIN); //clear green
+            clear_pin(TP_8_PORT, TP_8_PIN); //plausible
             break;
         case STATE_ERROR:
             // All contactors must be off
-            if (contactorState != 0x0) {
-                relayPlausible = false;
+            if (contactorState == 0x0) {
+                set_pin(TP_7_PORT, TP_7_PIN); //turn on green
+                clear_pin(TP_8_PORT, TP_8_PIN); //plausible
+                if (dcLinkVoltage > 60.0f && ++tsalCounter >= 70) {
+                    set_pin(TP_8_PORT, TP_8_PIN); //implausible
+                    systemIsHealthy = false; //Force error state in case of TSAL error
+                    tsalCounter = 70; //Limit value
+                }
+            } else {
+                clear_pin(TP_7_PORT, TP_7_PIN); //turn off green
+                set_pin(TP_8_PORT, TP_8_PIN); //implausible
             }
             break;
         }
 
         //TODO: Plausibility check is temporarily disabled. Cannot be tested with demonstrator.
         relayPlausible = true;
+
 
 
 
@@ -254,7 +274,6 @@ static void contactor_control_task(void *p) {
                 }
             }
         }
-        dbg6_clear();
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
 }
