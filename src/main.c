@@ -79,8 +79,12 @@ void housekeeping_task(void *p) {
     lastWakeTime = xTaskGetTickCount();
     uint64_t counter = 0;
 
+
+
+
+
     while (1) {
-        refresh_wdt(); //Refresh watchdog within 50 ms
+        //refresh_wdt(); //Refresh watchdog within 50 ms
 
         if ((counter % 2) == 0) {
             //100ms
@@ -282,6 +286,8 @@ void gpio_init(void) {
     set_direction(TP_6_PORT, TP_6_PIN, GPIO_OUTPUT);
     set_direction(TP_7_PORT, TP_7_PIN, GPIO_OUTPUT);
     set_direction(TP_8_PORT, TP_8_PIN, GPIO_OUTPUT);
+    clear_pin(TP_7_PORT, TP_7_PIN); //Initial condition TSAL
+    clear_pin(TP_8_PORT, TP_8_PIN); //Initial condition TSAL
 
 
     set_pin_mux(UART_PORT, UART_RX, 6);
@@ -319,7 +325,7 @@ void init_task(void *p) {
         init_rtc();
 
         uint32_t resetReason = RCM->SRS;
-        PRINTF("Reset reason: 0x%X\n", resetReason);
+        printf("Reset reason: 0x%lX\n", resetReason);
         if (resetReason & 0x0002) {
             PRINTF("Reset due to brown-out\n");
         } else if (resetReason & 0x0004) {
@@ -346,12 +352,14 @@ void init_task(void *p) {
             PRINTF("Reset due to stop ack error\n");
         }
 
+        //init_wdt();
+        //refresh_wdt();
 
         xTaskCreate(uart_rec_task, "uart_rec", 1000, NULL, 2, &uartRecTaskHandle);
         init_bmu();
         logger_init();
         xTaskCreate(sd_init_task, "sd init", 400, NULL, 2, &_sdInitTaskHandle);
-        xTaskCreate(housekeeping_task, "housekeeping", 300, NULL, 4, &_housekeepingTaskHandle);
+        xTaskCreate(housekeeping_task, "housekeeping", 400, NULL, 4, &_housekeepingTaskHandle);
         vTaskDelete(NULL);
     }
 }
@@ -359,7 +367,7 @@ void init_task(void *p) {
 int main(void)
 {
     clock_init();
-    init_wdt();
+    disable_wdt();
     gpio_init();
     can_init(CAN0);
     uart_init(false);

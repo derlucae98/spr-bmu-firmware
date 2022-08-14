@@ -182,10 +182,13 @@ static void contactor_control_task(void *p) {
             if (contactorState == 0x0) {
                 set_pin(TP_7_PORT, TP_7_PIN); //turn on green
                 clear_pin(TP_8_PORT, TP_8_PIN); //plausible
-                if (dcLinkVoltage > 60.0f && ++tsalCounter >= 70) {
+                if (dcLinkVoltage >= 60.0f && ++tsalCounter >= 70) {
+                    // TSAC output voltage is still >60 V after 7 seconds -> TSAL turns off
                     set_pin(TP_8_PORT, TP_8_PIN); //implausible
                     systemIsHealthy = false; //Force error state in case of TSAL error
                     tsalCounter = 70; //Limit value
+                } else if (dcLinkVoltage < 60.0f) {
+                    tsalCounter = 0;
                 }
             } else {
                 clear_pin(TP_7_PORT, TP_7_PIN); //turn off green
@@ -207,10 +210,13 @@ static void contactor_control_task(void *p) {
             if (contactorState == 0x0) {
                 set_pin(TP_7_PORT, TP_7_PIN); //turn on green
                 clear_pin(TP_8_PORT, TP_8_PIN); //plausible
-                if (dcLinkVoltage > 60.0f && ++tsalCounter >= 70) {
+                if (dcLinkVoltage >= 60.0f && ++tsalCounter >= 70) {
+                    // TSAC output voltage is still >60 V after 7 seconds -> TSAL turns off
                     set_pin(TP_8_PORT, TP_8_PIN); //implausible
                     systemIsHealthy = false; //Force error state in case of TSAL error
                     tsalCounter = 70; //Limit value
+                } else if (dcLinkVoltage < 60.0f) {
+                    tsalCounter = 0;
                 }
             } else {
                 clear_pin(TP_7_PORT, TP_7_PIN); //turn off green
