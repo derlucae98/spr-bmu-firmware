@@ -127,7 +127,7 @@ static void error(void) {
 
 void init_contactor(void) {
     _stateMachine.current = STATE_STANDBY;
-    xTaskCreate(contactor_control_task, "contactor", 300, NULL, 2, NULL);
+    xTaskCreate(contactor_control_task, "contactor", 400, NULL, 2, NULL);
 }
 
 static void contactor_control_task(void *p) {

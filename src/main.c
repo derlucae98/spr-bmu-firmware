@@ -84,7 +84,7 @@ void housekeeping_task(void *p) {
 
 
     while (1) {
-        //refresh_wdt(); //Refresh watchdog within 50 ms
+        refresh_wdt(); //Refresh watchdog within 50 ms
 
         if ((counter % 2) == 0) {
             //100ms
@@ -325,7 +325,7 @@ void init_task(void *p) {
         init_rtc();
 
         uint32_t resetReason = RCM->SRS;
-        printf("Reset reason: 0x%lX\n", resetReason);
+        //printf("Reset reason: 0x%lX\n", resetReason);
         if (resetReason & 0x0002) {
             PRINTF("Reset due to brown-out\n");
         } else if (resetReason & 0x0004) {
@@ -352,22 +352,22 @@ void init_task(void *p) {
             PRINTF("Reset due to stop ack error\n");
         }
 
-        //init_wdt();
-        //refresh_wdt();
+        init_wdt();
+        refresh_wdt();
 
         xTaskCreate(uart_rec_task, "uart_rec", 1000, NULL, 2, &uartRecTaskHandle);
         init_bmu();
         logger_init();
         xTaskCreate(sd_init_task, "sd init", 400, NULL, 2, &_sdInitTaskHandle);
-        xTaskCreate(housekeeping_task, "housekeeping", 400, NULL, 4, &_housekeepingTaskHandle);
+        xTaskCreate(housekeeping_task, "housekeeping", 400, NULL, 3, &_housekeepingTaskHandle);
         vTaskDelete(NULL);
     }
 }
 
 int main(void)
 {
+//    disable_wdt();
     clock_init();
-    disable_wdt();
     gpio_init();
     can_init(CAN0);
     uart_init(false);
