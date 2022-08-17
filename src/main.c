@@ -286,7 +286,7 @@ void gpio_init(void) {
     set_direction(TP_6_PORT, TP_6_PIN, GPIO_OUTPUT);
     set_direction(TP_7_PORT, TP_7_PIN, GPIO_OUTPUT);
     set_direction(TP_8_PORT, TP_8_PIN, GPIO_OUTPUT);
-    clear_pin(TP_7_PORT, TP_7_PIN); //Initial condition TSAL
+    set_pin(TP_7_PORT, TP_7_PIN); //Initial condition TSAL
     clear_pin(TP_8_PORT, TP_8_PIN); //Initial condition TSAL
 
 

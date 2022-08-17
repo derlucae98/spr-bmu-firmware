@@ -180,46 +180,44 @@ static void contactor_control_task(void *p) {
         case STATE_STANDBY:
             // All contactors must be off
             if (contactorState == 0x0) {
-                set_pin(TP_7_PORT, TP_7_PIN); //turn on green
-                clear_pin(TP_8_PORT, TP_8_PIN); //plausible
                 if (dcLinkVoltage >= 60.0f && ++tsalCounter >= 70) {
                     // TSAC output voltage is still >60 V after 7 seconds -> TSAL turns off
                     set_pin(TP_8_PORT, TP_8_PIN); //implausible
-                    systemIsHealthy = false; //Force error state in case of TSAL error
+                    //systemIsHealthy = false; //Force error state in case of TSAL error
                     tsalCounter = 70; //Limit value
                 } else if (dcLinkVoltage < 60.0f) {
+                    clear_pin(TP_8_PORT, TP_8_PIN); //plausible
+                    set_pin(TP_7_PORT, TP_7_PIN); //green
                     tsalCounter = 0;
                 }
             } else {
-                clear_pin(TP_7_PORT, TP_7_PIN); //turn off green
                 set_pin(TP_8_PORT, TP_8_PIN); //implausible
             }
             break;
         case STATE_PRE_CHARGE:
             // Only pre-charge and neg AIR active
-            clear_pin(TP_7_PORT, TP_7_PIN); //clear green
             clear_pin(TP_8_PORT, TP_8_PIN); //plausible
+            clear_pin(TP_7_PORT, TP_7_PIN); //red
             break;
         case STATE_OPERATE:
             // Only pos AIR and neg AIR active
-            clear_pin(TP_7_PORT, TP_7_PIN); //clear green
             clear_pin(TP_8_PORT, TP_8_PIN); //plausible
+            clear_pin(TP_7_PORT, TP_7_PIN); //red
             break;
         case STATE_ERROR:
             // All contactors must be off
             if (contactorState == 0x0) {
-                set_pin(TP_7_PORT, TP_7_PIN); //turn on green
-                clear_pin(TP_8_PORT, TP_8_PIN); //plausible
                 if (dcLinkVoltage >= 60.0f && ++tsalCounter >= 70) {
                     // TSAC output voltage is still >60 V after 7 seconds -> TSAL turns off
                     set_pin(TP_8_PORT, TP_8_PIN); //implausible
-                    systemIsHealthy = false; //Force error state in case of TSAL error
+                    //systemIsHealthy = false; //Force error state in case of TSAL error
                     tsalCounter = 70; //Limit value
                 } else if (dcLinkVoltage < 60.0f) {
                     tsalCounter = 0;
+                    clear_pin(TP_8_PORT, TP_8_PIN); //plausible
+                    set_pin(TP_7_PORT, TP_7_PIN); //green
                 }
             } else {
-                clear_pin(TP_7_PORT, TP_7_PIN); //turn off green
                 set_pin(TP_8_PORT, TP_8_PIN); //implausible
             }
             break;
