@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include "sensors.h"
 #include "safety.h"
+#include "wdt.h"
 
 
 typedef enum {

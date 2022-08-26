@@ -32,7 +32,7 @@ void safety_task(void *p) {
 
     while (1) {
 
-        bool criticalValue = false;
+        volatile bool criticalValue = false;
         stacks_data_t* stacksData = get_stacks_data(portMAX_DELAY);
         if (stacksData != NULL) {
             //Check for critical AMS values. This represents the AMS status.
@@ -52,7 +52,7 @@ void safety_task(void *p) {
         //Poll external status pins
         bool amsResetStatus = get_pin(AMS_RES_STAT_PORT, AMS_RES_STAT_PIN);
         bool imdResetStatus = get_pin(IMD_RES_STAT_PORT, IMD_RES_STAT_PIN);
-        bool imdStatus = get_pin(IMD_STAT_PORT, IMD_STAT_PIN);
+        volatile bool imdStatus = get_pin(IMD_STAT_PORT, IMD_STAT_PIN);
         bool scStat = get_pin(SC_STATUS_PORT, SC_STATUS_PIN);
 
         if (criticalValue) {
@@ -84,6 +84,13 @@ void safety_task(void *p) {
             set_pin(LED_IMD_FAULT_PORT, LED_IMD_FAULT_PIN);
             clear_pin(LED_IMD_OK_PORT, LED_IMD_OK_PIN);
         }
+
+//        if (criticalValue == false && imdStatus) {
+////            printf("auto reset...\n");
+//            set_pin(TP_5_PORT, TP_5_PIN);
+//            vTaskDelay(pdMS_TO_TICKS(50));
+//            clear_pin(TP_5_PORT, TP_5_PIN);
+//        }
 
         battery_status_t *batteryStatus = get_battery_status(portMAX_DELAY);
         if (batteryStatus != NULL) {

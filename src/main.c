@@ -283,6 +283,7 @@ void gpio_init(void) {
     set_direction(TP_3_PORT, TP_3_PIN, GPIO_OUTPUT);
     set_direction(TP_4_PORT, TP_4_PIN, GPIO_OUTPUT);
     set_direction(TP_5_PORT, TP_5_PIN, GPIO_OUTPUT);
+    clear_pin(TP_5_PORT, TP_5_PIN);
     set_direction(TP_6_PORT, TP_6_PIN, GPIO_OUTPUT);
     set_direction(TP_7_PORT, TP_7_PIN, GPIO_OUTPUT);
     set_direction(TP_8_PORT, TP_8_PIN, GPIO_OUTPUT);

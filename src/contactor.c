@@ -127,7 +127,7 @@ static void error(void) {
 
 void init_contactor(void) {
     _stateMachine.current = STATE_STANDBY;
-    xTaskCreate(contactor_control_task, "contactor", 400, NULL, 3, NULL);
+    xTaskCreate(contactor_control_task, "contactor", 400, NULL, 4, NULL);
 }
 
 static void contactor_control_task(void *p) {
@@ -139,9 +139,10 @@ static void contactor_control_task(void *p) {
     static size_t tsalCounter = 0;
     static float dcLinkVoltage = 0.0f;
     bool dcLinkVoltageValid = false;
+    init_wdt();
 
     while (1) {
-
+        refresh_wdt();
         /*
          * 1) System is healthy if AMS and IMD are not in error state,
          * 2) AMS and IMD power stages are enabled to close the shutdown circuit,
