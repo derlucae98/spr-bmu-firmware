@@ -85,13 +85,6 @@ void safety_task(void *p) {
             clear_pin(LED_IMD_OK_PORT, LED_IMD_OK_PIN);
         }
 
-//        if (criticalValue == false && imdStatus) {
-////            printf("auto reset...\n");
-//            set_pin(TP_5_PORT, TP_5_PIN);
-//            vTaskDelay(pdMS_TO_TICKS(50));
-//            clear_pin(TP_5_PORT, TP_5_PIN);
-//        }
-
         battery_status_t *batteryStatus = get_battery_status(portMAX_DELAY);
         if (batteryStatus != NULL) {
             batteryStatus->amsStatus = !criticalValue;

@@ -355,8 +355,13 @@ void init_task(void *p) {
             PRINTF("Reset due to stop ack error\n");
         }
 
-//        init_wdt();
-//        refresh_wdt();
+        //Send reset reason on startup over CAN
+        can_msg_t msg;
+        msg.ID = 0x010;
+        msg.DLC = 2;
+        msg.payload[0] = (resetReason >> 8) & 0xFF;
+        msg.payload[1] = resetReason & 0xFF;
+        can_send(CAN0, &msg);
 
         xTaskCreate(uart_rec_task, "uart_rec", 1000, NULL, 2, &uartRecTaskHandle);
         init_bmu();
