@@ -51,7 +51,7 @@ bool copy_sensor_data(sensor_data_t *dest, TickType_t blocktime) {
 }
 
 static inline void sensor_spi(uint8_t *a, size_t len) {
-    spi_move_array(SENSOR_SPI, a, len);
+    spi_dma_move(SENSOR_SPI, a, len);
 }
 
 static inline void current_sensor_assert(void) {

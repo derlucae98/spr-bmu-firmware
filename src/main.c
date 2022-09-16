@@ -394,6 +394,7 @@ int main(void)
     spi_init(LPSPI0, LPSPI_PRESC_2, LPSPI_MODE_0);
     spi_init(LPSPI1, LPSPI_PRESC_8, LPSPI_MODE_0);
     spi_init(LPSPI2, LPSPI_PRESC_8, LPSPI_MODE_3);
+    spi_enable_dma(LPSPI1);
 
     xTaskCreate(init_task, "init", 1000, NULL, configMAX_PRIORITIES-1, NULL);
 
