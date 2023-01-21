@@ -11,13 +11,13 @@
 #include "can.h"
 
 #define VERS_MAJOR 0
-#define VERS_MINOR 2
-#define VERS_BUILD 2
+#define VERS_MINOR 3
+#define VERS_BUILD 1
 
 
 #define NUMBEROFSLAVES 12
 #define CELL_UNDERVOLTAGE 3000
-#define CELL_OVERVOLTAGE  4200
+#define CELL_OVERVOLTAGE  4166
 #define LTC6811_SPI LPSPI2
 
 #define SOC_TASK_STACK 512
@@ -184,22 +184,6 @@ static inline void dbg6_set(void) {
 
 static inline void dbg6_clear(void) {
     clear_pin(TP_6_PORT, TP_6_PIN);
-}
-
-static inline void dbg7_set(void) {
-    set_pin(TP_7_PORT, TP_7_PIN);
-}
-
-static inline void dbg7_clear(void) {
-    clear_pin(TP_7_PORT, TP_7_PIN);
-}
-
-static inline void dbg8_set(void) {
-    set_pin(TP_8_PORT, TP_8_PIN);
-}
-
-static inline void dbg8_clear(void) {
-    clear_pin(TP_8_PORT, TP_8_PIN);
 }
 
 #endif /* CONFIG_H_ */

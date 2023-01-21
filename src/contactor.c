@@ -127,7 +127,7 @@ static void error(void) {
 
 void init_contactor(void) {
     _stateMachine.current = STATE_STANDBY;
-    xTaskCreate(contactor_control_task, "contactor", 300, NULL, 2, NULL);
+    xTaskCreate(contactor_control_task, "contactor", 400, NULL, 4, NULL);
 }
 
 static void contactor_control_task(void *p) {
@@ -136,9 +136,13 @@ static void contactor_control_task(void *p) {
     const TickType_t xPeriod = pdMS_TO_TICKS(100);
     xLastWakeTime = xTaskGetTickCount();
 
-    while (1) {
+    static size_t tsalCounter = 0;
+    static float dcLinkVoltage = 0.0f;
+    bool dcLinkVoltageValid = false;
+    init_wdt();
 
-        dbg6_set();
+    while (1) {
+        refresh_wdt();
         /*
          * 1) System is healthy if AMS and IMD are not in error state,
          * 2) AMS and IMD power stages are enabled to close the shutdown circuit,
@@ -150,6 +154,9 @@ static void contactor_control_task(void *p) {
         bool voltageEqual = false;
 
         uint8_t contactorState = 0; //bit-coded: 00000xyz, x=pos, y=neg, z=pre
+        bool stateNegAir = false;
+        bool statePosAir = false;
+        bool statePre = false;
 
         _contactorStateMachineState = _stateMachine.current;
 
@@ -161,47 +168,61 @@ static void contactor_control_task(void *p) {
             systemIsHealthy &= batteryStatus->imdResetStatus;
             systemIsHealthy &= batteryStatus->shutdownCircuit;
 
-            contactorState = ((batteryStatus->hvPosState & 0x01) << 2) | ((batteryStatus->hvNegState & 0x01) << 1) | ((batteryStatus->hvPreState & 0x01));
+            statePosAir = batteryStatus->hvPosState;
+            stateNegAir = batteryStatus->hvNegState;
+            statePre = batteryStatus->hvPreState;
+            //contactorState = ((batteryStatus->hvPosState & 0x01) << 2) | ((batteryStatus->hvNegState & 0x01) << 1) | ((batteryStatus->hvPreState & 0x01));
             release_battery_status();
         }
 
         sensor_data_t *sensorData = get_sensor_data(portMAX_DELAY);
         if (sensorData != NULL) {
+            dcLinkVoltage = sensorData->dcLinkVoltage;
+            dcLinkVoltageValid = sensorData->dcLinkVoltageValid;
             if (fabs(sensorData->batteryVoltage - sensorData->dcLinkVoltage) <= (0.05f * sensorData->batteryVoltage)) {
                 voltageEqual = true;
             }
             release_sensor_data();
         }
 
+
         switch (_stateMachine.current) {
         case STATE_STANDBY:
+        case STATE_ERROR:
             // All contactors must be off
-            if (contactorState != 0x0) {
-                relayPlausible = false;
+            if (/*statePre == false && stateNegAir == false && statePosAir == false*/1) {
+                if (dcLinkVoltage >= 60.0f && ++tsalCounter >= 70) {
+                    // TSAC output voltage is still >60 V after 7 seconds -> TSAL turns off
+                    set_pin(TP_8_PORT, TP_8_PIN); //implausible
+                    //systemIsHealthy = false; //Force error state in case of TSAL error
+                    tsalCounter = 70; //Limit value
+                } else if (dcLinkVoltage < 60.0f) {
+                    clear_pin(TP_8_PORT, TP_8_PIN); //plausible
+                    set_pin(TP_7_PORT, TP_7_PIN); //green
+                    tsalCounter = 0;
+                } else if (dcLinkVoltage >= 60.0f && tsalCounter > 1 && tsalCounter <= 70) {
+                    clear_pin(TP_8_PORT, TP_8_PIN); //plausible
+                    clear_pin(TP_7_PORT, TP_7_PIN); //rot
+                }
+            } else {
+                set_pin(TP_8_PORT, TP_8_PIN); //implausible
             }
             break;
         case STATE_PRE_CHARGE:
             // Only pre-charge and neg AIR active
-            if (contactorState != 0x3) {
-                relayPlausible = false;
-            }
+            clear_pin(TP_8_PORT, TP_8_PIN); //plausible
+            clear_pin(TP_7_PORT, TP_7_PIN); //red
             break;
         case STATE_OPERATE:
             // Only pos AIR and neg AIR active
-            if (contactorState != 0x6) {
-                relayPlausible = false;
-            }
-            break;
-        case STATE_ERROR:
-            // All contactors must be off
-            if (contactorState != 0x0) {
-                relayPlausible = false;
-            }
+            clear_pin(TP_8_PORT, TP_8_PIN); //plausible
+            clear_pin(TP_7_PORT, TP_7_PIN); //red
             break;
         }
 
         //TODO: Plausibility check is temporarily disabled. Cannot be tested with demonstrator.
         relayPlausible = true;
+
 
 
 
@@ -254,7 +275,6 @@ static void contactor_control_task(void *p) {
                 }
             }
         }
-        dbg6_clear();
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
 }

@@ -85,7 +85,7 @@ static void can_send_task(void *p) {
     memset(balance, 0, sizeof(balance));
 
     while (1) {
-        dbg5_set();
+
         stacks_data_t* stacksData = get_stacks_data(portMAX_DELAY);
         if (stacksData != NULL) {
             memcpy(canData.UID, stacksUID, sizeof(stacksUID));
@@ -301,13 +301,22 @@ static void can_send_task(void *p) {
         msg.DLC = 3;
         can_send(CAN0, &msg);
 
+        msg.ID = 0x00F;
+        msg.payload[0] = canData.minSoc >> 8;
+        msg.payload[1] = canData.minSoc & 0xFF;
+        msg.payload[2] = canData.maxTemp >> 8;
+        msg.payload[3] = canData.maxTemp & 0xFF;
+        msg.payload[4] = canData.tsState;
+        msg.DLC = 5;
+        can_send(CAN0, &msg);
+
         if (counter < MAXSTACKS-1) {
             counter++;
         } else {
             counter = 0;
         }
 
-        dbg5_clear();
+
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
 }

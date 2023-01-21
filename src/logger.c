@@ -70,7 +70,7 @@ void logger_task(void *p) {
 
     while (1) {
         if (ulTaskNotifyTake(pdFALSE, pdMS_TO_TICKS(2000))) {
-            dbg4_set();
+
             if (_loggerActive) {
 
                 copy_rtc_date_time(&loggingData.timestamp, pdMS_TO_TICKS(5));
@@ -120,7 +120,7 @@ void logger_task(void *p) {
                 _loggerActive = false;
                 vTaskSuspend(NULL);
             }
-            dbg4_clear();
+
         }
     }
 }

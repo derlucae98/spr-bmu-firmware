@@ -79,8 +79,12 @@ void housekeeping_task(void *p) {
     lastWakeTime = xTaskGetTickCount();
     uint64_t counter = 0;
 
+
+
+
+
     while (1) {
-        refresh_wdt(); //Refresh watchdog within 50 ms
+        //refresh_wdt(); //Refresh watchdog within 50 ms
 
         if ((counter % 2) == 0) {
             //100ms
@@ -279,9 +283,14 @@ void gpio_init(void) {
     set_direction(TP_3_PORT, TP_3_PIN, GPIO_OUTPUT);
     set_direction(TP_4_PORT, TP_4_PIN, GPIO_OUTPUT);
     set_direction(TP_5_PORT, TP_5_PIN, GPIO_OUTPUT);
+    clear_pin(TP_5_PORT, TP_5_PIN);
     set_direction(TP_6_PORT, TP_6_PIN, GPIO_OUTPUT);
     set_direction(TP_7_PORT, TP_7_PIN, GPIO_OUTPUT);
     set_direction(TP_8_PORT, TP_8_PIN, GPIO_OUTPUT);
+    set_drive_strength(TP_7_PORT, TP_7_PIN, DRIVE_STRENGTH_HIGH);
+    set_drive_strength(TP_8_PORT, TP_8_PIN, DRIVE_STRENGTH_HIGH);
+    clear_pin(TP_7_PORT, TP_7_PIN); //Initial condition TSAL (Grün/rot : grün = 1, rot = 0)
+    clear_pin(TP_8_PORT, TP_8_PIN); //Initial condition TSAL (1 = 0V)
 
 
     set_pin_mux(UART_PORT, UART_RX, 6);
@@ -319,7 +328,7 @@ void init_task(void *p) {
         init_rtc();
 
         uint32_t resetReason = RCM->SRS;
-        PRINTF("Reset reason: 0x%X\n", resetReason);
+        //printf("Reset reason: 0x%lX\n", resetReason);
         if (resetReason & 0x0002) {
             PRINTF("Reset due to brown-out\n");
         } else if (resetReason & 0x0004) {
@@ -346,20 +355,27 @@ void init_task(void *p) {
             PRINTF("Reset due to stop ack error\n");
         }
 
+        //Send reset reason on startup over CAN
+        can_msg_t msg;
+        msg.ID = 0x010;
+        msg.DLC = 2;
+        msg.payload[0] = (resetReason >> 8) & 0xFF;
+        msg.payload[1] = resetReason & 0xFF;
+        can_send(CAN0, &msg);
 
         xTaskCreate(uart_rec_task, "uart_rec", 1000, NULL, 2, &uartRecTaskHandle);
         init_bmu();
         logger_init();
         xTaskCreate(sd_init_task, "sd init", 400, NULL, 2, &_sdInitTaskHandle);
-        xTaskCreate(housekeeping_task, "housekeeping", 300, NULL, 4, &_housekeepingTaskHandle);
+        xTaskCreate(housekeeping_task, "housekeeping", 400, NULL, 3, &_housekeepingTaskHandle);
         vTaskDelete(NULL);
     }
 }
 
 int main(void)
 {
+    disable_wdt();
     clock_init();
-    init_wdt();
     gpio_init();
     can_init(CAN0);
     uart_init(false);
@@ -378,6 +394,7 @@ int main(void)
     spi_init(LPSPI0, LPSPI_PRESC_2, LPSPI_MODE_0);
     spi_init(LPSPI1, LPSPI_PRESC_8, LPSPI_MODE_0);
     spi_init(LPSPI2, LPSPI_PRESC_8, LPSPI_MODE_3);
+    spi_enable_dma(LPSPI1);
 
     xTaskCreate(init_task, "init", 1000, NULL, configMAX_PRIORITIES-1, NULL);
 
