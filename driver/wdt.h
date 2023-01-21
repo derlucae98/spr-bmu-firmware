@@ -14,5 +14,6 @@
 
 void init_wdt(void);
 void refresh_wdt(void);
+void disable_wdt (void);
 
 #endif /* WDT_H_ */

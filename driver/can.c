@@ -50,11 +50,11 @@ void can_init(CAN_Type *can) {
 
     CAN0->CTRL1 = 0x10003; //1 MBit/s
     //Initialize message buffer
-    for(size_t i = 0; i < ((CAN_MB_REC + CAN_MB_SEND) * CAN_MB_SIZE); i++) {
+    for (size_t i = 0; i < ((CAN_MB_REC + CAN_MB_SEND) * CAN_MB_SIZE); i++) {
         can->RAMn[i] = 0; //Clear buffer
     }
 
-    for(size_t i = 0; i < CAN_MB_REC; i++) {
+    for (size_t i = 0; i < CAN_MB_REC; i++) {
         can->RXIMR[i] = 0x1FC3FFFF; //Filter Mask 0x00F
     }
     //Mask for message buffer 14 and 15 is handled separately

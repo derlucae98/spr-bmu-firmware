@@ -44,8 +44,6 @@ void stacks_worker_task(void *p) {
 
     while (1) {
 
-        dbg1_set();
-
         ltc6811_wake_daisy_chain();
         ltc6811_get_voltage(stacksDataLocal.cellVoltage, pecVoltage);
         ltc6811_set_balancing_gates(_balancingGates);
@@ -122,9 +120,6 @@ void stacks_worker_task(void *p) {
             memcpy(stacksData, &stacksDataLocal, sizeof(stacks_data_t));
             release_stacks_data();
         }
-
-        dbg1_clear();
-
 
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
