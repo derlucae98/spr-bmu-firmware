@@ -136,9 +136,6 @@ static void contactor_control_task(void *p) {
     const TickType_t xPeriod = pdMS_TO_TICKS(100);
     xLastWakeTime = xTaskGetTickCount();
 
-    static size_t tsalCounter = 0;
-    static float dcLinkVoltage = 0.0f;
-    bool dcLinkVoltageValid = false;
     init_wdt();
 
     while (1) {
@@ -177,54 +174,14 @@ static void contactor_control_task(void *p) {
 
         sensor_data_t *sensorData = get_sensor_data(portMAX_DELAY);
         if (sensorData != NULL) {
-            dcLinkVoltage = sensorData->dcLinkVoltage;
-            dcLinkVoltageValid = sensorData->dcLinkVoltageValid;
             if (fabs(sensorData->batteryVoltage - sensorData->dcLinkVoltage) <= (0.05f * sensorData->batteryVoltage)) {
                 voltageEqual = true;
             }
             release_sensor_data();
         }
 
-
-        switch (_stateMachine.current) {
-        case STATE_STANDBY:
-        case STATE_ERROR:
-            // All contactors must be off
-            if (/*statePre == false && stateNegAir == false && statePosAir == false*/1) {
-                if (dcLinkVoltage >= 60.0f && ++tsalCounter >= 70) {
-                    // TSAC output voltage is still >60 V after 7 seconds -> TSAL turns off
-                    set_pin(TP_8_PORT, TP_8_PIN); //implausible
-                    //systemIsHealthy = false; //Force error state in case of TSAL error
-                    tsalCounter = 70; //Limit value
-                } else if (dcLinkVoltage < 60.0f) {
-                    clear_pin(TP_8_PORT, TP_8_PIN); //plausible
-                    set_pin(TP_7_PORT, TP_7_PIN); //green
-                    tsalCounter = 0;
-                } else if (dcLinkVoltage >= 60.0f && tsalCounter > 1 && tsalCounter <= 70) {
-                    clear_pin(TP_8_PORT, TP_8_PIN); //plausible
-                    clear_pin(TP_7_PORT, TP_7_PIN); //rot
-                }
-            } else {
-                set_pin(TP_8_PORT, TP_8_PIN); //implausible
-            }
-            break;
-        case STATE_PRE_CHARGE:
-            // Only pre-charge and neg AIR active
-            clear_pin(TP_8_PORT, TP_8_PIN); //plausible
-            clear_pin(TP_7_PORT, TP_7_PIN); //red
-            break;
-        case STATE_OPERATE:
-            // Only pos AIR and neg AIR active
-            clear_pin(TP_8_PORT, TP_8_PIN); //plausible
-            clear_pin(TP_7_PORT, TP_7_PIN); //red
-            break;
-        }
-
         //TODO: Plausibility check is temporarily disabled. Cannot be tested with demonstrator.
         relayPlausible = true;
-
-
-
 
         if (++_tsRequestTimeout >= 5) {
             //timeout after 500ms

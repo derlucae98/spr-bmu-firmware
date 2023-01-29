@@ -287,11 +287,6 @@ void gpio_init(void) {
     set_direction(TP_6_PORT, TP_6_PIN, GPIO_OUTPUT);
     set_direction(TP_7_PORT, TP_7_PIN, GPIO_OUTPUT);
     set_direction(TP_8_PORT, TP_8_PIN, GPIO_OUTPUT);
-    set_drive_strength(TP_7_PORT, TP_7_PIN, DRIVE_STRENGTH_HIGH);
-    set_drive_strength(TP_8_PORT, TP_8_PIN, DRIVE_STRENGTH_HIGH);
-    clear_pin(TP_7_PORT, TP_7_PIN); //Initial condition TSAL (Grün/rot : grün = 1, rot = 0)
-    clear_pin(TP_8_PORT, TP_8_PIN); //Initial condition TSAL (1 = 0V)
-
 
     set_pin_mux(UART_PORT, UART_RX, 6);
     set_pin_mux(UART_PORT, UART_TX, 6);
