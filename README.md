@@ -2,7 +2,7 @@
 
 Firmware for Battery Management Unit (BMS, IMD evaluation, AIR control)  used in SPR21evo and SPR23e
 
-## Known issues BMU SPR22e
+## Known issues BMU SPR21evo
 
 - Hardware is susceptible to EMI: Controller restarts in 1 out of 3 times while turning TS on or at high motor RPM (strange restart reason: JTAG)
 - Isolation resistance evaluation is not implemented (IMD PWM protocol)
