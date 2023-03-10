@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include "FreeRTOS.h"
 #include "semphr.h"
-#include "S32K146.h"
+#include "S32K14x.h"
 #include "config.h"
 #include "interrupts.h"
 

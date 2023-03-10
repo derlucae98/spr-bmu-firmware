@@ -9,7 +9,7 @@
 #include "task.h"
 #include "semphr.h"
 #include "queue.h"
-#include "S32K146.h"
+#include "S32K14x.h"
 #include "interrupts.h"
 
 typedef struct {

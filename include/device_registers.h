@@ -4,7 +4,7 @@
 **         Common include file for CMSIS register access layer headers.
 **
 **     Copyright (c) 2015 Freescale Semiconductor, Inc.
-**     Copyright 2016-2017 NXP
+**     Copyright 2016-2021 NXP
 **     All rights reserved.
 **
 **     THIS SOFTWARE IS PROVIDED BY NXP "AS IS" AND ANY EXPRESSED OR
@@ -43,24 +43,23 @@
  * The CPU macro should be declared in the project or makefile.
  */
 
-#if defined(CPU_S32K146)
+#if (defined(CPU_S32K148) )
 
     #define S32K14x_SERIES
 
     /* Specific core definitions */
     #include "s32_core_cm4.h"
 	
-    #if defined(CPU_S32K146)
+    #if defined(CPU_S32K148)
 
-        #define S32K146_SERIES
+        #define S32K148_SERIES
 
         /* Register definitions */
-        #include "S32K146.h"
+        #include "S32K148.h"
         /* CPU specific feature definitions */
-        #include "S32K146_features.h"
-		
-     #endif
-
+        #include "S32K148_features.h"
+    #endif
+    
 #else
     #error "No valid CPU defined!"
 #endif

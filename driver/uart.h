@@ -6,7 +6,7 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "interrupts.h"
-#include "S32K146.h"
+#include "S32K14x.h"
 #include "gpio.h"
 #include "stdbool.h"
 
