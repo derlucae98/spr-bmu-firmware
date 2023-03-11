@@ -48,7 +48,7 @@ void can_init(CAN_Type *can) {
     can->MCR &= ~CAN_MCR_MDIS_MASK;
     while (!(can->MCR & CAN_MCR_FRZACK_MASK));
 
-    CAN0->CTRL1 = 0x10003; //1 MBit/s
+    can->CTRL1 = 0x10003; //1 MBit/s
     //Initialize message buffer
     for (size_t i = 0; i < ((CAN_MB_REC + CAN_MB_SEND) * CAN_MB_SIZE); i++) {
         can->RAMn[i] = 0; //Clear buffer

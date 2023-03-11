@@ -9,6 +9,7 @@
 #include "S32K14x.h"
 #include "gpio.h"
 #include "stdbool.h"
+#include "config.h"
 
 typedef void (*uart_receive_hook_t)(char*); //Function pointer for the uart receive hook
 

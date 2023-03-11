@@ -5,6 +5,13 @@
 #include "gpio.h"
 #include "config.h"
 #include "wdt.h"
+#include "uart.h"
+#include "can.h"
+
+
+#include <alloca.h>
+#include <string.h>
+
 
 static void set_gpio_config(void) {
     gpio_enable_clock(PORTA);
@@ -87,12 +94,22 @@ void all_contactor_off(void) {
 }
 
 void test_task(void *p) {
+    (void) p;
     TickType_t lastWake = xTaskGetTickCount();
     const TickType_t period = pdMS_TO_TICKS(1000);
 
     set_pin(AMS_FAULT_PORT, AMS_FAULT_PIN);
     uint8_t sequenzer = 0;
     while (1) {
+        PRINTF("Test!\n");
+
+        can_msg_t msg;
+        msg.ID = 0x0FF;
+        msg.DLC = 2;
+        msg.payload[0] = 0x5A;
+        msg.payload[1] = 0xA5;
+        can_send(CAN1, &msg);
+
         switch (sequenzer) {
         case 0:
             all_leds_off();
@@ -148,14 +165,40 @@ void test_task(void *p) {
     }
 }
 
+static void uart_rec(char* s) {
+
+    char *strtokHelp = NULL;
+    const char *delim = " \r\n";
+    char *token = NULL;
+    token = strtok_r(s, delim, &strtokHelp);
+    char *tokens[4];
+    uint8_t counter = 0;
+    while (token != NULL) {
+        size_t len = strlen(token) + 1;
+        tokens[counter] = alloca(len);
+        strcpy(tokens[counter], token);
+        counter++;
+        token = strtok_r(NULL, delim, &strtokHelp);
+    }
+
+    if (strcmp(tokens[0], "ts") == 0) {
+        if (strcmp(tokens[1], "on") == 0) {
+            PRINTF("Activating TS\n");
+        } else if (strcmp(tokens[1], "off") == 0) {
+            PRINTF("Deactivating TS\n");
+        }
+    }
+}
+
 int main(void)
 {
     disable_wdt();
     clock_init();
     set_gpio_config();
-//    can_init(CAN0);
-//    uart_init(false);
-//    uart_register_receive_hook(uart_rec);
+    can_init(CAN0);
+    can_init(CAN1);
+    uart_init(true);
+    uart_register_receive_hook(uart_rec);
 //
 //
 //    spi_init(LPSPI0, LPSPI_PRESC_2, LPSPI_MODE_0);
