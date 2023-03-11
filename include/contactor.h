@@ -14,9 +14,10 @@
 #include "gpio.h"
 #include "config.h"
 #include <stdbool.h>
-//#include "sensors.h"
+#include "sensors.h"
 //#include "safety.h"
 #include "wdt.h"
+#include "math.h"
 
 
 typedef enum {

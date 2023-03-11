@@ -111,7 +111,7 @@ static inline void open_all_contactors(void) {
 
 static void standby(void) {
     open_all_contactors();
-    PRINTF("State standby\n");
+//    PRINTF("State standby\n");
 }
 
 static void pre_charge(void) {
@@ -119,24 +119,24 @@ static void pre_charge(void) {
     close_contactor(CONTACTOR_HV_PRE);
     vTaskDelay(pdMS_TO_TICKS(50));
     close_contactor(CONTACTOR_HV_NEG);
-    PRINTF("State pre-charge\n");
+//    PRINTF("State pre-charge\n");
 }
 
 static void operate(void) {
     close_contactor(CONTACTOR_HV_POS);
     close_contactor(CONTACTOR_HV_NEG);
     open_contactor(CONTACTOR_HV_PRE);
-    PRINTF("State operate\n");
+//    PRINTF("State operate\n");
 }
 
 static void error(void) {
     open_all_contactors();
-    PRINTF("State error\n");
+//    PRINTF("State error\n");
 }
 
 void init_contactor(void) {
     _stateMachine.current = STATE_STANDBY;
-    xTaskCreate(contactor_control_task, "contactor", 400, NULL, 4, NULL);
+    xTaskCreate(contactor_control_task, "contactor", CONTACTOR_TASK_STACK, NULL, CONTACTOR_TASK_PRIO, NULL);
 }
 
 static void contactor_control_task(void *p) {
@@ -167,6 +167,13 @@ static void contactor_control_task(void *p) {
         _contactorStateMachineState = _stateMachine.current;
 
 
+        adc_data_t *adcData = get_adc_data(portMAX_DELAY);
+        if (adcData != NULL) {
+            if (fabs(adcData->batteryVoltage - adcData->dcLinkVoltage) <= (0.05f * adcData->batteryVoltage)) {
+                voltageEqual = true;
+            }
+            release_adc_data();
+        }
 //        if (++_tsRequestTimeout >= 5) {
 //            //timeout after 500ms
 //            _tsActive = false;

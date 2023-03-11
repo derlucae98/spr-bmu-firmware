@@ -99,7 +99,7 @@ static void adc_task(void *p) {
     (void) p;
 
     TickType_t xLastWakeTime;
-    const TickType_t xPeriod = pdMS_TO_TICKS(100);
+    const TickType_t xPeriod = pdMS_TO_TICKS(25);
     xLastWakeTime = xTaskGetTickCount();
     int32_t currentVal = 0;
     int32_t ubatVal = 0;
@@ -112,21 +112,21 @@ static void adc_task(void *p) {
     while (1) {
 
         // If an error occurred, try to reset the adc to clear the error
-        if (adcError) {
-            mcp356x_reset(&_adc);
-            mcp356x_set_config(&_adc);
-        }
-
-
-        if (mcp356x_acquire(&_adc, MUX_CH4, MUX_CH5) != MCP356X_ERROR_OK) {
-            adcError = true;
-        }
-        vTaskDelay(pdMS_TO_TICKS(6));
-        if (mcp356x_read_value(&_adc, &currentVal, NULL, NULL) == MCP356X_ERROR_OK) {
-            adcError = false;
-        } else {
-            adcError = true;
-        }
+//        if (adcError) {
+//            mcp356x_reset(&_adc);
+//            mcp356x_set_config(&_adc);
+//        }
+//
+//
+//        if (mcp356x_acquire(&_adc, MUX_CH4, MUX_CH5) != MCP356X_ERROR_OK) {
+//            adcError = true;
+//        }
+//        vTaskDelay(pdMS_TO_TICKS(6));
+//        if (mcp356x_read_value(&_adc, &currentVal, NULL, NULL) == MCP356X_ERROR_OK) {
+//            adcError = false;
+//        } else {
+//            adcError = true;
+//        }
 
 
         if (mcp356x_acquire(&_adc, MUX_CH3, MUX_CH2) != MCP356X_ERROR_OK) {
@@ -155,6 +155,7 @@ static void adc_task(void *p) {
         ulinkVolt = ADC_VOLTAGE_CONVERSION_RATIO * (ulinkVal * 2.5f) / 8388608.0f;
         ulinkVolt = (ulinkVolt + (1.11091f / 0.989208f)) * 0.989208f;
 
+
 //        PRINTF("%.3f\n", ulinkVolt);
 
 //        PRINTF("Ubat cal: %f\n", ubatCal);
@@ -180,16 +181,15 @@ static void adc_task(void *p) {
         }
 
 
-//        adc_data_t *adcData = get_adc_data(pdMS_TO_TICKS(4));
-//        if (adcData != NULL) {
-//            adcData->current = current;
-//            adcData->batteryVoltage = ubatVolt;
-//            adcData->dcLinkVoltage = ulinkVolt;
-//            adcData->valid = !adcError;
-//            release_adc_data();
-//        } else {
-//            PRINTF("adc: Can't get mutex!\n");
-//        }
+        adc_data_t *adcData = get_adc_data(pdMS_TO_TICKS(4));
+        if (adcData != NULL) {
+            adcData->batteryVoltage = ubatVolt;
+            adcData->dcLinkVoltage = ulinkVolt;
+            adcData->valid = !adcError;
+            release_adc_data();
+        } else {
+            PRINTF("adc: Can't get mutex!\n");
+        }
 
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
