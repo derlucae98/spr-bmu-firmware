@@ -68,6 +68,86 @@ static void set_gpio_config(void) {
     set_pin_mux(UART_PORT, UART_TX, 4);
 }
 
+void all_leds_off(void) {
+    clear_pin(LED_AMS_FAULT_PORT, LED_AMS_FAULT_PIN);
+    clear_pin(LED_IMD_FAULT_PORT, LED_IMD_FAULT_PIN);
+    clear_pin(LED_AMS_OK_PORT, LED_AMS_OK_PIN);
+    clear_pin(LED_IMD_OK_PORT, LED_IMD_OK_PIN);
+    clear_pin(LED_WARNING_PORT, LED_WARNING_PIN);
+    clear_pin(LED_CARD_PORT, LED_CARD_PIN);
+}
+
+void all_contactor_off(void) {
+    clear_pin(AIR_POS_SET_PORT, AIR_POS_SET_PIN);
+    clear_pin(AIR_POS_CLR_PORT, AIR_POS_CLR_PIN);
+    clear_pin(AIR_NEG_SET_PORT, AIR_NEG_SET_PIN);
+    clear_pin(AIR_NEG_CLR_PORT, AIR_NEG_CLR_PIN);
+    clear_pin(AIR_PRE_CLR_PORT, AIR_PRE_CLR_PIN);
+    clear_pin(AIR_PRE_SET_PORT, AIR_PRE_SET_PIN);
+}
+
+void test_task(void *p) {
+    TickType_t lastWake = xTaskGetTickCount();
+    const TickType_t period = pdMS_TO_TICKS(1000);
+
+    set_pin(AMS_FAULT_PORT, AMS_FAULT_PIN);
+    uint8_t sequenzer = 0;
+    while (1) {
+        switch (sequenzer) {
+        case 0:
+            all_leds_off();
+            set_pin(LED_AMS_FAULT_PORT, LED_AMS_FAULT_PIN);
+            all_contactor_off();
+            vTaskDelay(1);
+            set_pin(AIR_POS_CLR_PORT, AIR_POS_CLR_PIN);
+            vTaskDelay(1);
+            set_pin(AIR_POS_SET_PORT, AIR_POS_SET_PIN);
+            sequenzer = 1;
+            break;
+        case 1:
+            all_leds_off();
+            set_pin(LED_AMS_OK_PORT, LED_AMS_OK_PIN);
+            all_contactor_off();
+            vTaskDelay(1);
+            set_pin(AIR_NEG_CLR_PORT, AIR_NEG_CLR_PIN);
+            vTaskDelay(1);
+            set_pin(AIR_NEG_SET_PORT, AIR_NEG_SET_PIN);
+            sequenzer = 2;
+            break;
+        case 2:
+            all_leds_off();
+            set_pin(LED_IMD_FAULT_PORT, LED_IMD_FAULT_PIN);
+            all_contactor_off();
+            vTaskDelay(1);
+            set_pin(AIR_PRE_CLR_PORT, AIR_PRE_CLR_PIN);
+            vTaskDelay(1);
+            set_pin(AIR_PRE_SET_PORT, AIR_PRE_SET_PIN);
+            sequenzer = 3;
+            break;
+        case 3:
+            all_leds_off();
+            set_pin(LED_IMD_OK_PORT, LED_IMD_OK_PIN);
+            all_contactor_off();
+
+            sequenzer = 4;
+            break;
+        case 4:
+            all_leds_off();
+            set_pin(LED_WARNING_PORT, LED_WARNING_PIN);
+
+            sequenzer = 5;
+            break;
+        case 5:
+            all_leds_off();
+            set_pin(LED_CARD_PORT, LED_CARD_PIN);
+            sequenzer = 0;
+            break;
+        }
+
+        vTaskDelayUntil(&lastWake, period);
+    }
+}
+
 int main(void)
 {
     disable_wdt();
@@ -85,6 +165,7 @@ int main(void)
 //
 //    xTaskCreate(init_task, "init", 1000, NULL, configMAX_PRIORITIES-1, NULL);
 //
+    xTaskCreate(test_task, "Test", 1024, NULL, 2, NULL);
     vTaskStartScheduler();
 
     while(1); //Hopefully never reach here...
