@@ -7,6 +7,10 @@
 #include "wdt.h"
 #include "uart.h"
 #include "can.h"
+#include "spi.h"
+#include "sensors.h"
+
+#include "contactor.h"
 
 
 #include <alloca.h>
@@ -184,8 +188,10 @@ static void uart_rec(char* s) {
     if (strcmp(tokens[0], "ts") == 0) {
         if (strcmp(tokens[1], "on") == 0) {
             PRINTF("Activating TS\n");
+            request_tractive_system(true);
         } else if (strcmp(tokens[1], "off") == 0) {
             PRINTF("Deactivating TS\n");
+            request_tractive_system(false);
         }
     }
 }
@@ -199,16 +205,20 @@ int main(void)
     can_init(CAN1);
     uart_init(true);
     uart_register_receive_hook(uart_rec);
+    set_pin(AMS_FAULT_PORT, AMS_FAULT_PIN);
+    init_contactor();
 //
 //
 //    spi_init(LPSPI0, LPSPI_PRESC_2, LPSPI_MODE_0);
-//    spi_init(LPSPI1, LPSPI_PRESC_8, LPSPI_MODE_0);
+    spi_init(LPSPI1, LPSPI_PRESC_8, LPSPI_MODE_0);
 //    spi_init(LPSPI2, LPSPI_PRESC_8, LPSPI_MODE_3);
 //    spi_enable_dma(LPSPI1);
+
+    init_adc();
 //
 //    xTaskCreate(init_task, "init", 1000, NULL, configMAX_PRIORITIES-1, NULL);
 //
-    xTaskCreate(test_task, "Test", 1024, NULL, 2, NULL);
+//    xTaskCreate(test_task, "Test", 1024, NULL, 2, NULL);
     vTaskStartScheduler();
 
     while(1); //Hopefully never reach here...

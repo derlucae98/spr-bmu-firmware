@@ -24,12 +24,17 @@
 #define UART_RECV_TASK_STACK 512
 #define UART_RECV_TASK_PRIO 1
 
+#define ADC_TASK_STACK 1000
+#define ADC_TASK_PRIO   2
+
 
 #define EEPROM_SOC_PAGE_1 0x100
 #define EEPROM_SOC_PAGE_2 0x200
 #define EEPROM_SOC_PAGE_3 0x300
 
 #define NOMINAL_CELL_CAPACITY_mAh 15000
+
+#define ADC_VOLTAGE_CONVERSION_RATIO 299.9f
 
 
 #define MAXSTACKS 12
@@ -145,6 +150,7 @@
 #define MOSI_EEPROM_PIN     SPI2_MOSI_PIN
 
 //ADC
+#define ADC_SPI             LPSPI1
 #define CS_ADC_PORT         PORTB
 #define CS_ADC_PIN          13
 #define IRQ_ADC_PORT        PORTB
