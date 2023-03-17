@@ -170,7 +170,7 @@ void spi_mutex_give(LPSPI_Type *spi) {
     }
 }
 
-void spi_dma_move(LPSPI_Type *spi, uint8_t *data, size_t len) {
+void spi_dma_move_array(LPSPI_Type *spi, uint8_t *data, size_t len) {
     uintptr_t spiModule = (uintptr_t)spi;
     uint8_t dmaChannel;
 
