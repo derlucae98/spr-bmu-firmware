@@ -122,41 +122,105 @@ static void set_gpio_config(void) {
 }
 
 void test_1(void) {
+    // No error
     uartEN = 1;
     vTaskDelay(pdMS_TO_TICKS(1000));
     request_tractive_system(true);
-    vTaskDelay(pdMS_TO_TICKS(3300));
+    vTaskDelay(pdMS_TO_TICKS(2200));
     request_tractive_system(false);
-    vTaskDelay(pdMS_TO_TICKS(2700));
+    vTaskDelay(pdMS_TO_TICKS(2900));
     uartEN = 0;
 }
 
 void test_2(void) {
-
+    // AIR+ stuck
+    hilData.posAirStuck = 1;
+    uartEN = 1;
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    request_tractive_system(true);
+    vTaskDelay(pdMS_TO_TICKS(2200));
+    request_tractive_system(false);
+    vTaskDelay(pdMS_TO_TICKS(2900));
+    uartEN = 0;
+    hilData.posAirStuck = 0;
 }
 
 void test_3(void) {
-
+    // PRE stuck
+    hilData.preStuck = 1;
+    uartEN = 1;
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    request_tractive_system(true);
+    vTaskDelay(pdMS_TO_TICKS(2200));
+    request_tractive_system(false);
+    vTaskDelay(pdMS_TO_TICKS(2900));
+    uartEN = 0;
+    hilData.preStuck = 0;
 }
 
 void test_4(void) {
-
+    // AIR- stuck
+    hilData.negAirStuck = 1;
+    uartEN = 1;
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    request_tractive_system(true);
+    vTaskDelay(pdMS_TO_TICKS(2200));
+    request_tractive_system(false);
+    vTaskDelay(pdMS_TO_TICKS(2900));
+    uartEN = 0;
+    hilData.negAirStuck = 0;
 }
 
 void test_5(void) {
-
+    // Voltage detection broken wire
+    hilData.voltDetBroken = 1;
+    uartEN = 1;
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    request_tractive_system(true);
+    vTaskDelay(pdMS_TO_TICKS(2200));
+    request_tractive_system(false);
+    vTaskDelay(pdMS_TO_TICKS(2900));
+    uartEN = 0;
+    hilData.voltDetBroken = 0;
 }
 
 void test_6(void) {
-
+    // AIR+ state detection broken wire
+    hilData.posAirBroken = 1;
+    uartEN = 1;
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    request_tractive_system(true);
+    vTaskDelay(pdMS_TO_TICKS(2200));
+    request_tractive_system(false);
+    vTaskDelay(pdMS_TO_TICKS(2900));
+    uartEN = 0;
+    hilData.posAirBroken = 0;
 }
 
 void test_7(void) {
-
+    // PRE state detection broken wire
+    hilData.preBroken = 1;
+    uartEN = 1;
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    request_tractive_system(true);
+    vTaskDelay(pdMS_TO_TICKS(2200));
+    request_tractive_system(false);
+    vTaskDelay(pdMS_TO_TICKS(2900));
+    uartEN = 0;
+    hilData.preBroken = 0;
 }
 
 void test_8(void) {
-
+    // AIR- state detection broken wire
+    hilData.negAirBroken = 1;
+    uartEN = 1;
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    request_tractive_system(true);
+    vTaskDelay(pdMS_TO_TICKS(2200));
+    request_tractive_system(false);
+    vTaskDelay(pdMS_TO_TICKS(2900));
+    uartEN = 0;
+    hilData.negAirBroken = 0;
 }
 
 void uart_send_task(void *p) {
