@@ -359,6 +359,7 @@ void hil_tester_task(void *p) {
         if (ulTaskNotifyTake(pdFALSE, portMAX_DELAY)) {
             switch (requestedTest) {
             case 1:
+
                 test_1();
                 break;
             case 2:
@@ -387,6 +388,19 @@ void hil_tester_task(void *p) {
     }
 }
 
+void init_task(void *p) {
+    (void)p;
+
+    while (1) {
+        init_adc();
+        xTaskCreate(can_recv_task, "", 1024, NULL, 2, NULL);
+        xTaskCreate(can_send_task, "", 1024, NULL, 2, NULL);
+        xTaskCreate(uart_send_task, "", 1024, NULL, 2, NULL);
+        xTaskCreate(hil_tester_task, "", 1024, NULL, 2, &hil_tester_taskhandle);
+        vTaskDelete(NULL);
+    }
+}
+
 int main(void)
 {
     disable_wdt();
@@ -399,20 +413,19 @@ int main(void)
     set_pin(AMS_FAULT_PORT, AMS_FAULT_PIN);
     init_contactor();
 
-    spi_init(LPSPI1, LPSPI_PRESC_8, LPSPI_MODE_0);
+
+    spi_init(LPSPI1, LPSPI_PRESC_1, LPSPI_MODE_0);
+    spi_enable_dma(LPSPI1);
 
 
-    init_adc();
 
     uartEN = 0;
     tsal = 0;
     memset(&hilData, 0, sizeof(hil_data_t));
     memset(&uartData, 0, sizeof(uart_data_t));
 
-    xTaskCreate(can_recv_task, "", 1024, NULL, 2, NULL);
-    xTaskCreate(can_send_task, "", 1024, NULL, 2, NULL);
-    xTaskCreate(uart_send_task, "", 1024, NULL, 2, NULL);
-    xTaskCreate(hil_tester_task, "", 1024, NULL, 2, &hil_tester_taskhandle);
+    xTaskCreate(init_task, "", 1000, NULL, configMAX_PRIORITIES-1, NULL);
+
     vTaskStartScheduler();
 
     while(1); //Hopefully never reach here...

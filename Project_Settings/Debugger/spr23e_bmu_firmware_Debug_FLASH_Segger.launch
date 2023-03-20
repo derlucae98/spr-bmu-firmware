@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="ilg.gnuarmeclipse.debug.gdbjtag.jlink.launchConfigurationType">
+    <booleanAttribute key="com.nxp.s32ds.ext.cdt.debug.svd.ask_before_clean" value="false"/>
+    <booleanAttribute key="com.nxp.s32ds.ext.cdt.debug.svd.clean_watch_view" value="false"/>
+    <stringAttribute key="com.nxp.s32ds.ext.cdt.debug.svd.merge_strategy" value="ALL"/>
+    <stringAttribute key="com.nxp.s32ds.ext.cdt.debug.svd.svd_path" value=""/>
+    <booleanAttribute key="com.nxp.s32ds.ext.cdt.debug.svd.use_default" value="true"/>
     <booleanAttribute key="ilg.gnuarmeclipse.debug.gdbjtag.jlink.doConnectToRunning" value="false"/>
     <booleanAttribute key="ilg.gnuarmeclipse.debug.gdbjtag.jlink.doContinue" value="true"/>
     <booleanAttribute key="ilg.gnuarmeclipse.debug.gdbjtag.jlink.doDebugInRam" value="true"/>
@@ -27,7 +32,7 @@
     <stringAttribute key="ilg.gnuarmeclipse.debug.gdbjtag.jlink.gdbServerDeviceEndianness" value="little"/>
     <stringAttribute key="ilg.gnuarmeclipse.debug.gdbjtag.jlink.gdbServerDeviceName" value="S32K148"/>
     <stringAttribute key="ilg.gnuarmeclipse.debug.gdbjtag.jlink.gdbServerDeviceSpeed" value="1000"/>
-    <stringAttribute key="ilg.gnuarmeclipse.debug.gdbjtag.jlink.gdbServerExecutable" value="${eclipse_home}../Drivers/Segger/JLinkGDBServer"/>
+    <stringAttribute key="ilg.gnuarmeclipse.debug.gdbjtag.jlink.gdbServerExecutable" value="/opt/SEGGER/JLink/JLinkGDBServer"/>
     <intAttribute key="ilg.gnuarmeclipse.debug.gdbjtag.jlink.gdbServerGdbPortNumber" value="2331"/>
     <stringAttribute key="ilg.gnuarmeclipse.debug.gdbjtag.jlink.gdbServerLog" value=""/>
     <stringAttribute key="ilg.gnuarmeclipse.debug.gdbjtag.jlink.gdbServerOther" value="-singlerun -strict -timeout 0 -nogui"/>

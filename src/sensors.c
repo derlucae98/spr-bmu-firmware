@@ -45,7 +45,7 @@ bool copy_adc_data(adc_data_t *dest, TickType_t blocktime) {
 }
 
 static inline void adc_spi(uint8_t *a, size_t len) {
-    spi_move_array(ADC_SPI, a, len);
+    spi_dma_move_array(ADC_SPI, a, len);
 }
 
 static inline void adc_assert(void) {
@@ -156,7 +156,7 @@ static void adc_task(void *p) {
         ulinkVolt = (ulinkVolt + (1.11091f / 0.989208f)) * 0.989208f;
 
 
-//        PRINTF("%.3f\n", ulinkVolt);
+        PRINTF("%.3f\n", ulinkVolt);
 
 //        PRINTF("Ubat cal: %f\n", ubatCal);
 
