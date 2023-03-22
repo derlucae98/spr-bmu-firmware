@@ -37,7 +37,7 @@ void spi_mutex_give(LPSPI_Type *spi);
 void spi_enable_dma(LPSPI_Type *spi);
 void spi_disable_dma(LPSPI_Type *spi);
 
-void spi_dma_move_array(LPSPI_Type *spi, uint8_t *data, size_t len);
+
 
 
 #endif /* SPI_H_ */

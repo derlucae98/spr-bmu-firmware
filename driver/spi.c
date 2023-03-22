@@ -6,6 +6,10 @@ static SemaphoreHandle_t _spi2Mutex = NULL;
 
 static volatile TaskHandle_t dmaTaskToNotify[3] = {NULL};
 static volatile TaskHandle_t spiTaskToNotify[3] = {NULL};
+static uint8_t dmaEnabled[3] = {0};
+
+static void spi_dma_move_array(LPSPI_Type *spi, uint8_t *a, size_t len); //Use DMA for large transfers
+static void spi_irq_move_array(LPSPI_Type *spi, uint8_t *a, size_t len); //Default mode
 
 void spi_init(LPSPI_Type *spi, uint8_t presc, uint8_t mode) {
     configASSERT(spi);
@@ -16,17 +20,20 @@ void spi_init(LPSPI_Type *spi, uint8_t presc, uint8_t mode) {
     switch (spiModule) {
     case LPSPI0_BASE:
         spiIrq = LPSPI0_IRQn;
+        dmaEnabled[0] = 0;
         PCC->PCCn[PCC_LPSPI0_INDEX]  = PCC_PCCn_PCS(1) | PCC_PCCn_CGC(1);  //Set clock to option 1: SOSCDIV2_CLK
         _spi0Mutex = xSemaphoreCreateRecursiveMutex();
         configASSERT(_spi0Mutex);
         break;
     case LPSPI1_BASE:
         spiIrq = LPSPI1_IRQn;
+        dmaEnabled[1] = 0;
         PCC->PCCn[PCC_LPSPI1_INDEX]  = PCC_PCCn_PCS(1) | PCC_PCCn_CGC(1);  //Set clock to option 1: SOSCDIV2_CLK
         _spi1Mutex = xSemaphoreCreateRecursiveMutex();
         configASSERT(_spi1Mutex);
         break;
     case LPSPI2_BASE:
+        dmaEnabled[2] = 0;
         spiIrq = LPSPI2_IRQn;
         PCC->PCCn[PCC_LPSPI2_INDEX]  = PCC_PCCn_PCS(1) | PCC_PCCn_CGC(1);  //Set clock to option 1: SOSCDIV2_CLK
         _spi2Mutex = xSemaphoreCreateRecursiveMutex();
@@ -65,16 +72,19 @@ void spi_enable_dma(LPSPI_Type *spi) {
     case LPSPI0_BASE:
         dmaIRQ = DMA1_IRQn;
         spiIrq = LPSPI0_IRQn;
+        dmaEnabled[0] = 1;
         DMAMUX->CHCFG[0] = DMAMUX_CHCFG_ENBL_MASK | DMAMUX_CHCFG_SOURCE(15); //Source: LPSPI0 TX request
         DMAMUX->CHCFG[1] = DMAMUX_CHCFG_ENBL_MASK | DMAMUX_CHCFG_SOURCE(14); //Source: LPSPI0 RX request
         break;
     case LPSPI1_BASE:
         dmaIRQ = DMA3_IRQn;
         spiIrq = LPSPI1_IRQn;
+        dmaEnabled[1] = 1;
         DMAMUX->CHCFG[2] = DMAMUX_CHCFG_ENBL_MASK | DMAMUX_CHCFG_SOURCE(17); //Source: LPSPI1 TX request
         DMAMUX->CHCFG[3] = DMAMUX_CHCFG_ENBL_MASK | DMAMUX_CHCFG_SOURCE(16); //Source: LPSPI1 RX request
         break;
     case LPSPI2_BASE:
+        dmaEnabled[2] = 1;
         dmaIRQ = DMA5_IRQn;
         spiIrq = LPSPI2_IRQn;
         DMAMUX->CHCFG[4] = DMAMUX_CHCFG_ENBL_MASK | DMAMUX_CHCFG_SOURCE(19); //Source: LPSPI2 TX request
@@ -90,6 +100,7 @@ void spi_enable_dma(LPSPI_Type *spi) {
 void spi_disable_dma(LPSPI_Type *spi) {
     configASSERT(spi);
     uint32_t dmaIRQ = 0;
+    uint32_t spiIrq = 0;
 
     spi->DER = LPSPI_DER_TDDE(0) | LPSPI_DER_RDDE(0); //DMA RX/TX request disabled
 
@@ -102,22 +113,29 @@ void spi_disable_dma(LPSPI_Type *spi) {
     switch (spiModule) {
     case LPSPI0_BASE:
         dmaIRQ = DMA1_IRQn;
+        spiIrq = LPSPI0_IRQn;
+        dmaEnabled[0] = 0;
         DMAMUX->CHCFG[0] = 0;
         DMAMUX->CHCFG[1] = 0;
         break;
     case LPSPI1_BASE:
         dmaIRQ = DMA3_IRQn;
+        spiIrq = LPSPI0_IRQn;
+        dmaEnabled[1] = 0;
         DMAMUX->CHCFG[2] = 0;
         DMAMUX->CHCFG[3] = 0;
         break;
     case LPSPI2_BASE:
         dmaIRQ = DMA5_IRQn;
+        spiIrq = LPSPI0_IRQn;
+        dmaEnabled[2] = 0;
         DMAMUX->CHCFG[4] = 0;
         DMAMUX->CHCFG[5] = 0;
         break;
     }
 
     nvic_disable_irq(dmaIRQ);
+    nvic_enable_irq(spiIrq);
 }
 
 uint8_t spi_move(LPSPI_Type *spi, uint8_t b) {
@@ -148,7 +166,7 @@ uint8_t spi_move(LPSPI_Type *spi, uint8_t b) {
     return rec;
 }
 
-void spi_move_array(LPSPI_Type *spi, uint8_t *a, size_t len) {
+static void spi_irq_move_array(LPSPI_Type *spi, uint8_t *a, size_t len) {
     if (spi_mutex_take(spi, portMAX_DELAY)) {
         dbg2(1);
         for (size_t i = 0; i < len; i++) {
@@ -156,6 +174,28 @@ void spi_move_array(LPSPI_Type *spi, uint8_t *a, size_t len) {
         }
         spi_mutex_give(spi);
         dbg2(0);
+    }
+}
+
+void spi_move_array(LPSPI_Type *spi, uint8_t *a, size_t len) {
+    uintptr_t spiModule = (uintptr_t)spi;
+    uint8_t spi_module = 0;
+
+    switch (spiModule) {
+        case LPSPI0_BASE:
+            spi_module = 0;
+            break;
+        case LPSPI1_BASE:
+            spi_module = 1;
+            break;
+        case LPSPI2_BASE:
+            spi_module = 2;
+            break;
+    }
+    if (dmaEnabled[spi_module]) {
+        spi_dma_move_array(spi, a, len);
+    } else {
+        spi_irq_move_array(spi, a, len);
     }
 }
 
@@ -203,7 +243,7 @@ void spi_mutex_give(LPSPI_Type *spi) {
     }
 }
 
-void spi_dma_move_array(LPSPI_Type *spi, uint8_t *data, size_t len) {
+static void spi_dma_move_array(LPSPI_Type *spi, uint8_t *a, size_t len) {
 
     uintptr_t spiModule = (uintptr_t)spi;
     volatile uint8_t dmaChannel;
@@ -222,7 +262,7 @@ void spi_dma_move_array(LPSPI_Type *spi, uint8_t *data, size_t len) {
     if (spi_mutex_take(spi, portMAX_DELAY)) {
 
         //TX DMA
-        DMA->TCD[dmaChannel].SADDR = (uint32_t)data; //Source address
+        DMA->TCD[dmaChannel].SADDR = (uint32_t)a; //Source address
         DMA->TCD[dmaChannel].SOFF = 1; //1 byte offset after each read
         DMA->TCD[dmaChannel].ATTR = 0; //8 bit transfers, no modulo
         DMA->TCD[dmaChannel].NBYTES.MLOFFNO = DMA_TCD_NBYTES_MLOFFNO_NBYTES(1); //1 byte per minor loop
@@ -239,7 +279,7 @@ void spi_dma_move_array(LPSPI_Type *spi, uint8_t *data, size_t len) {
         DMA->TCD[dmaChannel+1].ATTR = 0; //8 bit transfers, no modulo
         DMA->TCD[dmaChannel+1].NBYTES.MLOFFNO = DMA_TCD_NBYTES_MLOFFNO_NBYTES(1); //1 byte per minor loop
         DMA->TCD[dmaChannel+1].SLAST = 0;
-        DMA->TCD[dmaChannel+1].DADDR = (uint32_t)data;
+        DMA->TCD[dmaChannel+1].DADDR = (uint32_t)a;
         DMA->TCD[dmaChannel+1].DOFF = 1; //Destination offset
         DMA->TCD[dmaChannel+1].DLASTSGA = -len;
         DMA->TCD[dmaChannel+1].CITER.ELINKNO = len;
