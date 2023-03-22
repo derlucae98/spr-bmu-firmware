@@ -15,6 +15,8 @@ static adc_data_t _adcData;
 
 extern void PRINTF(const char *format, ...);
 static void adc_task(void *p);
+static void adc_irq_callback(BaseType_t *higherPrioTaskWoken);
+static TaskHandle_t adcTaskHandle = NULL;
 
 
 static BaseType_t adc_mutex_take(TickType_t blocktime) {
@@ -61,6 +63,8 @@ bool init_adc(void) {
     configASSERT(_adcDataMutex);
     memset(&_adcData, 0, sizeof(adc_data_t));
 
+    attach_interrupt(IRQ_ADC_PORT, IRQ_ADC_PIN, IRQ_EDGE_FALLING, adc_irq_callback);
+
     mcp356x_error_t err;
 
     _adc = mcp356x_init(adc_spi, adc_assert, adc_deassert);
@@ -73,7 +77,7 @@ bool init_adc(void) {
     _adc.config.CRC_FORMAT = CRC_FORMAT_16;
     _adc.config.IRQ_MODE = IRQ_MODE_IRQ_HIGH_Z;
     _adc.config.EN_STP = 0;
-    _adc.config.OSR = OSR_2048;
+    _adc.config.OSR = OSR_16384;
     _adc.config.AZ_MUX = 1;
     _adc.config.EN_CRCCOM = 1;
 
@@ -81,27 +85,27 @@ bool init_adc(void) {
     err = mcp356x_reset(&_adc);
 
     if (err != MCP356X_ERROR_OK) {
-        PRINTF("Current adc init failed!\n");
+        PRINTF("Adc reset failed!\n");
         return false;
     }
 
     err = mcp356x_set_config(&_adc);
     if (err != MCP356X_ERROR_OK) {
-        PRINTF("Current adc init failed!\n");
+        PRINTF("Adc set config failed!\n");
         return false;
     }
 
-    xTaskCreate(adc_task, "adc", ADC_TASK_STACK, NULL, ADC_TASK_PRIO, NULL);
+    xTaskCreate(adc_task, "adc", ADC_TASK_STACK, NULL, ADC_TASK_PRIO, &adcTaskHandle);
     return true;
 }
 
+static void adc_irq_callback(BaseType_t *higherPrioTaskWoken) {
+
+    vTaskNotifyGiveFromISR(adcTaskHandle, higherPrioTaskWoken);
+}
 
 static void adc_task(void *p) {
     (void) p;
-
-    TickType_t xLastWakeTime;
-    const TickType_t xPeriod = pdMS_TO_TICKS(25);
-    xLastWakeTime = xTaskGetTickCount();
     int32_t currentVal = 0;
     int32_t ubatVal = 0;
     int32_t ulinkVal = 0;
@@ -129,36 +133,46 @@ static void adc_task(void *p) {
 //            adcError = true;
 //        }
 
+
+//        if (mcp356x_acquire(&_adc, MUX_CH3, MUX_CH2) != MCP356X_ERROR_OK) {
+//            adcError = true;
+//        }
+
+//
+//        ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
+//
+
+//        if (mcp356x_read_value(&_adc, &ubatVal, NULL, NULL) == MCP356X_ERROR_OK) {
+//            adcError = false;
+//        } else {
+//            adcError = true;
+//        }
+
+
         dbg1(1);
-        if (mcp356x_acquire(&_adc, MUX_CH3, MUX_CH2) != MCP356X_ERROR_OK) {
-            adcError = true;
-        }
-//        vTaskDelay(pdMS_TO_TICKS(6));
-        if (mcp356x_read_value(&_adc, &ubatVal, NULL, NULL) == MCP356X_ERROR_OK) {
-            adcError = false;
-        } else {
+        if (mcp356x_acquire(&_adc, MUX_CH1, MUX_CH0) != MCP356X_ERROR_OK) {
             adcError = true;
         }
         dbg1(0);
 
-        if (mcp356x_acquire(&_adc, MUX_CH1, MUX_CH0) != MCP356X_ERROR_OK) {
-            adcError = true;
-        }
-//        vTaskDelay(pdMS_TO_TICKS(6));
+        ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
+
+        dbg2(1);
         if (mcp356x_read_value(&_adc, &ulinkVal, NULL, NULL) == MCP356X_ERROR_OK) {
             adcError = false;
         } else {
             adcError = true;
         }
-
-        ubatVolt = ADC_VOLTAGE_CONVERSION_RATIO * (ubatVal * 2.5f) / 8388608.0f;
-        ubatVolt = (ubatVolt - (1.3606f / 0.99671f)) * 0.99671f;
+        dbg2(0);
+//
+//        ubatVolt = ADC_VOLTAGE_CONVERSION_RATIO * (ubatVal * 2.5f) / 8388608.0f;
+//        ubatVolt = (ubatVolt - (1.3606f / 0.99671f)) * 0.99671f;
 
         ulinkVolt = ADC_VOLTAGE_CONVERSION_RATIO * (ulinkVal * 2.5f) / 8388608.0f;
         ulinkVolt = (ulinkVolt + (1.11091f / 0.989208f)) * 0.989208f;
 
 
-        PRINTF("%.3f\n", ulinkVolt);
+        PRINTF("%.1f\n", ulinkVolt);
 
 //        PRINTF("Ubat cal: %f\n", ubatCal);
 
@@ -192,7 +206,5 @@ static void adc_task(void *p) {
         } else {
             PRINTF("adc: Can't get mutex!\n");
         }
-
-        vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
 }

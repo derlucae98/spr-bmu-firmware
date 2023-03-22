@@ -158,7 +158,7 @@ uint8_t spi_move(LPSPI_Type *spi, uint8_t b) {
         while(!(spi->SR & LPSPI_SR_TDF_MASK)); //Wait for TX-Fifo
         spi->TDR = (uint32_t)b; //Transmit data
 
-        ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         rec = (uint8_t)spi->RDR; //Read received data
         spi_mutex_give(spi);

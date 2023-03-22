@@ -448,5 +448,6 @@ void vApplicationMallocFailedHook(void) {
 }
 
 void vApplicationIdleHook(void) {
+    toggle_pin(DBG_3_PORT, DBG_3_PIN);
 }
 
