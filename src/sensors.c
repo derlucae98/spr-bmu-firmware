@@ -45,7 +45,7 @@ bool copy_adc_data(adc_data_t *dest, TickType_t blocktime) {
 }
 
 static inline void adc_spi(uint8_t *a, size_t len) {
-    spi_dma_move_array(ADC_SPI, a, len);
+    spi_move_array(ADC_SPI, a, len);
 }
 
 static inline void adc_assert(void) {
@@ -73,7 +73,8 @@ bool init_adc(void) {
     _adc.config.CRC_FORMAT = CRC_FORMAT_16;
     _adc.config.IRQ_MODE = IRQ_MODE_IRQ_HIGH_Z;
     _adc.config.EN_STP = 0;
-    _adc.config.OSR = OSR_4096;
+    _adc.config.OSR = OSR_2048;
+    _adc.config.AZ_MUX = 1;
     _adc.config.EN_CRCCOM = 1;
 
 
@@ -128,21 +129,22 @@ static void adc_task(void *p) {
 //            adcError = true;
 //        }
 
-
+        dbg1(1);
         if (mcp356x_acquire(&_adc, MUX_CH3, MUX_CH2) != MCP356X_ERROR_OK) {
             adcError = true;
         }
-        vTaskDelay(pdMS_TO_TICKS(6));
+//        vTaskDelay(pdMS_TO_TICKS(6));
         if (mcp356x_read_value(&_adc, &ubatVal, NULL, NULL) == MCP356X_ERROR_OK) {
             adcError = false;
         } else {
             adcError = true;
         }
+        dbg1(0);
 
         if (mcp356x_acquire(&_adc, MUX_CH1, MUX_CH0) != MCP356X_ERROR_OK) {
             adcError = true;
         }
-        vTaskDelay(pdMS_TO_TICKS(6));
+//        vTaskDelay(pdMS_TO_TICKS(6));
         if (mcp356x_read_value(&_adc, &ulinkVal, NULL, NULL) == MCP356X_ERROR_OK) {
             adcError = false;
         } else {

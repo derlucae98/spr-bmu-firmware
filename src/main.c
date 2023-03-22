@@ -393,6 +393,7 @@ void init_task(void *p) {
 
     while (1) {
         init_adc();
+        init_contactor();
         xTaskCreate(can_recv_task, "", 1024, NULL, 2, NULL);
         xTaskCreate(can_send_task, "", 1024, NULL, 2, NULL);
         xTaskCreate(uart_send_task, "", 1024, NULL, 2, NULL);
@@ -411,11 +412,11 @@ int main(void)
     uart_init(true);
     uart_register_receive_hook(uart_rec);
     set_pin(AMS_FAULT_PORT, AMS_FAULT_PIN);
-    init_contactor();
+
 
 
     spi_init(LPSPI1, LPSPI_PRESC_1, LPSPI_MODE_0);
-    spi_enable_dma(LPSPI1);
+//    spi_enable_dma(LPSPI1);
 
 
 
