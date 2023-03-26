@@ -117,7 +117,6 @@ static void standby(void) {
 static void pre_charge(void) {
     open_contactor(CONTACTOR_HV_POS);
     close_contactor(CONTACTOR_HV_PRE);
-    vTaskDelay(pdMS_TO_TICKS(50));
     close_contactor(CONTACTOR_HV_NEG);
 //    PRINTF("State pre-charge\n");
 }
