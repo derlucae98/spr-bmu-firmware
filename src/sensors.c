@@ -1,5 +1,5 @@
 /*
- * adcs.c
+ * sensors.c
  *
  *  Created on: Feb 4, 2022
  *      Author: Luca Engelmann
@@ -134,45 +134,45 @@ static void adc_task(void *p) {
 //        }
 
 
-//        if (mcp356x_acquire(&_adc, MUX_CH3, MUX_CH2) != MCP356X_ERROR_OK) {
-//            adcError = true;
-//        }
-
-//
-//        ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
-//
-
-//        if (mcp356x_read_value(&_adc, &ubatVal, NULL, NULL) == MCP356X_ERROR_OK) {
-//            adcError = false;
-//        } else {
-//            adcError = true;
-//        }
-
-
-        dbg1(1);
-        if (mcp356x_acquire(&_adc, MUX_CH1, MUX_CH0) != MCP356X_ERROR_OK) {
+        if (mcp356x_acquire(&_adc, MUX_CH3, MUX_CH2) != MCP356X_ERROR_OK) {
             adcError = true;
         }
-        dbg1(0);
+
 
         ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
 
-        dbg2(1);
-        if (mcp356x_read_value(&_adc, &ulinkVal, NULL, NULL) == MCP356X_ERROR_OK) {
+
+        if (mcp356x_read_value(&_adc, &ubatVal, NULL, NULL) == MCP356X_ERROR_OK) {
             adcError = false;
         } else {
             adcError = true;
         }
-        dbg2(0);
+
+
+//        dbg1(1);
+//        if (mcp356x_acquire(&_adc, MUX_CH1, MUX_CH0) != MCP356X_ERROR_OK) {
+//            adcError = true;
+//        }
+//        dbg1(0);
 //
-//        ubatVolt = ADC_VOLTAGE_CONVERSION_RATIO * (ubatVal * 2.5f) / 8388608.0f;
-//        ubatVolt = (ubatVolt - (1.3606f / 0.99671f)) * 0.99671f;
+//        ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
+//
+//        dbg2(1);
+//        if (mcp356x_read_value(&_adc, &ulinkVal, NULL, NULL) == MCP356X_ERROR_OK) {
+//            adcError = false;
+//        } else {
+//            adcError = true;
+//        }
+//        dbg2(0);
+
+        ubatVolt = ADC_VOLTAGE_CONVERSION_RATIO * (ubatVal * 2.5f) / 8388608.0f;
+        ubatVolt = (ubatVolt - (1.3606f / 0.99671f)) * 0.99671f;
 
         ulinkVolt = ADC_VOLTAGE_CONVERSION_RATIO * (ulinkVal * 2.5f) / 8388608.0f;
         ulinkVolt = (ulinkVolt + (1.11091f / 0.989208f)) * 0.989208f;
 
 
-        PRINTF("%.1f\n", ulinkVolt);
+        PRINTF("%.1f\n", ubatVolt);
 
 //        PRINTF("Ubat cal: %f\n", ubatCal);
 
