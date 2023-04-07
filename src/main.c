@@ -9,47 +9,13 @@
 #include "can.h"
 #include "spi.h"
 #include "sensors.h"
-
+#include "stacks.h"
+#include "bmu.h"
 #include "contactor.h"
 
 
 #include <alloca.h>
 #include <string.h>
-
-volatile uint8_t tsal = 0;
-
-typedef struct {
-    uint8_t powerCycle;
-    uint8_t posAirStuck;
-    uint8_t posAirBroken;
-    uint8_t preStuck;
-    uint8_t preBroken;
-    uint8_t negAirStuck;
-    uint8_t negAirBroken;
-    uint8_t voltDetBroken;
-} hil_data_t;
-
-typedef struct {
-    uint8_t posAirIntent;
-    uint8_t posAirState;
-
-    uint8_t preIntent;
-    uint8_t preState;
-
-    uint8_t negAirIntent;
-    uint8_t negAirState;
-
-    uint8_t voltPresent;
-} uart_data_t;
-
-volatile uart_data_t uartData;
-
-volatile hil_data_t hilData;
-
-volatile uint8_t uartEN;
-
-TaskHandle_t hil_tester_taskhandle = NULL;
-uint8_t requestedTest = 0;
 
 
 static void set_gpio_config(void) {
@@ -121,145 +87,6 @@ static void set_gpio_config(void) {
     set_pin_mux(UART_PORT, UART_TX, 4);
 }
 
-void test_1(void) {
-    // No error
-    uartEN = 1;
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    request_tractive_system(true);
-    vTaskDelay(pdMS_TO_TICKS(2200));
-    request_tractive_system(false);
-    vTaskDelay(pdMS_TO_TICKS(2900));
-    uartEN = 0;
-}
-
-void test_2(void) {
-    // AIR+ stuck
-    hilData.posAirStuck = 1;
-    uartEN = 1;
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    request_tractive_system(true);
-    vTaskDelay(pdMS_TO_TICKS(2200));
-    request_tractive_system(false);
-    vTaskDelay(pdMS_TO_TICKS(2900));
-    uartEN = 0;
-    hilData.posAirStuck = 0;
-}
-
-void test_3(void) {
-    // PRE stuck
-    hilData.preStuck = 1;
-    uartEN = 1;
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    request_tractive_system(true);
-    vTaskDelay(pdMS_TO_TICKS(2200));
-    request_tractive_system(false);
-    vTaskDelay(pdMS_TO_TICKS(2900));
-    uartEN = 0;
-    hilData.preStuck = 0;
-}
-
-void test_4(void) {
-    // AIR- stuck
-    hilData.negAirStuck = 1;
-    uartEN = 1;
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    request_tractive_system(true);
-    vTaskDelay(pdMS_TO_TICKS(2200));
-    request_tractive_system(false);
-    vTaskDelay(pdMS_TO_TICKS(2900));
-    uartEN = 0;
-    hilData.negAirStuck = 0;
-}
-
-void test_5(void) {
-    // Voltage detection broken wire
-    hilData.voltDetBroken = 1;
-    uartEN = 1;
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    request_tractive_system(true);
-    vTaskDelay(pdMS_TO_TICKS(2200));
-    request_tractive_system(false);
-    vTaskDelay(pdMS_TO_TICKS(2900));
-    uartEN = 0;
-    hilData.voltDetBroken = 0;
-}
-
-void test_6(void) {
-    // AIR+ state detection broken wire
-    hilData.posAirBroken = 1;
-    uartEN = 1;
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    request_tractive_system(true);
-    vTaskDelay(pdMS_TO_TICKS(2200));
-    request_tractive_system(false);
-    vTaskDelay(pdMS_TO_TICKS(2900));
-    uartEN = 0;
-    hilData.posAirBroken = 0;
-}
-
-void test_7(void) {
-    // PRE state detection broken wire
-    hilData.preBroken = 1;
-    uartEN = 1;
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    request_tractive_system(true);
-    vTaskDelay(pdMS_TO_TICKS(2200));
-    request_tractive_system(false);
-    vTaskDelay(pdMS_TO_TICKS(2900));
-    uartEN = 0;
-    hilData.preBroken = 0;
-}
-
-void test_8(void) {
-    // AIR- state detection broken wire
-    hilData.negAirBroken = 1;
-    uartEN = 1;
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    request_tractive_system(true);
-    vTaskDelay(pdMS_TO_TICKS(2200));
-    request_tractive_system(false);
-    vTaskDelay(pdMS_TO_TICKS(2900));
-    uartEN = 0;
-    hilData.negAirBroken = 0;
-}
-
-void uart_send_task(void *p) {
-    (void)p;
-
-    TickType_t lastWake = xTaskGetTickCount();
-    TickType_t period = pdMS_TO_TICKS(50);
-
-    float voltage = 0.0f;
-    while (1) {
-
-        if (uartEN) {
-            adc_data_t *adcData = get_adc_data(portMAX_DELAY);
-            voltage = adcData->dcLinkVoltage;
-            release_adc_data();
-
-            //Eingänge abfragen
-            uartData.posAirIntent = get_pin(AIR_POS_INTENT_PORT, AIR_POS_INTENT_PIN);
-            uartData.negAirIntent = get_pin(AIR_NEG_INTENT_PORT, AIR_NEG_INTENT_PIN);
-            uartData.preIntent = get_pin(AIR_PRE_INTENT_PORT, AIR_PRE_INTENT_PIN);
-            uartData.posAirState = get_pin(AIR_POS_STATE_PORT, AIR_POS_STATE_PIN);
-            uartData.negAirState = get_pin(AIR_NEG_STATE_PORT, AIR_NEG_STATE_PIN);
-            uartData.preState = get_pin(AIR_PRE_STATE_PORT, AIR_PRE_STATE_PIN);
-            uartData.voltPresent = get_pin(TSAC_HV_PORT, TSAC_HV_PIN);
-
-
-
-
-
-            PRINTF("%.2f;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u\n", voltage, uartData.posAirIntent, uartData.posAirState, hilData.posAirStuck, hilData.posAirBroken,
-                    uartData.preIntent, uartData.preState, hilData.preStuck, hilData.preBroken, uartData.negAirIntent, uartData.negAirState, hilData.negAirStuck, hilData.negAirBroken,
-                    uartData.voltPresent, hilData.voltDetBroken, tsal);
-        }
-
-        vTaskDelayUntil(&lastWake, period);
-    }
-}
-
-
 
 
 static void uart_rec(char* s) {
@@ -284,109 +111,9 @@ static void uart_rec(char* s) {
         } else if (strcmp(tokens[1], "off") == 0) {
             request_tractive_system(false);
         }
-    } else if (strcmp(tokens[0], "test") == 0) {
-        if (strcmp(tokens[1], "1") == 0) {
-            requestedTest = 1;
-            xTaskNotifyGive(hil_tester_taskhandle);
-        } else if (strcmp(tokens[1], "2") == 0) {
-            requestedTest = 2;
-            xTaskNotifyGive(hil_tester_taskhandle);
-        }
-        else if (strcmp(tokens[1], "3") == 0) {
-            requestedTest = 3;
-            xTaskNotifyGive(hil_tester_taskhandle);
-        }
-        else if (strcmp(tokens[1], "4") == 0) {
-            requestedTest = 4;
-            xTaskNotifyGive(hil_tester_taskhandle);
-        }
-        else if (strcmp(tokens[1], "5") == 0) {
-            requestedTest = 5;
-            xTaskNotifyGive(hil_tester_taskhandle);
-        }
-        else if (strcmp(tokens[1], "6") == 0) {
-            requestedTest = 6;
-            xTaskNotifyGive(hil_tester_taskhandle);
-        }
-        else if (strcmp(tokens[1], "7") == 0) {
-            requestedTest = 7;
-            xTaskNotifyGive(hil_tester_taskhandle);
-        }
-        else if (strcmp(tokens[1], "8") == 0) {
-            requestedTest = 8;
-            xTaskNotifyGive(hil_tester_taskhandle);
-        }
-    } else if (strcmp(tokens[0], "power") == 0) {
-        if (strcmp(tokens[1], "cycle") == 0) {
-            hilData.powerCycle = 1;
-        }
     }
 }
 
-void can_recv_task(void *p) {
-    (void)p;
-    can_msg_t msg;
-    while (1) {
-        if (xQueueReceive(can0RxQueueHandle, &msg, portMAX_DELAY)) {
-            if (msg.ID == 1 && msg.DLC == 1) {
-                tsal = msg.payload[0] & 0x01;
-            }
-        }
-    }
-}
-
-void can_send_task(void *p) {
-    (void)p;
-    TickType_t lastWake = xTaskGetTickCount();
-    TickType_t period = pdMS_TO_TICKS(50);
-
-    can_msg_t msg;
-    while (1) {
-        msg.ID = 0;
-        msg.DLC = 1;
-        msg.payload[0] = ((hilData.powerCycle & 0x01) << 7) | ((hilData.posAirStuck & 0x01) << 6) | ((hilData.posAirBroken & 0x01) << 5)
-                | ((hilData.preStuck & 0x01) << 4) | ((hilData.preBroken & 0x01) << 3) | ((hilData.negAirStuck & 0x01) << 2) | ((hilData.negAirBroken & 0x01) << 1)
-                | (hilData.voltDetBroken & 0x01);
-        can_send(CAN0, &msg);
-        vTaskDelayUntil(&lastWake, period);
-    }
-}
-
-void hil_tester_task(void *p) {
-    (void)p;
-
-    while (1) {
-        if (ulTaskNotifyTake(pdFALSE, portMAX_DELAY)) {
-            switch (requestedTest) {
-            case 1:
-
-                test_1();
-                break;
-            case 2:
-                test_2();
-                break;
-            case 3:
-                test_3();
-                break;
-            case 4:
-                test_4();
-                break;
-            case 5:
-                test_5();
-                break;
-            case 6:
-                test_6();
-                break;
-            case 7:
-                test_7();
-                break;
-            case 8:
-                test_8();
-                break;
-            }
-        }
-    }
-}
 
 void init_task(void *p) {
     (void)p;
@@ -394,10 +121,9 @@ void init_task(void *p) {
     while (1) {
         init_adc();
         init_contactor();
-        xTaskCreate(can_recv_task, "", 1024, NULL, 2, NULL);
-        xTaskCreate(can_send_task, "", 1024, NULL, 2, NULL);
-        xTaskCreate(uart_send_task, "", 1024, NULL, 2, NULL);
-        xTaskCreate(hil_tester_task, "", 1024, NULL, 2, &hil_tester_taskhandle);
+        init_bmu();
+        init_stacks();
+
         vTaskDelete(NULL);
     }
 }
@@ -416,14 +142,11 @@ int main(void)
 
 
     spi_init(LPSPI1, LPSPI_PRESC_1, LPSPI_MODE_0);
+    spi_init(LPSPI0, LPSPI_PRESC_8, LPSPI_MODE_3);
 //    spi_enable_dma(LPSPI1);
 
 
 
-    uartEN = 0;
-    tsal = 0;
-    memset(&hilData, 0, sizeof(hil_data_t));
-    memset(&uartData, 0, sizeof(uart_data_t));
 
     xTaskCreate(init_task, "", 1000, NULL, configMAX_PRIORITIES-1, NULL);
 

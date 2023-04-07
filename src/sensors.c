@@ -172,7 +172,7 @@ static void adc_task(void *p) {
         ulinkVolt = (ulinkVolt + (1.11091f / 0.989208f)) * 0.989208f;
 
 
-        PRINTF("%.1f\n", ubatVolt);
+//        PRINTF("%.1f\n", ubatVolt);
 
 //        PRINTF("Ubat cal: %f\n", ubatCal);
 
