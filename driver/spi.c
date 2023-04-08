@@ -28,7 +28,7 @@ void spi_init(LPSPI_Type *spi, uint8_t presc, uint8_t mode) {
     case LPSPI1_BASE:
         spiIrq = LPSPI1_IRQn;
         dmaEnabled[1] = 0;
-        PCC->PCCn[PCC_LPSPI1_INDEX]  = PCC_PCCn_PCS(1) | PCC_PCCn_CGC(1);  //Set clock to option 1: SOSCDIV2_CLK
+        PCC->PCCn[PCC_LPSPI1_INDEX]  = PCC_PCCn_PCS(6) | PCC_PCCn_CGC(1);  //Set clock to option 6: SPLLDIV2
         _spi1Mutex = xSemaphoreCreateRecursiveMutex();
         configASSERT(_spi1Mutex);
         break;

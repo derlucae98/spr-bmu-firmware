@@ -142,7 +142,7 @@ int main(void)
 
 
     spi_init(LPSPI1, LPSPI_PRESC_1, LPSPI_MODE_0);
-    spi_init(LPSPI0, LPSPI_PRESC_8, LPSPI_MODE_3);
+    spi_init(LPSPI0, LPSPI_PRESC_4, LPSPI_MODE_3);
 //    spi_enable_dma(LPSPI1);
 
 
