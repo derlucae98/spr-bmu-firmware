@@ -305,11 +305,6 @@ void ltc6811_get_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], LTCError_t voltag
 
 
     read_cell_voltage_registers_and_convert_to_voltage(voltage, voltageStatus);
-    for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
-        for (size_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
-            voltage[slave][cell] /= 10; //chop off the 100 uV digit
-        }
-    }
 }
 
 void read_cell_voltage_registers_and_convert_to_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], LTCError_t voltageStatus[][MAX_NUM_OF_CELLS]) {

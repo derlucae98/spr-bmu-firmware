@@ -73,6 +73,13 @@ void stacks_worker_task(void *p) {
 
         ltc6811_wake_daisy_chain();
         ltc6811_get_voltage(stacksDataLocal.cellVoltage, pecVoltage);
+
+        for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
+            for (size_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
+                stacksDataLocal.cellVoltage[slave][cell] /= 10; //chop off the 100 uV digit
+            }
+        }
+
         ltc6811_set_balancing_gates(_balancingGates);
 
         switch (cycle) {
