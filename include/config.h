@@ -12,10 +12,9 @@
 #define VERS_MINOR 0
 #define VERS_BUILD 0
 
-
-#define NUMBEROFSLAVES 1
 #define CELL_UNDERVOLTAGE 3000
 #define CELL_OVERVOLTAGE  4166
+#define MAXCELLTEMP 560 //56 deg C
 
 
 #define SOC_TASK_STACK 512
@@ -46,10 +45,7 @@
 #define ADC_VOLTAGE_CONVERSION_RATIO 299.9f
 
 
-#define MAXSTACKS 12
-#define MAXCELLS  12
-#define MAXTEMPSENS 14
-#define MAXCELLTEMP 560 //56 deg C
+
 
 #define BMU_Q_HANDLE can0RxQueueHandle
 

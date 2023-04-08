@@ -91,14 +91,15 @@ typedef enum {
     GPIO_2 //!< GPIO_2
 } LTCGPIO_t;
 
-#define NTC_CELL 3960
-#define NTC_PCB  3900
 
-static uint8_t _temperatureCounter;
-static uint8_t _config;
+static uint8_t prvConfig;
 
-static inline void select_bms(void);
-static inline void deselect_bms(void);
+static ltc_spi_move_array_t prv_ltc_spi_move_array;
+static ltc_assert_cs_t      prv_ltc_assert_cs;
+static ltc_deassert_cs_t    prv_ltc_deassert_cs;
+static ltc_mutex_take_t     prv_ltc_mutex_take;
+static ltc_mutex_give_t     prv_ltc_mutex_give;
+
 static void send_command(commandLTC_t command);
 static void broadcast(commandLTC_t command);
 static void broadcast_transmit(commandLTC_t command, uint8_t sendPayload[][PAYLOADLEN]);
@@ -133,25 +134,21 @@ enum {
 
 //############################################################################################
 
-void ltc6811_init(uint32_t UID[]) {
-    _config = CFGR0_GPIO5 | CFGR0_GPIO4 | CFGR0_GPIO3 | CFGR0_GPIO2 | CFGR0_GPIO1 | CFGR0_REFON;
+void ltc6811_init(ltc_mutex_take_t ltc_mutex_take, ltc_mutex_give_t ltc_mutex_give, ltc_spi_move_array_t ltc_spi_move_array, ltc_assert_cs_t ltc_assert_cs, ltc_deassert_cs_t ltc_deassert_cs) {
+    prvConfig = CFGR0_GPIO5 | CFGR0_GPIO4 | CFGR0_GPIO3 | CFGR0_GPIO2 | CFGR0_GPIO1 | CFGR0_REFON;
 
-    if(spi_mutex_take(LTC6811_SPI, portMAX_DELAY)) {
+    prv_ltc_mutex_take      = ltc_mutex_take;
+    prv_ltc_mutex_give      = ltc_mutex_give;
+    prv_ltc_spi_move_array  = ltc_spi_move_array;
+    prv_ltc_assert_cs       = ltc_assert_cs;
+    prv_ltc_deassert_cs     = ltc_deassert_cs;
+
+    if (prv_ltc_mutex_take(portMAX_DELAY)) {
         ltc6811_wake_daisy_chain();
-        set_config(_config, NULL);
-        ltc6811_get_uid(UID);
-        spi_mutex_give(LTC6811_SPI);
+        set_config(prvConfig, NULL);
+        prv_ltc_mutex_give();
     }
-}
 
-// Helper functions
-
-void select_bms(void) {
-    clear_pin(CS_SLAVES_PORT, CS_SLAVES_PIN);
-}
-
-void deselect_bms(void) {
-    set_pin(CS_SLAVES_PORT, CS_SLAVES_PIN);
 }
 
 static void send_command(commandLTC_t command) {
@@ -160,46 +157,49 @@ static void send_command(commandLTC_t command) {
     command_temp[1] = (uint8_t) ((command & 0x00FF0000) >> 16);
     command_temp[2] = (uint8_t) ((command & 0x0000FF00) >> 8);
     command_temp[3] = (uint8_t)  (command);
-    spi_move_array(LTC6811_SPI, command_temp, 4);
+    prv_ltc_spi_move_array(command_temp, 4);
 }
 
 void broadcast(commandLTC_t command) {
-    select_bms();
+    prv_ltc_assert_cs();
     send_command(command);
-    deselect_bms();
+    prv_ltc_deassert_cs();
 }
 
 static void broadcast_transmit(commandLTC_t command, uint8_t sendPayload[][PAYLOADLEN]) {
     uint16_t PEC[NUMBEROFSLAVES]; //PEC for the payload. Each payload has different PECs
+    uint8_t send;
 
     for (size_t slave = NUMBEROFSLAVES; slave-- > 0; ) { //Reverse order since first byte will be shifted to the last slave in the chain!
         PEC[slave] = calc_pec(6, &sendPayload[slave][0]); //Calculate the payload PEC beforehand for every slave
     }
 
-    select_bms();
+    prv_ltc_assert_cs();
     send_command(command);
 
     for (size_t slave = NUMBEROFSLAVES; slave-- > 0; ) { //Reverse order since first byte will be shifted to the last slave in the chain!
         for (size_t byte = 0; byte < 6; byte++) {
-            spi_move(LTC6811_SPI, sendPayload[slave][byte]);
+            prv_ltc_spi_move_array(&sendPayload[slave][byte], 1);
         }
-        spi_move(LTC6811_SPI, (uint8_t)(PEC[slave] >> 8));
-        spi_move(LTC6811_SPI, (uint8_t)(PEC[slave] & 0x00FF));
+        send = PEC[slave] >> 8;
+        prv_ltc_spi_move_array(&send, 1);
+        send = PEC[slave] & 0x00FF;
+        prv_ltc_spi_move_array(&send, 1);
     }
-    deselect_bms();
+    prv_ltc_deassert_cs();
 }
 
 static void broadcast_receive(commandLTC_t command, uint8_t recPayload[][PAYLOADLEN], uint8_t *recPEC) {
     uint8_t tempRecPayload[NUMBEROFSLAVES][8]; //Holds payload and received PEC. PEC will be removed
 
-    select_bms();
+    prv_ltc_assert_cs();
     send_command(command);
 
     for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
         memset(&tempRecPayload[slave][0], 0xFF, 8);
-        spi_move_array(LTC6811_SPI, &tempRecPayload[slave][0], 8);
+        prv_ltc_spi_move_array(&tempRecPayload[slave][0], 8);
     }
-    deselect_bms();
+    prv_ltc_deassert_cs();
     for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
         memcpy(&recPayload[slave][0], &tempRecPayload[slave][0], 6); //Copy only the first 6 bytes per payload
     }
@@ -207,12 +207,13 @@ static void broadcast_receive(commandLTC_t command, uint8_t recPayload[][PAYLOAD
 }
 
 static void broadcast_stcomm(void) {
-    select_bms();
+    prv_ltc_assert_cs();
     send_command(STCOMM);
+    uint8_t send = 0xFF;
     for (size_t i = 0; i < 9; i++) {
-        spi_move(LTC6811_SPI, 0xFF); //72 clock cycles
+        prv_ltc_spi_move_array(&send, 1); //72 clock cycles
     }
-    deselect_bms();
+    prv_ltc_deassert_cs();
 }
 
 uint16_t calc_pec(uint8_t len, const uint8_t *data) {
@@ -260,10 +261,11 @@ void check_pec(uint8_t payload[][8], uint8_t *result) {
 }
 
 void ltc6811_wake_daisy_chain(void) {
+    uint8_t send = 0xFF;
     for (size_t slave = 0; slave < NUMBEROFSLAVES + 1U; slave++) {
-        select_bms();
-        spi_move(LTC6811_SPI, 0xFF);
-        deselect_bms();
+        prv_ltc_assert_cs();
+        prv_ltc_spi_move_array(&send, 1);
+        prv_ltc_deassert_cs();
         vTaskDelay(pdMS_TO_TICKS(1));
     }
 }
@@ -294,7 +296,7 @@ void set_config(uint8_t CFGR0, uint8_t gates[][MAXCELLS]) {
 
 void ltc6811_get_voltage(uint16_t voltage[][MAXCELLS], uint8_t voltageStatus[][MAXCELLS]) {
     //Change the ADCOPT bit to enable 3 kHz mode
-    set_config(_config | CFGR0_ADCOPT, NULL);
+    set_config(prvConfig | CFGR0_ADCOPT, NULL);
     //Start ADC conversion
     broadcast(ADCV_NORM_ALL);
 
@@ -409,41 +411,19 @@ void get_gpio_voltage(uint16_t voltGPIO[][2], uint8_t *voltGPIOStatus) {
     }
 }
 
-void ltc6811_get_temperatures_in_degC(uint16_t temperature[][MAXTEMPSENS], uint8_t temperatureStatus[][MAXTEMPSENS]) {
+void ltc6811_get_temperatures_in_degC(uint16_t temperature[][MAXTEMPSENS], uint8_t temperatureStatus[][MAXTEMPSENS], uint8_t startChannel, uint8_t len) {
     uint16_t voltGPIO[NUMBEROFSLAVES][2]; //GPIO1 and GPIO2 are converted simultaneously
     uint8_t status[NUMBEROFSLAVES];
 
-    size_t channelOffset = 0;
-    static const size_t NUMBEROFCHANNELS = 4; //Channels per run. Note that we sample 2 channels at once
-    if (_temperatureCounter == 0) {
-        //First half of temperature sensors
-        channelOffset = 0;
-        _temperatureCounter = 1;
-    } else {
-        //Second half of temperature sensors
-        channelOffset = 4;
-        _temperatureCounter = 0;
-    }
-
-    for (size_t channel = channelOffset; channel < (channelOffset + NUMBEROFCHANNELS); channel++) {
+    for (size_t channel = startChannel; channel < startChannel + len; channel++) {
         set_mux_channel(channel);
         get_gpio_voltage(voltGPIO, status);
-
-        if (channel >= 7) {
-            //We only have 14 temperature sensors but we sample 16 channels. Ignore the highest channel.
-            break;
-        }
 
         for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
             temperatureStatus[slave][channel] = status[slave];
             temperatureStatus[slave][channel + 7] = status[slave];
-            if (channel == 6) { //PCB Sensor
-                temperature[slave][channel] = calc_temperature_from_voltage(NTC_PCB, voltGPIO[slave][0]);
-                temperature[slave][channel + 7] = calc_temperature_from_voltage(NTC_PCB, voltGPIO[slave][1]);
-            } else {
-                temperature[slave][channel] = calc_temperature_from_voltage(NTC_CELL, voltGPIO[slave][0]);
-                temperature[slave][channel + 7] = calc_temperature_from_voltage(NTC_CELL, voltGPIO[slave][1]);
-            }
+            temperature[slave][channel] = calc_temperature_from_voltage(NTC_CELL, voltGPIO[slave][0]);
+            temperature[slave][channel + 7] = calc_temperature_from_voltage(NTC_CELL, voltGPIO[slave][1]);
         }
     }
 }
@@ -600,5 +580,5 @@ void ltc6811_open_wire_check(uint8_t result[][MAXCELLS+1]) {
 }
 
 void ltc6811_set_balancing_gates(uint8_t gates[][MAXCELLS]) {
-    set_config(_config, gates);
+    set_config(prvConfig, gates);
 }

@@ -14,6 +14,7 @@
 #include <stdbool.h>
 #include "config.h"
 #include "LTC6811.h"
+#include "spi.h"
 
 
 typedef struct {

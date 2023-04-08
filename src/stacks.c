@@ -22,6 +22,26 @@ static void balancing_task(void *p);
 
 uint32_t stacksUID[MAXSTACKS];
 
+static void prv_ltc_spi(uint8_t *a, size_t len) {
+    spi_move_array(LTC6811_SPI, a, len);
+}
+
+static void prv_ltc_assert(void) {
+    clear_pin(CS_SLAVES_PORT, CS_SLAVES_PIN);
+}
+
+static void prv_ltc_deassert(void) {
+    set_pin(CS_SLAVES_PORT, CS_SLAVES_PIN);
+}
+
+static bool prv_ltc_mutex_take(TickType_t blocktime) {
+    return spi_mutex_take(LTC6811_SPI, blocktime);
+}
+
+static void prv_ltc_mutex_give(void) {
+    spi_mutex_give(LTC6811_SPI);
+}
+
 void init_stacks(void) {
     _stacksDataMutex = xSemaphoreCreateMutex();
     configASSERT(_stacksDataMutex);
@@ -31,7 +51,8 @@ void init_stacks(void) {
     configASSERT(_balancingGatesMutex);
     memset(_balancingGates, 0, sizeof(_balancingGates));
 
-    ltc6811_init(stacksUID);
+    ltc6811_init(prv_ltc_mutex_take, prv_ltc_mutex_give, prv_ltc_spi, prv_ltc_assert, prv_ltc_deassert);
+    ltc6811_get_uid(stacksUID);
 
     xTaskCreate(stacks_worker_task, "LTC", LTC_WORKER_TASK_STACK, NULL, LTC_WORKER_TASK_PRIO, NULL);
 //    xTaskCreate(balancing_task, "balance", BALANCING_TASK_STACK, NULL, BALANCING_TASK_PRIO, NULL);
@@ -56,14 +77,10 @@ void stacks_worker_task(void *p) {
 
         switch (cycle) {
         case 0:
-            ltc6811_get_temperatures_in_degC(stacksDataLocal.temperature, stacksDataLocal.temperatureStatus);
+            ltc6811_get_temperatures_in_degC(stacksDataLocal.temperature, stacksDataLocal.temperatureStatus, 0, 3);
             cycle = 1;
             break;
         case 1:
-            ltc6811_get_temperatures_in_degC(stacksDataLocal.temperature, stacksDataLocal.temperatureStatus);
-            cycle = 2;
-            break;
-        case 2:
             ltc6811_open_wire_check(stacksDataLocal.cellVoltageStatus);
             cycle = 0;
             break;
