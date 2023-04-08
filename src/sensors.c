@@ -73,13 +73,16 @@ bool init_adc(void) {
     _adc.config.CLK_SEL = CLK_SEL_INT;
     _adc.config.ADC_MODE = ADC_MODE_CONV;
     _adc.config.CONV_MODE = CONV_MODE_CONT_SCAN;
-    _adc.config.DATA_FORMAT = DATA_FORMAT_32_SGN;
+    _adc.config.DATA_FORMAT = DATA_FORMAT_32_SGN_CHID;
     _adc.config.CRC_FORMAT = CRC_FORMAT_16;
     _adc.config.IRQ_MODE = IRQ_MODE_IRQ_HIGH_Z;
     _adc.config.EN_STP = 0;
-    _adc.config.OSR = OSR_16384;
+    _adc.config.OSR = OSR_512;
     _adc.config.AZ_MUX = 1;
-    _adc.config.EN_CRCCOM = 1;
+    _adc.config.EN_CRCCOM = 0;
+    _adc.config.SCAN = SCAN_DIFF_CH0_CH1 | SCAN_DIFF_CH2_CH3 | SCAN_DIFF_CH4_CH5 | SCAN_SE_CH4;
+    _adc.config.DLY = SCAN_DLY_512;
+    _adc.config.TIMER = 512;
 
 
     err = mcp356x_reset(&_adc);
@@ -100,111 +103,71 @@ bool init_adc(void) {
 }
 
 static void adc_irq_callback(BaseType_t *higherPrioTaskWoken) {
-
+    dbg1(1);
     vTaskNotifyGiveFromISR(adcTaskHandle, higherPrioTaskWoken);
 }
 
 static void adc_task(void *p) {
     (void) p;
-    int32_t currentVal = 0;
-    int32_t ubatVal = 0;
-    int32_t ulinkVal = 0;
+    int32_t adcVal = 0;
+
     float ubatVolt = 0.0f;
     float ulinkVolt = 0.0f;
+    float current = 0.0f;
 
     bool adcError = false;
 
+    uint8_t chID;
+    uint8_t sgn;
+
     while (1) {
 
-        // If an error occurred, try to reset the adc to clear the error
-//        if (adcError) {
-//            mcp356x_reset(&_adc);
-//            mcp356x_set_config(&_adc);
-//        }
-//
-//
-//        if (mcp356x_acquire(&_adc, MUX_CH4, MUX_CH5) != MCP356X_ERROR_OK) {
-//            adcError = true;
-//        }
-//        vTaskDelay(pdMS_TO_TICKS(6));
-//        if (mcp356x_read_value(&_adc, &currentVal, NULL, NULL) == MCP356X_ERROR_OK) {
-//            adcError = false;
-//        } else {
-//            adcError = true;
-//        }
-
-
-        if (mcp356x_acquire(&_adc, MUX_CH3, MUX_CH2) != MCP356X_ERROR_OK) {
-            adcError = true;
-        }
-
-
+        /* Sample period ~ 3ms for each value
+           Each value is updated every 12ms
+        */
         ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
 
 
-        if (mcp356x_read_value(&_adc, &ubatVal, NULL, NULL) == MCP356X_ERROR_OK) {
+        if (mcp356x_read_value(&_adc, &adcVal, &sgn, &chID) == MCP356X_ERROR_OK) {
             adcError = false;
         } else {
             adcError = true;
         }
 
+        mcp356x_scan_t scanCh = 1 << chID;
+        switch ((mcp356x_scan_t)scanCh) {
 
-//        dbg1(1);
-//        if (mcp356x_acquire(&_adc, MUX_CH1, MUX_CH0) != MCP356X_ERROR_OK) {
-//            adcError = true;
-//        }
-//        dbg1(0);
-//
-//        ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
-//
-//        dbg2(1);
-//        if (mcp356x_read_value(&_adc, &ulinkVal, NULL, NULL) == MCP356X_ERROR_OK) {
-//            adcError = false;
-//        } else {
-//            adcError = true;
-//        }
-//        dbg2(0);
-
-        ubatVolt = ADC_VOLTAGE_CONVERSION_RATIO * (ubatVal * 2.5f) / 8388608.0f;
-        ubatVolt = (ubatVolt - (1.3606f / 0.99671f)) * 0.99671f;
-
-        ulinkVolt = ADC_VOLTAGE_CONVERSION_RATIO * (ulinkVal * 2.5f) / 8388608.0f;
-        ulinkVolt = (ulinkVolt + (1.11091f / 0.989208f)) * 0.989208f;
-
-
-//        PRINTF("%.1f\n", ubatVolt);
-
-//        PRINTF("Ubat cal: %f\n", ubatCal);
-
-//        if (counter >= 100) {
-//            counter = 0;
-//            accu = accu / 100.0;
-//            PRINTF("%.3f\n", accu);
-//            accu = 0;
-//        } else {
-//            counter++;
-//            accu = accu + ulinkVolt;
-//        }
-
-//        PRINTF("%f\n", counter, ubatVolt);
-
-
-
-        if (!adcError) {
-//            PRINTF("I: %.2f A\n", current);
-        } else {
-            PRINTF("ADC Error!\n");
+        case SCAN_DIFF_CH0_CH1: //DC-Link / TSAC Output voltage
+            ulinkVolt = ADC_VOLTAGE_CONVERSION_RATIO * (adcVal * -2.5f) / 8388608.0f;
+            ulinkVolt = (ulinkVolt + (1.11091f / 0.989208f)) * 0.989208f;
+            //PRINTF("U_Link: %.1f\n", ulinkVolt);
+            break;
+        case SCAN_DIFF_CH2_CH3: //Battery Voltage
+            ubatVolt = ADC_VOLTAGE_CONVERSION_RATIO * (adcVal * -2.5f) / 8388608.0f;
+            ubatVolt = (ubatVolt - (1.3606f / 0.99671f)) * 0.99671f;
+            //PRINTF("U_Batt: %.1f\n", ubatVolt);
+            break;
+        case SCAN_DIFF_CH4_CH5: //Current
+            //Todo
+            break;
+        case SCAN_SE_CH4: //Current open wire check
+            //Todo
+            break;
+        default:
+            adcError = true;
+            break;
         }
-
 
         adc_data_t *adcData = get_adc_data(pdMS_TO_TICKS(4));
         if (adcData != NULL) {
             adcData->batteryVoltage = ubatVolt;
             adcData->dcLinkVoltage = ulinkVolt;
+            adcData->current = current;
             adcData->valid = !adcError;
             release_adc_data();
         } else {
             PRINTF("adc: Can't get mutex!\n");
         }
+        dbg1(0);
     }
 }

@@ -53,6 +53,9 @@ typedef struct {
     uint8_t IRQ_MODE    : 1;
     uint8_t EN_FASTCMD  : 1;
     uint8_t EN_STP      : 1;
+    uint16_t SCAN;
+    uint8_t DLY;
+    uint32_t TIMER;
     uint32_t MCLK;
 } mcp356x_config_t;
 
@@ -174,6 +177,36 @@ typedef enum {
     MUX_INT_TEMP_M,
     MUX_INT_VCM
 } mcp356x_channel_t;
+
+typedef enum {
+    SCAN_OFFSET       = 0x8000,
+    SCAN_VCM          = 0x4000,
+    SCAN_AVDD         = 0x2000,
+    SCAN_TEMP         = 0x1000,
+    SCAN_DIFF_CH6_CH7 = 0x0800,
+    SCAN_DIFF_CH4_CH5 = 0x0400,
+    SCAN_DIFF_CH2_CH3 = 0x0200,
+    SCAN_DIFF_CH0_CH1 = 0x0100,
+    SCAN_SE_CH7       = 0x0080,
+    SCAN_SE_CH6       = 0x0040,
+    SCAN_SE_CH5       = 0x0020,
+    SCAN_SE_CH4       = 0x0010,
+    SCAN_SE_CH3       = 0x0008,
+    SCAN_SE_CH2       = 0x0004,
+    SCAN_SE_CH1       = 0x0002,
+    SCAN_SE_CH0       = 0x0001
+} mcp356x_scan_t;
+
+typedef enum {
+    SCAN_DLY_512    = 7,
+    SCAN_DLY_256    = 6,
+    SCAN_DLY_128    = 5,
+    SCAN_DLY_64     = 4,
+    SCAN_DLY_32     = 3,
+    SCAN_DLY_16     = 2,
+    SCAN_DLY_8      = 1,
+    SCAN_DLY_NO_DLY = 0
+} mcp356x_scan_delay_t;
 
 typedef enum {
     MCP356X_ERROR_OK,

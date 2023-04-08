@@ -166,15 +166,22 @@ mcp356x_error_t mcp356x_set_config(mcp356x_obj_t *obj) {
         return MCP356X_ERROR_FAILED;
     }
 
-    uint8_t buf[6];
+    uint8_t buf[13];
     memset(buf, 0, sizeof(buf));
-    buf[0] = INCR_WRITE(REG_CONFIG0);
-    buf[1] = (obj->config.VREF_SEL << 7) | (obj->config.CLK_SEL << 4) | (obj->config.CS_SEL << 2) | (obj->config.ADC_MODE);
-    buf[2] = (obj->config.PRE << 6) | (obj->config.OSR << 2);
-    buf[3] = (obj->config.BOOST << 6) | (obj->config.GAIN << 3) | (obj->config.AZ_MUX << 2) | (obj->config.AZ_REF << 1);
+    buf[0] = INCR_WRITE(REG_CONFIG0); //Command byte
+    buf[1] = (obj->config.VREF_SEL << 7) | (obj->config.CLK_SEL << 4) | (obj->config.CS_SEL << 2) | (obj->config.ADC_MODE); //CONFIG0
+    buf[2] = (obj->config.PRE << 6) | (obj->config.OSR << 2); //CONFIG1
+    buf[3] = (obj->config.BOOST << 6) | (obj->config.GAIN << 3) | (obj->config.AZ_MUX << 2) | (obj->config.AZ_REF << 1); //CONFIG2
     buf[4] = (obj->config.CONV_MODE << 6) | (obj->config.DATA_FORMAT << 4) | (obj->config.CRC_FORMAT << 3)
-           | (obj->config.EN_CRCCOM << 2) | (obj->config.EN_OFFCAL << 1) | (obj->config.EN_GAINCAL);
-    buf[5] = (obj->config.IRQ_MODE << 2) | (obj->config.EN_FASTCMD << 1) | (obj->config.EN_STP);
+           | (obj->config.EN_CRCCOM << 2) | (obj->config.EN_OFFCAL << 1) | (obj->config.EN_GAINCAL); //CONFIG3
+    buf[5] = (obj->config.IRQ_MODE << 2) | (obj->config.EN_FASTCMD << 1) | (obj->config.EN_STP); //IRQ
+    buf[6] = 0x00; //MUX
+    buf[7] = (obj->config.DLY & 0x7) << 5; //SCAN2
+    buf[8] = obj->config.SCAN >> 8;        //SCAN1
+    buf[9] = obj->config.SCAN & 0xFF;      //SCAN0
+    buf[10] = (obj->config.TIMER >> 16) & 0xFF; //TIMER3
+    buf[11] = (obj->config.TIMER >> 8) & 0xFF;  //TIMER2
+    buf[12] = obj->config.TIMER & 0xFF;         //TIMER0
 
     obj->assert_cs();
     obj->spi_move_array(buf, sizeof(buf));
@@ -279,8 +286,10 @@ mcp356x_error_t mcp356x_read_value(mcp356x_obj_t *obj, int32_t *val, uint8_t *sg
         return MCP356X_ERROR_FAILED;
     }
 
-    if (!check_crc(obj, rec)) {
-        return MCP356X_ERROR_CRC;
+    if (obj->config.EN_CRCCOM) {
+        if (!check_crc(obj, rec)) {
+            return MCP356X_ERROR_CRC;
+        }
     }
 
     uint8_t sign = 0;
