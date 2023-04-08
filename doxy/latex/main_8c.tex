@@ -1,0 +1,79 @@
+\hypertarget{main_8c}{}\doxysection{src/main.c File Reference}
+\label{main_8c}\index{src/main.c@{src/main.c}}
+{\ttfamily \#include \char`\"{}Free\+RTOS.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}task.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}clock.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}gpio.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}config.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}wdt.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}uart.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}can.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}spi.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}sensors.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}stacks.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}bmu.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}contactor.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$alloca.\+h$>$}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+Include dependency graph for main.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{main_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{main_8c_ad8c85ad53a0984a04748aef0c5e84815}{init\+\_\+task}} (void $\ast$p)
+\item 
+int \mbox{\hyperlink{main_8c_a840291bc02cba5474a4cb46a9b9566fe}{main}} (void)
+\item 
+void \mbox{\hyperlink{main_8c_a9ca051aa77e17583aa5a85d5de5c199a}{v\+Application\+Tick\+Hook}} (void)
+\item 
+void \mbox{\hyperlink{main_8c_a306672a74bdd13ce210c05fca3385c59}{v\+Application\+Stack\+Overflow\+Hook}} (Task\+Handle\+\_\+t px\+Task, char $\ast$pc\+Task\+Name)
+\item 
+void \mbox{\hyperlink{main_8c_ab7e5c95cf72a3f819bc4462a7fb62ca3}{v\+Application\+Malloc\+Failed\+Hook}} (void)
+\item 
+void \mbox{\hyperlink{main_8c_a97fd430f36f8b065226e2bff9bad1de5}{v\+Application\+Idle\+Hook}} (void)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{main_8c_ad8c85ad53a0984a04748aef0c5e84815}\label{main_8c_ad8c85ad53a0984a04748aef0c5e84815}} 
+\index{main.c@{main.c}!init\_task@{init\_task}}
+\index{init\_task@{init\_task}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{init\_task()}{init\_task()}}
+{\footnotesize\ttfamily void init\+\_\+task (\begin{DoxyParamCaption}\item[{void $\ast$}]{p }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{main_8c_a840291bc02cba5474a4cb46a9b9566fe}\label{main_8c_a840291bc02cba5474a4cb46a9b9566fe}} 
+\index{main.c@{main.c}!main@{main}}
+\index{main@{main}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{main_8c_a97fd430f36f8b065226e2bff9bad1de5}\label{main_8c_a97fd430f36f8b065226e2bff9bad1de5}} 
+\index{main.c@{main.c}!vApplicationIdleHook@{vApplicationIdleHook}}
+\index{vApplicationIdleHook@{vApplicationIdleHook}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{vApplicationIdleHook()}{vApplicationIdleHook()}}
+{\footnotesize\ttfamily void v\+Application\+Idle\+Hook (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{main_8c_ab7e5c95cf72a3f819bc4462a7fb62ca3}\label{main_8c_ab7e5c95cf72a3f819bc4462a7fb62ca3}} 
+\index{main.c@{main.c}!vApplicationMallocFailedHook@{vApplicationMallocFailedHook}}
+\index{vApplicationMallocFailedHook@{vApplicationMallocFailedHook}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{vApplicationMallocFailedHook()}{vApplicationMallocFailedHook()}}
+{\footnotesize\ttfamily void v\+Application\+Malloc\+Failed\+Hook (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{main_8c_a306672a74bdd13ce210c05fca3385c59}\label{main_8c_a306672a74bdd13ce210c05fca3385c59}} 
+\index{main.c@{main.c}!vApplicationStackOverflowHook@{vApplicationStackOverflowHook}}
+\index{vApplicationStackOverflowHook@{vApplicationStackOverflowHook}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{vApplicationStackOverflowHook()}{vApplicationStackOverflowHook()}}
+{\footnotesize\ttfamily void v\+Application\+Stack\+Overflow\+Hook (\begin{DoxyParamCaption}\item[{Task\+Handle\+\_\+t}]{px\+Task,  }\item[{char $\ast$}]{pc\+Task\+Name }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{main_8c_a9ca051aa77e17583aa5a85d5de5c199a}\label{main_8c_a9ca051aa77e17583aa5a85d5de5c199a}} 
+\index{main.c@{main.c}!vApplicationTickHook@{vApplicationTickHook}}
+\index{vApplicationTickHook@{vApplicationTickHook}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{vApplicationTickHook()}{vApplicationTickHook()}}
+{\footnotesize\ttfamily void v\+Application\+Tick\+Hook (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+

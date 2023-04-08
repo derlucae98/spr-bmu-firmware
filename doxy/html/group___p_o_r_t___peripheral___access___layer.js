@@ -1,0 +1,35 @@
+var group___p_o_r_t___peripheral___access___layer =
+[
+    [ "PORT Register Masks", "group___p_o_r_t___register___masks.html", "group___p_o_r_t___register___masks" ],
+    [ "PORT_Type", "struct_p_o_r_t___type.html", [
+      [ "DFCR", "struct_p_o_r_t___type.html#ad85d97f511fdb6626888603d5c970d3d", null ],
+      [ "DFER", "struct_p_o_r_t___type.html#a08715ad30e568d84770805b6bdbc1cfb", null ],
+      [ "DFWR", "struct_p_o_r_t___type.html#ac0bb591e49f732d8010df56312388c74", null ],
+      [ "GICHR", "struct_p_o_r_t___type.html#a6c137577beafd84ec419944688c37348", null ],
+      [ "GICLR", "struct_p_o_r_t___type.html#aa60fb10bfa3137e37ca9ba02fdf10ce7", null ],
+      [ "GPCHR", "struct_p_o_r_t___type.html#abc885669f9579a0514a37a62fc070ec7", null ],
+      [ "GPCLR", "struct_p_o_r_t___type.html#a7ca65d71461aa5e76eb2266ab7ccd0cf", null ],
+      [ "ISFR", "struct_p_o_r_t___type.html#a810f6911c38333115775f924be784050", null ],
+      [ "PCR", "struct_p_o_r_t___type.html#af184bec5d72e5c9a01d996a16f297f3d", null ],
+      [ "RESERVED_0", "struct_p_o_r_t___type.html#a4398e5001fa061061fe95e2ceef7a31a", null ],
+      [ "RESERVED_1", "struct_p_o_r_t___type.html#a110c7cdc6ff066e67353a119359731f2", null ]
+    ] ],
+    [ "PORT_BASE_ADDRS", "group___p_o_r_t___peripheral___access___layer.html#ga80b01d00368494b63dd2a67eda52b241", null ],
+    [ "PORT_BASE_PTRS", "group___p_o_r_t___peripheral___access___layer.html#ga54ff5179f8acaef2e1683cedfc0ef453", null ],
+    [ "PORT_INSTANCE_COUNT", "group___p_o_r_t___peripheral___access___layer.html#gaa272f4e30fe8426e1222e9ddc13e3610", null ],
+    [ "PORT_IRQS", "group___p_o_r_t___peripheral___access___layer.html#ga442cafa4ce211d588393a5f2954198bb", null ],
+    [ "PORT_IRQS_ARR_COUNT", "group___p_o_r_t___peripheral___access___layer.html#ga0e897bdb74b5fa048eea1238b28bcafe", null ],
+    [ "PORT_IRQS_CH_COUNT", "group___p_o_r_t___peripheral___access___layer.html#ga68732ace83317192134db56c59dee31a", null ],
+    [ "PORT_PCR_COUNT", "group___p_o_r_t___peripheral___access___layer.html#gae9d33dd352fbda70db758fa6daabf495", null ],
+    [ "PORTA", "group___p_o_r_t___peripheral___access___layer.html#ga7c8a7f98a98d8cb125dd57a66720ab30", null ],
+    [ "PORTA_BASE", "group___p_o_r_t___peripheral___access___layer.html#gae3d20f730f9619aabbf94e2efd1de34c", null ],
+    [ "PORTB", "group___p_o_r_t___peripheral___access___layer.html#ga09a0c85cd3da09d9cdf63a5ac4c39f77", null ],
+    [ "PORTB_BASE", "group___p_o_r_t___peripheral___access___layer.html#ga2a668049a5e6c09cf6a7164ffca38a7e", null ],
+    [ "PORTC", "group___p_o_r_t___peripheral___access___layer.html#ga68fea88642279a70246e026e7221b0a5", null ],
+    [ "PORTC_BASE", "group___p_o_r_t___peripheral___access___layer.html#ga0018f0edf7f8030868f9cc791275378d", null ],
+    [ "PORTD", "group___p_o_r_t___peripheral___access___layer.html#ga3e6a2517db4f9cb7c9037adf0aefe79b", null ],
+    [ "PORTD_BASE", "group___p_o_r_t___peripheral___access___layer.html#gab88c980d0129f396683260eb978daf15", null ],
+    [ "PORTE", "group___p_o_r_t___peripheral___access___layer.html#ga7e2386d3b1084b5b875ae3696f550ba9", null ],
+    [ "PORTE_BASE", "group___p_o_r_t___peripheral___access___layer.html#ga72d490d67d751071845b3532193b4b93", null ],
+    [ "PORT_MemMapPtr", "group___p_o_r_t___peripheral___access___layer.html#gaa0db94574a8e9a7d7de23f9fbecb0347", null ]
+];

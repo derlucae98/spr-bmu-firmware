@@ -1,0 +1,138 @@
+\hypertarget{group___r_c_m___peripheral___access___layer}{}\doxysection{RCM Peripheral Access Layer}
+\label{group___r_c_m___peripheral___access___layer}\index{RCM Peripheral Access Layer@{RCM Peripheral Access Layer}}
+Collaboration diagram for RCM Peripheral Access Layer\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{group___r_c_m___peripheral___access___layer}
+\end{center}
+\end{figure}
+\doxysubsection*{Modules}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{group___r_c_m___register___masks}{RCM Register Masks}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_r_c_m___type}{RCM\+\_\+\+Type}}
+\begin{DoxyCompactList}\small\item\em RCM -\/ Size of Registers Arrays. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{group___r_c_m___peripheral___access___layer_ga6eae2aa57fc4559b723de5dc0fa178a0}{RCM\+\_\+\+INSTANCE\+\_\+\+COUNT}}~(1u)
+\begin{DoxyCompactList}\small\item\em Number of instances of the RCM module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___r_c_m___peripheral___access___layer_ga0f155ee1b03b8a20749da74c4f19d34d}{RCM\+\_\+\+BASE}}~(0x4007\+F000u)
+\begin{DoxyCompactList}\small\item\em Peripheral RCM base address. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___r_c_m___peripheral___access___layer_gaa5c5e6af3b266654facbd52caa0b8874}{RCM}}~((\mbox{\hyperlink{struct_r_c_m___type}{RCM\+\_\+\+Type}} $\ast$)\mbox{\hyperlink{group___r_c_m___peripheral___access___layer_ga0f155ee1b03b8a20749da74c4f19d34d}{RCM\+\_\+\+BASE}})
+\begin{DoxyCompactList}\small\item\em Peripheral RCM base pointer. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___r_c_m___peripheral___access___layer_gaf3db57eb66e9dc48fcac7ebf4e6884c6}{RCM\+\_\+\+BASE\+\_\+\+ADDRS}}~\{ \mbox{\hyperlink{group___r_c_m___peripheral___access___layer_ga0f155ee1b03b8a20749da74c4f19d34d}{RCM\+\_\+\+BASE}} \}
+\begin{DoxyCompactList}\small\item\em Array initializer of RCM peripheral base addresses. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___r_c_m___peripheral___access___layer_gad8549fec4a09b0b485983beadfc3a5fb}{RCM\+\_\+\+BASE\+\_\+\+PTRS}}~\{ \mbox{\hyperlink{group___r_c_m___peripheral___access___layer_gaa5c5e6af3b266654facbd52caa0b8874}{RCM}} \}
+\begin{DoxyCompactList}\small\item\em Array initializer of RCM peripheral base pointers. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___r_c_m___peripheral___access___layer_ga49e64394e9b0ee05655559107c51d31a}{RCM\+\_\+\+IRQS\+\_\+\+ARR\+\_\+\+COUNT}}~(1u)
+\begin{DoxyCompactList}\small\item\em Number of interrupt vector arrays for the RCM module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___r_c_m___peripheral___access___layer_gaaa2bd8af2ec02b73b56e09b80e619844}{RCM\+\_\+\+IRQS\+\_\+\+CH\+\_\+\+COUNT}}~(1u)
+\begin{DoxyCompactList}\small\item\em Number of interrupt channels for the RCM module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___r_c_m___peripheral___access___layer_ga26ae066628c022cc4fb5e791d9b29242}{RCM\+\_\+\+IRQS}}~\{ \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8a82a08fab8ffcf6de8276c7d0b5b04936}{RCM\+\_\+\+IRQn}} \}
+\begin{DoxyCompactList}\small\item\em Interrupt vectors for the RCM peripheral type. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \mbox{\hyperlink{struct_r_c_m___type}{RCM\+\_\+\+Type}} $\ast$ \mbox{\hyperlink{group___r_c_m___peripheral___access___layer_gac95728e1838541dba02817daa27f147a}{RCM\+\_\+\+Mem\+Map\+Ptr}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{group___r_c_m___peripheral___access___layer_gaa5c5e6af3b266654facbd52caa0b8874}\label{group___r_c_m___peripheral___access___layer_gaa5c5e6af3b266654facbd52caa0b8874}} 
+\index{RCM Peripheral Access Layer@{RCM Peripheral Access Layer}!RCM@{RCM}}
+\index{RCM@{RCM}!RCM Peripheral Access Layer@{RCM Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{RCM}{RCM}}
+{\footnotesize\ttfamily \#define RCM~((\mbox{\hyperlink{struct_r_c_m___type}{RCM\+\_\+\+Type}} $\ast$)\mbox{\hyperlink{group___r_c_m___peripheral___access___layer_ga0f155ee1b03b8a20749da74c4f19d34d}{RCM\+\_\+\+BASE}})}
+
+
+
+Peripheral RCM base pointer. 
+
+\mbox{\Hypertarget{group___r_c_m___peripheral___access___layer_ga0f155ee1b03b8a20749da74c4f19d34d}\label{group___r_c_m___peripheral___access___layer_ga0f155ee1b03b8a20749da74c4f19d34d}} 
+\index{RCM Peripheral Access Layer@{RCM Peripheral Access Layer}!RCM\_BASE@{RCM\_BASE}}
+\index{RCM\_BASE@{RCM\_BASE}!RCM Peripheral Access Layer@{RCM Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{RCM\_BASE}{RCM\_BASE}}
+{\footnotesize\ttfamily \#define RCM\+\_\+\+BASE~(0x4007\+F000u)}
+
+
+
+Peripheral RCM base address. 
+
+\mbox{\Hypertarget{group___r_c_m___peripheral___access___layer_gaf3db57eb66e9dc48fcac7ebf4e6884c6}\label{group___r_c_m___peripheral___access___layer_gaf3db57eb66e9dc48fcac7ebf4e6884c6}} 
+\index{RCM Peripheral Access Layer@{RCM Peripheral Access Layer}!RCM\_BASE\_ADDRS@{RCM\_BASE\_ADDRS}}
+\index{RCM\_BASE\_ADDRS@{RCM\_BASE\_ADDRS}!RCM Peripheral Access Layer@{RCM Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{RCM\_BASE\_ADDRS}{RCM\_BASE\_ADDRS}}
+{\footnotesize\ttfamily \#define RCM\+\_\+\+BASE\+\_\+\+ADDRS~\{ \mbox{\hyperlink{group___r_c_m___peripheral___access___layer_ga0f155ee1b03b8a20749da74c4f19d34d}{RCM\+\_\+\+BASE}} \}}
+
+
+
+Array initializer of RCM peripheral base addresses. 
+
+\mbox{\Hypertarget{group___r_c_m___peripheral___access___layer_gad8549fec4a09b0b485983beadfc3a5fb}\label{group___r_c_m___peripheral___access___layer_gad8549fec4a09b0b485983beadfc3a5fb}} 
+\index{RCM Peripheral Access Layer@{RCM Peripheral Access Layer}!RCM\_BASE\_PTRS@{RCM\_BASE\_PTRS}}
+\index{RCM\_BASE\_PTRS@{RCM\_BASE\_PTRS}!RCM Peripheral Access Layer@{RCM Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{RCM\_BASE\_PTRS}{RCM\_BASE\_PTRS}}
+{\footnotesize\ttfamily \#define RCM\+\_\+\+BASE\+\_\+\+PTRS~\{ \mbox{\hyperlink{group___r_c_m___peripheral___access___layer_gaa5c5e6af3b266654facbd52caa0b8874}{RCM}} \}}
+
+
+
+Array initializer of RCM peripheral base pointers. 
+
+\mbox{\Hypertarget{group___r_c_m___peripheral___access___layer_ga6eae2aa57fc4559b723de5dc0fa178a0}\label{group___r_c_m___peripheral___access___layer_ga6eae2aa57fc4559b723de5dc0fa178a0}} 
+\index{RCM Peripheral Access Layer@{RCM Peripheral Access Layer}!RCM\_INSTANCE\_COUNT@{RCM\_INSTANCE\_COUNT}}
+\index{RCM\_INSTANCE\_COUNT@{RCM\_INSTANCE\_COUNT}!RCM Peripheral Access Layer@{RCM Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{RCM\_INSTANCE\_COUNT}{RCM\_INSTANCE\_COUNT}}
+{\footnotesize\ttfamily \#define RCM\+\_\+\+INSTANCE\+\_\+\+COUNT~(1u)}
+
+
+
+Number of instances of the RCM module. 
+
+\mbox{\Hypertarget{group___r_c_m___peripheral___access___layer_ga26ae066628c022cc4fb5e791d9b29242}\label{group___r_c_m___peripheral___access___layer_ga26ae066628c022cc4fb5e791d9b29242}} 
+\index{RCM Peripheral Access Layer@{RCM Peripheral Access Layer}!RCM\_IRQS@{RCM\_IRQS}}
+\index{RCM\_IRQS@{RCM\_IRQS}!RCM Peripheral Access Layer@{RCM Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{RCM\_IRQS}{RCM\_IRQS}}
+{\footnotesize\ttfamily \#define RCM\+\_\+\+IRQS~\{ \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8a82a08fab8ffcf6de8276c7d0b5b04936}{RCM\+\_\+\+IRQn}} \}}
+
+
+
+Interrupt vectors for the RCM peripheral type. 
+
+\mbox{\Hypertarget{group___r_c_m___peripheral___access___layer_ga49e64394e9b0ee05655559107c51d31a}\label{group___r_c_m___peripheral___access___layer_ga49e64394e9b0ee05655559107c51d31a}} 
+\index{RCM Peripheral Access Layer@{RCM Peripheral Access Layer}!RCM\_IRQS\_ARR\_COUNT@{RCM\_IRQS\_ARR\_COUNT}}
+\index{RCM\_IRQS\_ARR\_COUNT@{RCM\_IRQS\_ARR\_COUNT}!RCM Peripheral Access Layer@{RCM Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{RCM\_IRQS\_ARR\_COUNT}{RCM\_IRQS\_ARR\_COUNT}}
+{\footnotesize\ttfamily \#define RCM\+\_\+\+IRQS\+\_\+\+ARR\+\_\+\+COUNT~(1u)}
+
+
+
+Number of interrupt vector arrays for the RCM module. 
+
+\mbox{\Hypertarget{group___r_c_m___peripheral___access___layer_gaaa2bd8af2ec02b73b56e09b80e619844}\label{group___r_c_m___peripheral___access___layer_gaaa2bd8af2ec02b73b56e09b80e619844}} 
+\index{RCM Peripheral Access Layer@{RCM Peripheral Access Layer}!RCM\_IRQS\_CH\_COUNT@{RCM\_IRQS\_CH\_COUNT}}
+\index{RCM\_IRQS\_CH\_COUNT@{RCM\_IRQS\_CH\_COUNT}!RCM Peripheral Access Layer@{RCM Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{RCM\_IRQS\_CH\_COUNT}{RCM\_IRQS\_CH\_COUNT}}
+{\footnotesize\ttfamily \#define RCM\+\_\+\+IRQS\+\_\+\+CH\+\_\+\+COUNT~(1u)}
+
+
+
+Number of interrupt channels for the RCM module. 
+
+
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{group___r_c_m___peripheral___access___layer_gac95728e1838541dba02817daa27f147a}\label{group___r_c_m___peripheral___access___layer_gac95728e1838541dba02817daa27f147a}} 
+\index{RCM Peripheral Access Layer@{RCM Peripheral Access Layer}!RCM\_MemMapPtr@{RCM\_MemMapPtr}}
+\index{RCM\_MemMapPtr@{RCM\_MemMapPtr}!RCM Peripheral Access Layer@{RCM Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{RCM\_MemMapPtr}{RCM\_MemMapPtr}}
+{\footnotesize\ttfamily typedef  struct \mbox{\hyperlink{struct_r_c_m___type}{RCM\+\_\+\+Type}} $\ast$ \mbox{\hyperlink{group___r_c_m___peripheral___access___layer_gac95728e1838541dba02817daa27f147a}{RCM\+\_\+\+Mem\+Map\+Ptr}}}
+

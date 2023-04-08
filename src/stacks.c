@@ -9,7 +9,7 @@
 
 static SemaphoreHandle_t _stacksDataMutex = NULL;
 static stacks_data_t _stacksData;
-static uint8_t _balancingGates[NUMBEROFSLAVES][MAXCELLS];
+static uint8_t _balancingGates[NUMBEROFSLAVES][MAX_NUM_OF_CELLS];
 static bool _balanceEnable = false;
 
 static SemaphoreHandle_t _balancingGatesMutex = NULL;
@@ -20,7 +20,7 @@ static BaseType_t stacks_mutex_take(TickType_t blocktime);
 static void stacks_worker_task(void *p);
 static void balancing_task(void *p);
 
-uint32_t stacksUID[MAXSTACKS];
+uint32_t stacksUID[MAX_NUM_OF_STACKS];
 
 static void prv_ltc_spi(uint8_t *a, size_t len) {
     spi_move_array(LTC6811_SPI, a, len);
@@ -63,7 +63,7 @@ void stacks_worker_task(void *p) {
 
     stacks_data_t stacksDataLocal;
     memset(&stacksDataLocal, 0, sizeof(stacks_data_t));
-    static uint8_t pecVoltage[MAXSTACKS][MAXCELLS];
+    static uint8_t pecVoltage[MAX_NUM_OF_STACKS][MAX_NUM_OF_CELLS];
     TickType_t xLastWakeTime = xTaskGetTickCount();
     const TickType_t xPeriod = pdMS_TO_TICKS(100);
 
@@ -94,7 +94,7 @@ void stacks_worker_task(void *p) {
         for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
             // Validity check for temperature sensors
 
-            for (size_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
+            for (size_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
                 if (stacksDataLocal.temperatureStatus[slave][tempsens] == PECERROR) {
                     continue;
                 }
@@ -106,7 +106,7 @@ void stacks_worker_task(void *p) {
             }
 
             // Validity checks for cell voltage measurement
-            for (size_t cell = 0; cell < MAXCELLS; cell++) {
+            for (size_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
                 // PEC error: highest prio
                 if (pecVoltage[slave][cell] == PECERROR) {
                     stacksDataLocal.cellVoltageStatus[slave][cell + 1] = PECERROR;
@@ -151,13 +151,13 @@ void balancing_task(void *p) {
     (void) p;
     TickType_t xLastWakeTime = xTaskGetTickCount();
     const TickType_t xPeriod = pdMS_TO_TICKS(1000);
-    uint8_t balancingGates[NUMBEROFSLAVES][MAXCELLS];
+    uint8_t balancingGates[NUMBEROFSLAVES][MAX_NUM_OF_CELLS];
     memset(balancingGates, 0, sizeof(balancingGates));
     while(1) {
 
         if (_balanceEnable) {
 
-            uint16_t cellVoltage[MAXSTACKS][MAXCELLS];
+            uint16_t cellVoltage[MAX_NUM_OF_STACKS][MAX_NUM_OF_CELLS];
             uint16_t maxCellVoltage = 0;
             uint16_t minCellVoltage = 0;
             bool valid = false;
@@ -180,7 +180,7 @@ void balancing_task(void *p) {
             if (delta > 5 && valid) {
                 //Balance only, if difference is greater than 5 mV
                 for (size_t stack = 0; stack < NUMBEROFSLAVES; stack++) {
-                    for (size_t cell = 0; cell < MAXCELLS; cell++) {
+                    for (size_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
                         if (cellVoltage[stack][cell] > (minCellVoltage + 5)) {
                             balancingGates[stack][cell] = 1;
                         } else {
@@ -248,17 +248,17 @@ void control_balancing(bool enabled) {
     _balanceEnable = enabled;
 }
 
-void get_balancing_status(uint8_t gates[NUMBEROFSLAVES][MAXCELLS]) {
+void get_balancing_status(uint8_t gates[NUMBEROFSLAVES][MAX_NUM_OF_CELLS]) {
     if (balancingGatesMutex_take(pdMS_TO_TICKS(portMAX_DELAY))) {
         memcpy(gates, _balancingGates, sizeof(_balancingGates));
         balancingGatesMutex_give();
     }
 }
 
-uint16_t max_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks) {
+uint16_t max_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks) {
     uint16_t volt = 0;
     for (uint8_t stack = 0; stack < stacks; stack++) {
-        for (uint8_t cell = 0; cell < MAXCELLS; cell++) {
+        for (uint8_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
             if (voltage[stack][cell] > volt) {
                 volt = voltage[stack][cell];
             }
@@ -267,10 +267,10 @@ uint16_t max_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks) {
     return volt;
 }
 
-uint16_t min_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks) {
+uint16_t min_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks) {
     uint16_t volt = -1;
     for (uint8_t stack = 0; stack < stacks; stack++) {
-        for (uint8_t cell = 0; cell < MAXCELLS; cell++) {
+        for (uint8_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
             if (voltage[stack][cell] < volt) {
                 volt = voltage[stack][cell];
             }
@@ -279,20 +279,20 @@ uint16_t min_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks) {
     return volt;
 }
 
-uint16_t avg_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks) {
+uint16_t avg_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks) {
     double volt = 0.0;
     for (uint8_t stack = 0; stack < stacks; stack++) {
-        for (uint8_t cell = 0; cell < MAXCELLS; cell++) {
+        for (uint8_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
             volt += (double)voltage[stack][cell];
         }
     }
-    return (uint16_t)(volt / (MAXCELLS * stacks));
+    return (uint16_t)(volt / (MAX_NUM_OF_CELLS * stacks));
 }
 
-bool check_voltage_validity(uint8_t voltageStatus[][MAXCELLS+1], uint8_t stacks) {
+bool check_voltage_validity(uint8_t voltageStatus[][MAX_NUM_OF_CELLS+1], uint8_t stacks) {
     bool critical = false;
     for (uint8_t stack = 0; stack < stacks; stack++) {
-        for (uint8_t cell = 0; cell < MAXCELLS+1; cell++) {
+        for (uint8_t cell = 0; cell < MAX_NUM_OF_CELLS+1; cell++) {
             if (voltageStatus[stack][cell] != NOERROR) {
                 critical |= true;
             }
@@ -301,10 +301,10 @@ bool check_voltage_validity(uint8_t voltageStatus[][MAXCELLS+1], uint8_t stacks)
     return !critical;
 }
 
-bool check_temperature_validity(uint8_t temperatureStatus[][MAXTEMPSENS], uint8_t stacks) {
+bool check_temperature_validity(uint8_t temperatureStatus[][MAX_NUM_OF_TEMPSENS], uint8_t stacks) {
     bool critical = false;
     for (uint8_t stack = 0; stack < stacks; stack++) {
-        for (uint8_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
+        for (uint8_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
             if (tempsens == 6 || tempsens == 13) {
                 continue; //Don't include PCB temperatures in statistics
             }
@@ -316,10 +316,10 @@ bool check_temperature_validity(uint8_t temperatureStatus[][MAXTEMPSENS], uint8_
     return !critical;
 }
 
-uint16_t max_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stacks) {
+uint16_t max_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8_t stacks) {
     uint16_t temp = 0;
     for (uint8_t stack = 0; stack < stacks; stack++) {
-        for (uint8_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
+        for (uint8_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
             if (tempsens == 6 || tempsens == 13) {
                 continue; //Don't include PCB temperatures in statistics
             }
@@ -331,10 +331,10 @@ uint16_t max_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stack
     return temp;
 }
 
-uint16_t min_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stacks) {
+uint16_t min_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8_t stacks) {
     uint16_t temp = -1;
     for (uint8_t stack = 0; stack < stacks; stack++) {
-        for (uint8_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
+        for (uint8_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
             if (tempsens == 6 || tempsens == 13) {
                 continue; //Don't include PCB temperatures in statistics
             }
@@ -346,15 +346,15 @@ uint16_t min_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stack
     return temp;
 }
 
-uint16_t avg_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stacks) {
+uint16_t avg_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8_t stacks) {
     double temp = 0.0;
     for (uint8_t stack = 0; stack < stacks; stack++) {
-        for (uint8_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
+        for (uint8_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
             if (tempsens == 6 || tempsens == 13) {
                 continue; //Don't include PCB temperatures in statistics
             }
             temp += (double)temperature[stack][tempsens];
         }
     }
-    return (uint16_t)(temp / ((MAXTEMPSENS - 2) * stacks));
+    return (uint16_t)(temp / ((MAX_NUM_OF_TEMPSENS - 2) * stacks));
 }

@@ -1,0 +1,174 @@
+\hypertarget{stacks_8h}{}\doxysection{include/stacks.h File Reference}
+\label{stacks_8h}\index{include/stacks.h@{include/stacks.h}}
+{\ttfamily \#include \char`\"{}Free\+RTOS.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}task.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}semphr.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$stdbool.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}config.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}LTC6811.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}spi.\+h\char`\"{}}\newline
+Include dependency graph for stacks.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{stacks_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=168pt]{stacks_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structstacks__data__t}{stacks\+\_\+data\+\_\+t}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{stacks_8h_a96d4f075f9eb3624baf42f54759b3634}{MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+STACKS}}~12
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+uint16\+\_\+t \mbox{\hyperlink{stacks_8h_ae2613464b5eb74d34be151731c757d5d}{max\+\_\+cell\+\_\+voltage}} (uint16\+\_\+t voltage\mbox{[}$\,$\mbox{]}\mbox{[}\mbox{\hyperlink{_l_t_c6811_8h_ac3447b6da089862e9efd9e742443bd5f}{MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS}}\mbox{]}, uint8\+\_\+t stacks)
+\item 
+uint16\+\_\+t \mbox{\hyperlink{stacks_8h_af58cef1d2dd6ee9bf23cfd3bdcff38b4}{min\+\_\+cell\+\_\+voltage}} (uint16\+\_\+t voltage\mbox{[}$\,$\mbox{]}\mbox{[}\mbox{\hyperlink{_l_t_c6811_8h_ac3447b6da089862e9efd9e742443bd5f}{MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS}}\mbox{]}, uint8\+\_\+t stacks)
+\item 
+uint16\+\_\+t \mbox{\hyperlink{stacks_8h_a03675c6bf9a30357a82b36b10806f042}{avg\+\_\+cell\+\_\+voltage}} (uint16\+\_\+t voltage\mbox{[}$\,$\mbox{]}\mbox{[}\mbox{\hyperlink{_l_t_c6811_8h_ac3447b6da089862e9efd9e742443bd5f}{MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS}}\mbox{]}, uint8\+\_\+t stacks)
+\item 
+bool \mbox{\hyperlink{stacks_8h_a8d16f174be4bb6a635fc75f17298a8b7}{check\+\_\+voltage\+\_\+validity}} (uint8\+\_\+t voltage\+Status\mbox{[}$\,$\mbox{]}\mbox{[}\mbox{\hyperlink{_l_t_c6811_8h_ac3447b6da089862e9efd9e742443bd5f}{MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS}}+1\mbox{]}, uint8\+\_\+t stacks)
+\item 
+bool \mbox{\hyperlink{stacks_8h_a317c7cb521a74700c1a805bd5e443941}{check\+\_\+temperature\+\_\+validity}} (uint8\+\_\+t temperature\+Status\mbox{[}$\,$\mbox{]}\mbox{[}\mbox{\hyperlink{_l_t_c6811_8h_ab3358aea7d1fe26f3387487a772a4b59}{MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+TEMPSENS}}\mbox{]}, uint8\+\_\+t stacks)
+\item 
+uint16\+\_\+t \mbox{\hyperlink{stacks_8h_a513bc9c1e7329a854b1926f90ebc830b}{max\+\_\+cell\+\_\+temperature}} (uint16\+\_\+t temperature\mbox{[}$\,$\mbox{]}\mbox{[}\mbox{\hyperlink{_l_t_c6811_8h_ab3358aea7d1fe26f3387487a772a4b59}{MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+TEMPSENS}}\mbox{]}, uint8\+\_\+t stacks)
+\item 
+uint16\+\_\+t \mbox{\hyperlink{stacks_8h_a6233e43b944e6fa739b55d84ebdf7a4a}{min\+\_\+cell\+\_\+temperature}} (uint16\+\_\+t temperature\mbox{[}$\,$\mbox{]}\mbox{[}\mbox{\hyperlink{_l_t_c6811_8h_ab3358aea7d1fe26f3387487a772a4b59}{MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+TEMPSENS}}\mbox{]}, uint8\+\_\+t stacks)
+\item 
+uint16\+\_\+t \mbox{\hyperlink{stacks_8h_a4b10c203e8b8c4434de32423ce2fd823}{avg\+\_\+cell\+\_\+temperature}} (uint16\+\_\+t temperature\mbox{[}$\,$\mbox{]}\mbox{[}\mbox{\hyperlink{_l_t_c6811_8h_ab3358aea7d1fe26f3387487a772a4b59}{MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+TEMPSENS}}\mbox{]}, uint8\+\_\+t stacks)
+\item 
+void \mbox{\hyperlink{stacks_8h_a78fdb4c2cdafba4696c2a6a0da558845}{init\+\_\+stacks}} (void)
+\item 
+\mbox{\hyperlink{structstacks__data__t}{stacks\+\_\+data\+\_\+t}} $\ast$ \mbox{\hyperlink{stacks_8h_a2199a8aada9ff14aced446806302701d}{get\+\_\+stacks\+\_\+data}} (Tick\+Type\+\_\+t blocktime)
+\item 
+bool \mbox{\hyperlink{stacks_8h_a59ef0488c28f3170bf6d360abf7ab85e}{copy\+\_\+stacks\+\_\+data}} (\mbox{\hyperlink{structstacks__data__t}{stacks\+\_\+data\+\_\+t}} $\ast$dest, Tick\+Type\+\_\+t blocktime)
+\item 
+void \mbox{\hyperlink{stacks_8h_a3b36054e34985d7389ef71ac430fcd23}{release\+\_\+stacks\+\_\+data}} (void)
+\item 
+void \mbox{\hyperlink{stacks_8h_aabf463ce77d1c20dc5dbb39e8bf3e6ed}{control\+\_\+balancing}} (bool enabled)
+\item 
+void \mbox{\hyperlink{stacks_8h_ac99fac1270344e147f33864e1da25153}{get\+\_\+balancing\+\_\+status}} (uint8\+\_\+t gates\mbox{[}\mbox{\hyperlink{_l_t_c6811_8h_ae8917e4694b50aff9d8b1cf3de93d5c0}{NUMBEROFSLAVES}}\mbox{]}\mbox{[}\mbox{\hyperlink{_l_t_c6811_8h_ac3447b6da089862e9efd9e742443bd5f}{MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS}}\mbox{]})
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+uint32\+\_\+t \mbox{\hyperlink{stacks_8h_a47090d0050d47d9b66a20dc544b45dcd}{stacks\+UID}} \mbox{[}\mbox{\hyperlink{stacks_8h_a96d4f075f9eb3624baf42f54759b3634}{MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+STACKS}}\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{stacks_8h_a96d4f075f9eb3624baf42f54759b3634}\label{stacks_8h_a96d4f075f9eb3624baf42f54759b3634}} 
+\index{stacks.h@{stacks.h}!MAX\_NUM\_OF\_STACKS@{MAX\_NUM\_OF\_STACKS}}
+\index{MAX\_NUM\_OF\_STACKS@{MAX\_NUM\_OF\_STACKS}!stacks.h@{stacks.h}}
+\doxysubsubsection{\texorpdfstring{MAX\_NUM\_OF\_STACKS}{MAX\_NUM\_OF\_STACKS}}
+{\footnotesize\ttfamily \#define MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+STACKS~12}
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{stacks_8h_a4b10c203e8b8c4434de32423ce2fd823}\label{stacks_8h_a4b10c203e8b8c4434de32423ce2fd823}} 
+\index{stacks.h@{stacks.h}!avg\_cell\_temperature@{avg\_cell\_temperature}}
+\index{avg\_cell\_temperature@{avg\_cell\_temperature}!stacks.h@{stacks.h}}
+\doxysubsubsection{\texorpdfstring{avg\_cell\_temperature()}{avg\_cell\_temperature()}}
+{\footnotesize\ttfamily uint16\+\_\+t avg\+\_\+cell\+\_\+temperature (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{temperature\mbox{[}$\,$\mbox{]}\mbox{[}\+MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+TEMPSENS\mbox{]},  }\item[{uint8\+\_\+t}]{stacks }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{stacks_8h_a03675c6bf9a30357a82b36b10806f042}\label{stacks_8h_a03675c6bf9a30357a82b36b10806f042}} 
+\index{stacks.h@{stacks.h}!avg\_cell\_voltage@{avg\_cell\_voltage}}
+\index{avg\_cell\_voltage@{avg\_cell\_voltage}!stacks.h@{stacks.h}}
+\doxysubsubsection{\texorpdfstring{avg\_cell\_voltage()}{avg\_cell\_voltage()}}
+{\footnotesize\ttfamily uint16\+\_\+t avg\+\_\+cell\+\_\+voltage (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{voltage\mbox{[}$\,$\mbox{]}\mbox{[}\+MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS\mbox{]},  }\item[{uint8\+\_\+t}]{stacks }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{stacks_8h_a317c7cb521a74700c1a805bd5e443941}\label{stacks_8h_a317c7cb521a74700c1a805bd5e443941}} 
+\index{stacks.h@{stacks.h}!check\_temperature\_validity@{check\_temperature\_validity}}
+\index{check\_temperature\_validity@{check\_temperature\_validity}!stacks.h@{stacks.h}}
+\doxysubsubsection{\texorpdfstring{check\_temperature\_validity()}{check\_temperature\_validity()}}
+{\footnotesize\ttfamily bool check\+\_\+temperature\+\_\+validity (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{temperature\+Status\mbox{[}$\,$\mbox{]}\mbox{[}\+MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+TEMPSENS\mbox{]},  }\item[{uint8\+\_\+t}]{stacks }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{stacks_8h_a8d16f174be4bb6a635fc75f17298a8b7}\label{stacks_8h_a8d16f174be4bb6a635fc75f17298a8b7}} 
+\index{stacks.h@{stacks.h}!check\_voltage\_validity@{check\_voltage\_validity}}
+\index{check\_voltage\_validity@{check\_voltage\_validity}!stacks.h@{stacks.h}}
+\doxysubsubsection{\texorpdfstring{check\_voltage\_validity()}{check\_voltage\_validity()}}
+{\footnotesize\ttfamily bool check\+\_\+voltage\+\_\+validity (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{voltage\+Status\mbox{[}$\,$\mbox{]}\mbox{[}\+MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS+1\mbox{]},  }\item[{uint8\+\_\+t}]{stacks }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{stacks_8h_aabf463ce77d1c20dc5dbb39e8bf3e6ed}\label{stacks_8h_aabf463ce77d1c20dc5dbb39e8bf3e6ed}} 
+\index{stacks.h@{stacks.h}!control\_balancing@{control\_balancing}}
+\index{control\_balancing@{control\_balancing}!stacks.h@{stacks.h}}
+\doxysubsubsection{\texorpdfstring{control\_balancing()}{control\_balancing()}}
+{\footnotesize\ttfamily void control\+\_\+balancing (\begin{DoxyParamCaption}\item[{bool}]{enabled }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{stacks_8h_a59ef0488c28f3170bf6d360abf7ab85e}\label{stacks_8h_a59ef0488c28f3170bf6d360abf7ab85e}} 
+\index{stacks.h@{stacks.h}!copy\_stacks\_data@{copy\_stacks\_data}}
+\index{copy\_stacks\_data@{copy\_stacks\_data}!stacks.h@{stacks.h}}
+\doxysubsubsection{\texorpdfstring{copy\_stacks\_data()}{copy\_stacks\_data()}}
+{\footnotesize\ttfamily bool copy\+\_\+stacks\+\_\+data (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structstacks__data__t}{stacks\+\_\+data\+\_\+t}} $\ast$}]{dest,  }\item[{Tick\+Type\+\_\+t}]{blocktime }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{stacks_8h_ac99fac1270344e147f33864e1da25153}\label{stacks_8h_ac99fac1270344e147f33864e1da25153}} 
+\index{stacks.h@{stacks.h}!get\_balancing\_status@{get\_balancing\_status}}
+\index{get\_balancing\_status@{get\_balancing\_status}!stacks.h@{stacks.h}}
+\doxysubsubsection{\texorpdfstring{get\_balancing\_status()}{get\_balancing\_status()}}
+{\footnotesize\ttfamily void get\+\_\+balancing\+\_\+status (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{gates\mbox{[}\+NUMBEROFSLAVES\mbox{]}\mbox{[}\+MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS\mbox{]} }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{stacks_8h_a2199a8aada9ff14aced446806302701d}\label{stacks_8h_a2199a8aada9ff14aced446806302701d}} 
+\index{stacks.h@{stacks.h}!get\_stacks\_data@{get\_stacks\_data}}
+\index{get\_stacks\_data@{get\_stacks\_data}!stacks.h@{stacks.h}}
+\doxysubsubsection{\texorpdfstring{get\_stacks\_data()}{get\_stacks\_data()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structstacks__data__t}{stacks\+\_\+data\+\_\+t}}$\ast$ get\+\_\+stacks\+\_\+data (\begin{DoxyParamCaption}\item[{Tick\+Type\+\_\+t}]{blocktime }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{stacks_8h_a78fdb4c2cdafba4696c2a6a0da558845}\label{stacks_8h_a78fdb4c2cdafba4696c2a6a0da558845}} 
+\index{stacks.h@{stacks.h}!init\_stacks@{init\_stacks}}
+\index{init\_stacks@{init\_stacks}!stacks.h@{stacks.h}}
+\doxysubsubsection{\texorpdfstring{init\_stacks()}{init\_stacks()}}
+{\footnotesize\ttfamily void init\+\_\+stacks (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{stacks_8h_a513bc9c1e7329a854b1926f90ebc830b}\label{stacks_8h_a513bc9c1e7329a854b1926f90ebc830b}} 
+\index{stacks.h@{stacks.h}!max\_cell\_temperature@{max\_cell\_temperature}}
+\index{max\_cell\_temperature@{max\_cell\_temperature}!stacks.h@{stacks.h}}
+\doxysubsubsection{\texorpdfstring{max\_cell\_temperature()}{max\_cell\_temperature()}}
+{\footnotesize\ttfamily uint16\+\_\+t max\+\_\+cell\+\_\+temperature (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{temperature\mbox{[}$\,$\mbox{]}\mbox{[}\+MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+TEMPSENS\mbox{]},  }\item[{uint8\+\_\+t}]{stacks }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{stacks_8h_ae2613464b5eb74d34be151731c757d5d}\label{stacks_8h_ae2613464b5eb74d34be151731c757d5d}} 
+\index{stacks.h@{stacks.h}!max\_cell\_voltage@{max\_cell\_voltage}}
+\index{max\_cell\_voltage@{max\_cell\_voltage}!stacks.h@{stacks.h}}
+\doxysubsubsection{\texorpdfstring{max\_cell\_voltage()}{max\_cell\_voltage()}}
+{\footnotesize\ttfamily uint16\+\_\+t max\+\_\+cell\+\_\+voltage (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{voltage\mbox{[}$\,$\mbox{]}\mbox{[}\+MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS\mbox{]},  }\item[{uint8\+\_\+t}]{stacks }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{stacks_8h_a6233e43b944e6fa739b55d84ebdf7a4a}\label{stacks_8h_a6233e43b944e6fa739b55d84ebdf7a4a}} 
+\index{stacks.h@{stacks.h}!min\_cell\_temperature@{min\_cell\_temperature}}
+\index{min\_cell\_temperature@{min\_cell\_temperature}!stacks.h@{stacks.h}}
+\doxysubsubsection{\texorpdfstring{min\_cell\_temperature()}{min\_cell\_temperature()}}
+{\footnotesize\ttfamily uint16\+\_\+t min\+\_\+cell\+\_\+temperature (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{temperature\mbox{[}$\,$\mbox{]}\mbox{[}\+MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+TEMPSENS\mbox{]},  }\item[{uint8\+\_\+t}]{stacks }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{stacks_8h_af58cef1d2dd6ee9bf23cfd3bdcff38b4}\label{stacks_8h_af58cef1d2dd6ee9bf23cfd3bdcff38b4}} 
+\index{stacks.h@{stacks.h}!min\_cell\_voltage@{min\_cell\_voltage}}
+\index{min\_cell\_voltage@{min\_cell\_voltage}!stacks.h@{stacks.h}}
+\doxysubsubsection{\texorpdfstring{min\_cell\_voltage()}{min\_cell\_voltage()}}
+{\footnotesize\ttfamily uint16\+\_\+t min\+\_\+cell\+\_\+voltage (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{voltage\mbox{[}$\,$\mbox{]}\mbox{[}\+MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS\mbox{]},  }\item[{uint8\+\_\+t}]{stacks }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{stacks_8h_a3b36054e34985d7389ef71ac430fcd23}\label{stacks_8h_a3b36054e34985d7389ef71ac430fcd23}} 
+\index{stacks.h@{stacks.h}!release\_stacks\_data@{release\_stacks\_data}}
+\index{release\_stacks\_data@{release\_stacks\_data}!stacks.h@{stacks.h}}
+\doxysubsubsection{\texorpdfstring{release\_stacks\_data()}{release\_stacks\_data()}}
+{\footnotesize\ttfamily void release\+\_\+stacks\+\_\+data (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{stacks_8h_a47090d0050d47d9b66a20dc544b45dcd}\label{stacks_8h_a47090d0050d47d9b66a20dc544b45dcd}} 
+\index{stacks.h@{stacks.h}!stacksUID@{stacksUID}}
+\index{stacksUID@{stacksUID}!stacks.h@{stacks.h}}
+\doxysubsubsection{\texorpdfstring{stacksUID}{stacksUID}}
+{\footnotesize\ttfamily uint32\+\_\+t stacks\+UID\mbox{[}\mbox{\hyperlink{stacks_8h_a96d4f075f9eb3624baf42f54759b3634}{MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+STACKS}}\mbox{]}\hspace{0.3cm}{\ttfamily [extern]}}
+

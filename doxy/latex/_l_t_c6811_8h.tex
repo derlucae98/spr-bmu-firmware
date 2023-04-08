@@ -1,0 +1,350 @@
+\hypertarget{_l_t_c6811_8h}{}\doxysection{include/\+LTC6811.h File Reference}
+\label{_l_t_c6811_8h}\index{include/LTC6811.h@{include/LTC6811.h}}
+{\ttfamily \#include $<$string.\+h$>$}\newline
+{\ttfamily \#include $<$math.\+h$>$}\newline
+{\ttfamily \#include $<$stdbool.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}Free\+RTOS.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}task.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}queue.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}semphr.\+h\char`\"{}}\newline
+Include dependency graph for LTC6811.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{_l_t_c6811_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=178pt]{_l_t_c6811_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{_l_t_c6811_8h_a92be83a62ab975ee948fa03c09f9831e}{NTC\+\_\+\+CELL}}~3435
+\item 
+\#define \mbox{\hyperlink{_l_t_c6811_8h_ae8917e4694b50aff9d8b1cf3de93d5c0}{NUMBEROFSLAVES}}~1
+\item 
+\#define \mbox{\hyperlink{_l_t_c6811_8h_ac3447b6da089862e9efd9e742443bd5f}{MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS}}~12
+\item 
+\#define \mbox{\hyperlink{_l_t_c6811_8h_ab3358aea7d1fe26f3387487a772a4b59}{MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+TEMPSENS}}~14
+\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef void($\ast$ \mbox{\hyperlink{_l_t_c6811_8h_a23911bc7d65f2efb127ef14081bbb8d5}{ltc\+\_\+spi\+\_\+move\+\_\+array\+\_\+t}}) (uint8\+\_\+t $\ast$a, size\+\_\+t len)
+\begin{DoxyCompactList}\small\item\em Function pointer declaration for the SPI transceive function. \end{DoxyCompactList}\item 
+typedef void($\ast$ \mbox{\hyperlink{_l_t_c6811_8h_a844396149fd490f0a68d7caf7924fbd5}{ltc\+\_\+assert\+\_\+cs\+\_\+t}}) (void)
+\begin{DoxyCompactList}\small\item\em Function pointer declaration for the cs assert function. \end{DoxyCompactList}\item 
+typedef void($\ast$ \mbox{\hyperlink{_l_t_c6811_8h_a17ceb739aa99428ec549476a4aaf7e91}{ltc\+\_\+deassert\+\_\+cs\+\_\+t}}) (void)
+\begin{DoxyCompactList}\small\item\em Function pointer declaration for the cs de-\/assert function. \end{DoxyCompactList}\item 
+typedef bool($\ast$ \mbox{\hyperlink{_l_t_c6811_8h_a31b64eebecd3df73a5ad676a296ef97e}{ltc\+\_\+mutex\+\_\+take\+\_\+t}}) (Tick\+Type\+\_\+t blocktime)
+\begin{DoxyCompactList}\small\item\em Function pointer declaration for the Mutex take function. \end{DoxyCompactList}\item 
+typedef void($\ast$ \mbox{\hyperlink{_l_t_c6811_8h_a4606ccb265371f82a6e0a6fc1b954911}{ltc\+\_\+mutex\+\_\+give\+\_\+t}}) (void)
+\begin{DoxyCompactList}\small\item\em Function pointer declaration for the Mutex give function. This function returns the Mutex after the work is done. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \mbox{\hyperlink{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536a}{LTCError\+\_\+t}} \{ \mbox{\hyperlink{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536aab1bcf0cef5926b7207df9833ba0b65cd}{NOERROR}} = 0x0
+, \mbox{\hyperlink{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536aa9180193116a0a37311655cb5951fb570}{PECERROR}} = 0x1
+, \mbox{\hyperlink{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536aab19da59f66c7879953ba1586eafac9cd}{VALUEOUTOFRANGE}} = 0x2
+, \mbox{\hyperlink{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536aa95ab59911f0c860f1e5e85b89195cf79}{OPENCELLWIRE}} = 0x3
+ \}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{_l_t_c6811_8h_a614d2b0cedb80b743f3de8dbf9a269e4}{ltc6811\+\_\+init}} (\mbox{\hyperlink{_l_t_c6811_8h_a31b64eebecd3df73a5ad676a296ef97e}{ltc\+\_\+mutex\+\_\+take\+\_\+t}} ltc\+\_\+mutex\+\_\+take, \mbox{\hyperlink{_l_t_c6811_8h_a4606ccb265371f82a6e0a6fc1b954911}{ltc\+\_\+mutex\+\_\+give\+\_\+t}} ltc\+\_\+mutex\+\_\+give, \mbox{\hyperlink{_l_t_c6811_8h_a23911bc7d65f2efb127ef14081bbb8d5}{ltc\+\_\+spi\+\_\+move\+\_\+array\+\_\+t}} ltc\+\_\+spi\+\_\+move\+\_\+array, \mbox{\hyperlink{_l_t_c6811_8h_a844396149fd490f0a68d7caf7924fbd5}{ltc\+\_\+assert\+\_\+cs\+\_\+t}} ltc\+\_\+assert\+\_\+cs, \mbox{\hyperlink{_l_t_c6811_8h_a17ceb739aa99428ec549476a4aaf7e91}{ltc\+\_\+deassert\+\_\+cs\+\_\+t}} ltc\+\_\+deassert\+\_\+cs)
+\begin{DoxyCompactList}\small\item\em Initializes the LTC6811 library. Provide hardware-\/dependant callback functions. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{_l_t_c6811_8h_a23cac4daf38421f8aa37c9426d451858}{ltc6811\+\_\+wake\+\_\+daisy\+\_\+chain}} (void)
+\begin{DoxyCompactList}\small\item\em Wakes a daisy-\/chain of NUMBEROFSLAVES devices. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{_l_t_c6811_8h_ae0be5d32aabfc30b8413f938304ff5b5}{ltc6811\+\_\+get\+\_\+voltage}} (uint16\+\_\+t voltage\mbox{[}$\,$\mbox{]}\mbox{[}\mbox{\hyperlink{_l_t_c6811_8h_ac3447b6da089862e9efd9e742443bd5f}{MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS}}\mbox{]}, \mbox{\hyperlink{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536a}{LTCError\+\_\+t}} voltage\+Status\mbox{[}$\,$\mbox{]}\mbox{[}\mbox{\hyperlink{_l_t_c6811_8h_ac3447b6da089862e9efd9e742443bd5f}{MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS}}\mbox{]})
+\begin{DoxyCompactList}\small\item\em Get the cell voltage of NUMBEROFSLAVES devices. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{_l_t_c6811_8h_ab68b2f7615ba1bcb3c7df0cce7f9bd2c}{ltc6811\+\_\+get\+\_\+temperatures\+\_\+in\+\_\+degC}} (uint16\+\_\+t temperature\mbox{[}$\,$\mbox{]}\mbox{[}\mbox{\hyperlink{_l_t_c6811_8h_ab3358aea7d1fe26f3387487a772a4b59}{MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+TEMPSENS}}\mbox{]}, \mbox{\hyperlink{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536a}{LTCError\+\_\+t}} temperature\+Status\mbox{[}$\,$\mbox{]}\mbox{[}\mbox{\hyperlink{_l_t_c6811_8h_ab3358aea7d1fe26f3387487a772a4b59}{MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+TEMPSENS}}\mbox{]}, uint8\+\_\+t start\+Channel, uint8\+\_\+t len)
+\begin{DoxyCompactList}\small\item\em Get the temperatures in degrees Celsius. Two temperatures are acquired simultaneously. The sensors are multiplexed. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{_l_t_c6811_8h_a722f58309dc66e8a79b1f347dd1c5216}{ltc6811\+\_\+get\+\_\+uid}} (uint32\+\_\+t UID\mbox{[}$\,$\mbox{]})
+\begin{DoxyCompactList}\small\item\em Get the unique ID of NUMBEROFSLAVES slaves. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{_l_t_c6811_8h_a594f5d5cba4d8dce21492a2889bc0a96}{ltc6811\+\_\+open\+\_\+wire\+\_\+check}} (\mbox{\hyperlink{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536a}{LTCError\+\_\+t}} result\mbox{[}$\,$\mbox{]}\mbox{[}\mbox{\hyperlink{_l_t_c6811_8h_ac3447b6da089862e9efd9e742443bd5f}{MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS}}+1\mbox{]})
+\begin{DoxyCompactList}\small\item\em Performs an open wire check for the cell voltage measurement. For N cells, N+1 cell wires have to be checked. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{_l_t_c6811_8h_a33556491ac2c9ab3549f33622e5f7508}{ltc6811\+\_\+set\+\_\+balancing\+\_\+gates}} (uint8\+\_\+t gates\mbox{[}$\,$\mbox{]}\mbox{[}\mbox{\hyperlink{_l_t_c6811_8h_ac3447b6da089862e9efd9e742443bd5f}{MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS}}\mbox{]})
+\begin{DoxyCompactList}\small\item\em Enable the balancing for specific cells. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{_l_t_c6811_8h_ac3447b6da089862e9efd9e742443bd5f}\label{_l_t_c6811_8h_ac3447b6da089862e9efd9e742443bd5f}} 
+\index{LTC6811.h@{LTC6811.h}!MAX\_NUM\_OF\_CELLS@{MAX\_NUM\_OF\_CELLS}}
+\index{MAX\_NUM\_OF\_CELLS@{MAX\_NUM\_OF\_CELLS}!LTC6811.h@{LTC6811.h}}
+\doxysubsubsection{\texorpdfstring{MAX\_NUM\_OF\_CELLS}{MAX\_NUM\_OF\_CELLS}}
+{\footnotesize\ttfamily \#define MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS~12}
+
+Defines the number of cells per stack. \mbox{\Hypertarget{_l_t_c6811_8h_ab3358aea7d1fe26f3387487a772a4b59}\label{_l_t_c6811_8h_ab3358aea7d1fe26f3387487a772a4b59}} 
+\index{LTC6811.h@{LTC6811.h}!MAX\_NUM\_OF\_TEMPSENS@{MAX\_NUM\_OF\_TEMPSENS}}
+\index{MAX\_NUM\_OF\_TEMPSENS@{MAX\_NUM\_OF\_TEMPSENS}!LTC6811.h@{LTC6811.h}}
+\doxysubsubsection{\texorpdfstring{MAX\_NUM\_OF\_TEMPSENS}{MAX\_NUM\_OF\_TEMPSENS}}
+{\footnotesize\ttfamily \#define MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+TEMPSENS~14}
+
+Defines the number of temperature sensors per stack. \mbox{\Hypertarget{_l_t_c6811_8h_a92be83a62ab975ee948fa03c09f9831e}\label{_l_t_c6811_8h_a92be83a62ab975ee948fa03c09f9831e}} 
+\index{LTC6811.h@{LTC6811.h}!NTC\_CELL@{NTC\_CELL}}
+\index{NTC\_CELL@{NTC\_CELL}!LTC6811.h@{LTC6811.h}}
+\doxysubsubsection{\texorpdfstring{NTC\_CELL}{NTC\_CELL}}
+{\footnotesize\ttfamily \#define NTC\+\_\+\+CELL~3435}
+
+Defines the B-\/value for the NTCs used for the cell temperature monitoring \mbox{\Hypertarget{_l_t_c6811_8h_ae8917e4694b50aff9d8b1cf3de93d5c0}\label{_l_t_c6811_8h_ae8917e4694b50aff9d8b1cf3de93d5c0}} 
+\index{LTC6811.h@{LTC6811.h}!NUMBEROFSLAVES@{NUMBEROFSLAVES}}
+\index{NUMBEROFSLAVES@{NUMBEROFSLAVES}!LTC6811.h@{LTC6811.h}}
+\doxysubsubsection{\texorpdfstring{NUMBEROFSLAVES}{NUMBEROFSLAVES}}
+{\footnotesize\ttfamily \#define NUMBEROFSLAVES~1}
+
+Defines the number of devices in a the daisy-\/chain 
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{_l_t_c6811_8h_a844396149fd490f0a68d7caf7924fbd5}\label{_l_t_c6811_8h_a844396149fd490f0a68d7caf7924fbd5}} 
+\index{LTC6811.h@{LTC6811.h}!ltc\_assert\_cs\_t@{ltc\_assert\_cs\_t}}
+\index{ltc\_assert\_cs\_t@{ltc\_assert\_cs\_t}!LTC6811.h@{LTC6811.h}}
+\doxysubsubsection{\texorpdfstring{ltc\_assert\_cs\_t}{ltc\_assert\_cs\_t}}
+{\footnotesize\ttfamily ltc\+\_\+assert\+\_\+cs\+\_\+t}
+
+
+
+Function pointer declaration for the cs assert function. 
+
+\mbox{\Hypertarget{_l_t_c6811_8h_a17ceb739aa99428ec549476a4aaf7e91}\label{_l_t_c6811_8h_a17ceb739aa99428ec549476a4aaf7e91}} 
+\index{LTC6811.h@{LTC6811.h}!ltc\_deassert\_cs\_t@{ltc\_deassert\_cs\_t}}
+\index{ltc\_deassert\_cs\_t@{ltc\_deassert\_cs\_t}!LTC6811.h@{LTC6811.h}}
+\doxysubsubsection{\texorpdfstring{ltc\_deassert\_cs\_t}{ltc\_deassert\_cs\_t}}
+{\footnotesize\ttfamily ltc\+\_\+deassert\+\_\+cs\+\_\+t}
+
+
+
+Function pointer declaration for the cs de-\/assert function. 
+
+\mbox{\Hypertarget{_l_t_c6811_8h_a4606ccb265371f82a6e0a6fc1b954911}\label{_l_t_c6811_8h_a4606ccb265371f82a6e0a6fc1b954911}} 
+\index{LTC6811.h@{LTC6811.h}!ltc\_mutex\_give\_t@{ltc\_mutex\_give\_t}}
+\index{ltc\_mutex\_give\_t@{ltc\_mutex\_give\_t}!LTC6811.h@{LTC6811.h}}
+\doxysubsubsection{\texorpdfstring{ltc\_mutex\_give\_t}{ltc\_mutex\_give\_t}}
+{\footnotesize\ttfamily ltc\+\_\+mutex\+\_\+give\+\_\+t}
+
+
+
+Function pointer declaration for the Mutex give function. This function returns the Mutex after the work is done. 
+
+\mbox{\Hypertarget{_l_t_c6811_8h_a31b64eebecd3df73a5ad676a296ef97e}\label{_l_t_c6811_8h_a31b64eebecd3df73a5ad676a296ef97e}} 
+\index{LTC6811.h@{LTC6811.h}!ltc\_mutex\_take\_t@{ltc\_mutex\_take\_t}}
+\index{ltc\_mutex\_take\_t@{ltc\_mutex\_take\_t}!LTC6811.h@{LTC6811.h}}
+\doxysubsubsection{\texorpdfstring{ltc\_mutex\_take\_t}{ltc\_mutex\_take\_t}}
+{\footnotesize\ttfamily ltc\+\_\+mutex\+\_\+take\+\_\+t}
+
+
+
+Function pointer declaration for the Mutex take function. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em blocktime} & Timeout for the OS to wait for the Mutex to become available. This function blocks on the Mutex to securely use the SPI peripheral. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{_l_t_c6811_8h_a23911bc7d65f2efb127ef14081bbb8d5}\label{_l_t_c6811_8h_a23911bc7d65f2efb127ef14081bbb8d5}} 
+\index{LTC6811.h@{LTC6811.h}!ltc\_spi\_move\_array\_t@{ltc\_spi\_move\_array\_t}}
+\index{ltc\_spi\_move\_array\_t@{ltc\_spi\_move\_array\_t}!LTC6811.h@{LTC6811.h}}
+\doxysubsubsection{\texorpdfstring{ltc\_spi\_move\_array\_t}{ltc\_spi\_move\_array\_t}}
+{\footnotesize\ttfamily ltc\+\_\+spi\+\_\+move\+\_\+array\+\_\+t}
+
+
+
+Function pointer declaration for the SPI transceive function. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em a} & Pointer to the array to send. It will hold the received data afterwards. \\
+\hline
+{\em len} & Length of the array to send. \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Enumeration Type Documentation}
+\mbox{\Hypertarget{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536a}\label{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536a}} 
+\index{LTC6811.h@{LTC6811.h}!LTCError\_t@{LTCError\_t}}
+\index{LTCError\_t@{LTCError\_t}!LTC6811.h@{LTC6811.h}}
+\doxysubsubsection{\texorpdfstring{LTCError\_t}{LTCError\_t}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536a}{LTCError\+\_\+t}}}
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{NOERROR@{NOERROR}!LTC6811.h@{LTC6811.h}}\index{LTC6811.h@{LTC6811.h}!NOERROR@{NOERROR}}}\mbox{\Hypertarget{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536aab1bcf0cef5926b7207df9833ba0b65cd}\label{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536aab1bcf0cef5926b7207df9833ba0b65cd}} 
+NOERROR&No error occurred. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{PECERROR@{PECERROR}!LTC6811.h@{LTC6811.h}}\index{LTC6811.h@{LTC6811.h}!PECERROR@{PECERROR}}}\mbox{\Hypertarget{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536aa9180193116a0a37311655cb5951fb570}\label{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536aa9180193116a0a37311655cb5951fb570}} 
+PECERROR&PEC error occurred. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{VALUEOUTOFRANGE@{VALUEOUTOFRANGE}!LTC6811.h@{LTC6811.h}}\index{LTC6811.h@{LTC6811.h}!VALUEOUTOFRANGE@{VALUEOUTOFRANGE}}}\mbox{\Hypertarget{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536aab19da59f66c7879953ba1586eafac9cd}\label{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536aab19da59f66c7879953ba1586eafac9cd}} 
+VALUEOUTOFRANGE&Value is out of range. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{OPENCELLWIRE@{OPENCELLWIRE}!LTC6811.h@{LTC6811.h}}\index{LTC6811.h@{LTC6811.h}!OPENCELLWIRE@{OPENCELLWIRE}}}\mbox{\Hypertarget{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536aa95ab59911f0c860f1e5e85b89195cf79}\label{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536aa95ab59911f0c860f1e5e85b89195cf79}} 
+OPENCELLWIRE&Open wire. \\
+\hline
+
+\end{DoxyEnumFields}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{_l_t_c6811_8h_ab68b2f7615ba1bcb3c7df0cce7f9bd2c}\label{_l_t_c6811_8h_ab68b2f7615ba1bcb3c7df0cce7f9bd2c}} 
+\index{LTC6811.h@{LTC6811.h}!ltc6811\_get\_temperatures\_in\_degC@{ltc6811\_get\_temperatures\_in\_degC}}
+\index{ltc6811\_get\_temperatures\_in\_degC@{ltc6811\_get\_temperatures\_in\_degC}!LTC6811.h@{LTC6811.h}}
+\doxysubsubsection{\texorpdfstring{ltc6811\_get\_temperatures\_in\_degC()}{ltc6811\_get\_temperatures\_in\_degC()}}
+{\footnotesize\ttfamily void ltc6811\+\_\+get\+\_\+temperatures\+\_\+in\+\_\+degC (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{temperature\mbox{[}$\,$\mbox{]}\mbox{[}\+MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+TEMPSENS\mbox{]},  }\item[{\mbox{\hyperlink{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536a}{LTCError\+\_\+t}}}]{temperature\+Status\mbox{[}$\,$\mbox{]}\mbox{[}\+MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+TEMPSENS\mbox{]},  }\item[{uint8\+\_\+t}]{start\+Channel,  }\item[{uint8\+\_\+t}]{len }\end{DoxyParamCaption})}
+
+
+
+Get the temperatures in degrees Celsius. Two temperatures are acquired simultaneously. The sensors are multiplexed. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em temperature} & Array for the temperatures. Provide an array of size \mbox{[}NUMBEROFSLAVES\mbox{]}\mbox{[}MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+TEMPSENS\mbox{]}. The values are fixed-\/point values with 0.\+1°C resolution \\
+\hline
+{\em temperature\+Status} & Array for the status of each temperature measurement. Provide an array of size \mbox{[}NUMBEROFSLAVES\mbox{]}\mbox{[}MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+TEMPSENS\mbox{]}. \\
+\hline
+{\em start\+Channel} & First channel for each mux. \\
+\hline
+{\em len} & Number of channels to sample for each mux. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+\mbox{\hyperlink{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536a}{LTCError\+\_\+t}}. 
+\end{DoxySeeAlso}
+\mbox{\Hypertarget{_l_t_c6811_8h_a722f58309dc66e8a79b1f347dd1c5216}\label{_l_t_c6811_8h_a722f58309dc66e8a79b1f347dd1c5216}} 
+\index{LTC6811.h@{LTC6811.h}!ltc6811\_get\_uid@{ltc6811\_get\_uid}}
+\index{ltc6811\_get\_uid@{ltc6811\_get\_uid}!LTC6811.h@{LTC6811.h}}
+\doxysubsubsection{\texorpdfstring{ltc6811\_get\_uid()}{ltc6811\_get\_uid()}}
+{\footnotesize\ttfamily void ltc6811\+\_\+get\+\_\+uid (\begin{DoxyParamCaption}\item[{uint32\+\_\+t}]{UID\mbox{[}$\,$\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Get the unique ID of NUMBEROFSLAVES slaves. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em UID} & This parameter holds the 32-\/bit unique ID. Provide an array with the size of \mbox{[}NUMBEROFSLAVES\mbox{]} elements. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{_l_t_c6811_8h_ae0be5d32aabfc30b8413f938304ff5b5}\label{_l_t_c6811_8h_ae0be5d32aabfc30b8413f938304ff5b5}} 
+\index{LTC6811.h@{LTC6811.h}!ltc6811\_get\_voltage@{ltc6811\_get\_voltage}}
+\index{ltc6811\_get\_voltage@{ltc6811\_get\_voltage}!LTC6811.h@{LTC6811.h}}
+\doxysubsubsection{\texorpdfstring{ltc6811\_get\_voltage()}{ltc6811\_get\_voltage()}}
+{\footnotesize\ttfamily void ltc6811\+\_\+get\+\_\+voltage (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{voltage\mbox{[}$\,$\mbox{]}\mbox{[}\+MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS\mbox{]},  }\item[{\mbox{\hyperlink{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536a}{LTCError\+\_\+t}}}]{voltage\+Status\mbox{[}$\,$\mbox{]}\mbox{[}\+MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Get the cell voltage of NUMBEROFSLAVES devices. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em voltage} & Array for the voltages. Provide an array with the size of \mbox{[}NUMBEROFSLAVES\mbox{]}\mbox{[}MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS\mbox{]} elements. The voltages are fixed-\/point values with 100uV resolution. \\
+\hline
+{\em voltage\+Status} & Array for the status of each voltage measurement. Provide an array with the size of \mbox{[}NUMBEROFSLAVES\mbox{]}\mbox{[}MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS\mbox{]} elements. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+\mbox{\hyperlink{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536a}{LTCError\+\_\+t}}. 
+\end{DoxySeeAlso}
+\mbox{\Hypertarget{_l_t_c6811_8h_a614d2b0cedb80b743f3de8dbf9a269e4}\label{_l_t_c6811_8h_a614d2b0cedb80b743f3de8dbf9a269e4}} 
+\index{LTC6811.h@{LTC6811.h}!ltc6811\_init@{ltc6811\_init}}
+\index{ltc6811\_init@{ltc6811\_init}!LTC6811.h@{LTC6811.h}}
+\doxysubsubsection{\texorpdfstring{ltc6811\_init()}{ltc6811\_init()}}
+{\footnotesize\ttfamily void ltc6811\+\_\+init (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{_l_t_c6811_8h_a31b64eebecd3df73a5ad676a296ef97e}{ltc\+\_\+mutex\+\_\+take\+\_\+t}}}]{ltc\+\_\+mutex\+\_\+take,  }\item[{\mbox{\hyperlink{_l_t_c6811_8h_a4606ccb265371f82a6e0a6fc1b954911}{ltc\+\_\+mutex\+\_\+give\+\_\+t}}}]{ltc\+\_\+mutex\+\_\+give,  }\item[{\mbox{\hyperlink{_l_t_c6811_8h_a23911bc7d65f2efb127ef14081bbb8d5}{ltc\+\_\+spi\+\_\+move\+\_\+array\+\_\+t}}}]{ltc\+\_\+spi\+\_\+move\+\_\+array,  }\item[{\mbox{\hyperlink{_l_t_c6811_8h_a844396149fd490f0a68d7caf7924fbd5}{ltc\+\_\+assert\+\_\+cs\+\_\+t}}}]{ltc\+\_\+assert\+\_\+cs,  }\item[{\mbox{\hyperlink{_l_t_c6811_8h_a17ceb739aa99428ec549476a4aaf7e91}{ltc\+\_\+deassert\+\_\+cs\+\_\+t}}}]{ltc\+\_\+deassert\+\_\+cs }\end{DoxyParamCaption})}
+
+
+
+Initializes the LTC6811 library. Provide hardware-\/dependant callback functions. 
+
+\begin{DoxyNote}{Note}
+All other functions require the callbacks set by this function! 
+\end{DoxyNote}
+
+\begin{DoxyParams}{Parameters}
+{\em ltc\+\_\+mutex\+\_\+take} & Callback for the Mutex take function. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+\mbox{\hyperlink{_l_t_c6811_8h_a31b64eebecd3df73a5ad676a296ef97e}{ltc\+\_\+mutex\+\_\+take\+\_\+t}} for parameters. 
+\end{DoxySeeAlso}
+
+\begin{DoxyParams}{Parameters}
+{\em ltc\+\_\+murex\+\_\+give} & Callback for the Mutex give function. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+\mbox{\hyperlink{_l_t_c6811_8h_a4606ccb265371f82a6e0a6fc1b954911}{ltc\+\_\+mutex\+\_\+give\+\_\+t}} for parameters. 
+\end{DoxySeeAlso}
+
+\begin{DoxyParams}{Parameters}
+{\em ltc\+\_\+spi\+\_\+move\+\_\+array} & Callback for the SPI transceive function. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+\mbox{\hyperlink{_l_t_c6811_8h_a23911bc7d65f2efb127ef14081bbb8d5}{ltc\+\_\+spi\+\_\+move\+\_\+array\+\_\+t}} for parameters. 
+\end{DoxySeeAlso}
+
+\begin{DoxyParams}{Parameters}
+{\em ltc\+\_\+assert\+\_\+cs} & Callback for the chip-\/select assert function. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+\mbox{\hyperlink{_l_t_c6811_8h_a844396149fd490f0a68d7caf7924fbd5}{ltc\+\_\+assert\+\_\+cs\+\_\+t}} for parameters. 
+\end{DoxySeeAlso}
+
+\begin{DoxyParams}{Parameters}
+{\em ltc\+\_\+deassert\+\_\+cs} & Callback for the chip-\/select de-\/assert function. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+\mbox{\hyperlink{_l_t_c6811_8h_a17ceb739aa99428ec549476a4aaf7e91}{ltc\+\_\+deassert\+\_\+cs\+\_\+t}} for parameters. 
+\end{DoxySeeAlso}
+\mbox{\Hypertarget{_l_t_c6811_8h_a594f5d5cba4d8dce21492a2889bc0a96}\label{_l_t_c6811_8h_a594f5d5cba4d8dce21492a2889bc0a96}} 
+\index{LTC6811.h@{LTC6811.h}!ltc6811\_open\_wire\_check@{ltc6811\_open\_wire\_check}}
+\index{ltc6811\_open\_wire\_check@{ltc6811\_open\_wire\_check}!LTC6811.h@{LTC6811.h}}
+\doxysubsubsection{\texorpdfstring{ltc6811\_open\_wire\_check()}{ltc6811\_open\_wire\_check()}}
+{\footnotesize\ttfamily void ltc6811\+\_\+open\+\_\+wire\+\_\+check (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536a}{LTCError\+\_\+t}}}]{result\mbox{[}$\,$\mbox{]}\mbox{[}\+MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS+1\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Performs an open wire check for the cell voltage measurement. For N cells, N+1 cell wires have to be checked. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em result} & This array holds the status of all cell wires. Provide an array with the size of \mbox{[}NUMBEROFSLAVES\mbox{]}\mbox{[}MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS+1\mbox{]} elements. \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+\mbox{\hyperlink{_l_t_c6811_8h_af7a3bb131b6365609cffef31f878536a}{LTCError\+\_\+t}} 
+\end{DoxySeeAlso}
+\mbox{\Hypertarget{_l_t_c6811_8h_a33556491ac2c9ab3549f33622e5f7508}\label{_l_t_c6811_8h_a33556491ac2c9ab3549f33622e5f7508}} 
+\index{LTC6811.h@{LTC6811.h}!ltc6811\_set\_balancing\_gates@{ltc6811\_set\_balancing\_gates}}
+\index{ltc6811\_set\_balancing\_gates@{ltc6811\_set\_balancing\_gates}!LTC6811.h@{LTC6811.h}}
+\doxysubsubsection{\texorpdfstring{ltc6811\_set\_balancing\_gates()}{ltc6811\_set\_balancing\_gates()}}
+{\footnotesize\ttfamily void ltc6811\+\_\+set\+\_\+balancing\+\_\+gates (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{gates\mbox{[}$\,$\mbox{]}\mbox{[}\+MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Enable the balancing for specific cells. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em gates} & This array holds the enable bit for every stack and slave. Provide an array with the size of \mbox{[}NUMBEROFSLAVES\mbox{]}\mbox{[}MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS\mbox{]} elements. 0 = balancing disabled. 1 = balancing enabled. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{_l_t_c6811_8h_a23cac4daf38421f8aa37c9426d451858}\label{_l_t_c6811_8h_a23cac4daf38421f8aa37c9426d451858}} 
+\index{LTC6811.h@{LTC6811.h}!ltc6811\_wake\_daisy\_chain@{ltc6811\_wake\_daisy\_chain}}
+\index{ltc6811\_wake\_daisy\_chain@{ltc6811\_wake\_daisy\_chain}!LTC6811.h@{LTC6811.h}}
+\doxysubsubsection{\texorpdfstring{ltc6811\_wake\_daisy\_chain()}{ltc6811\_wake\_daisy\_chain()}}
+{\footnotesize\ttfamily void ltc6811\+\_\+wake\+\_\+daisy\+\_\+chain (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Wakes a daisy-\/chain of NUMBEROFSLAVES devices. 
+

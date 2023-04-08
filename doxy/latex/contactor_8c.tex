@@ -1,0 +1,97 @@
+\hypertarget{contactor_8c}{}\doxysection{src/contactor.c File Reference}
+\label{contactor_8c}\index{src/contactor.c@{src/contactor.c}}
+{\ttfamily \#include \char`\"{}contactor.\+h\char`\"{}}\newline
+Include dependency graph for contactor.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=161pt]{contactor_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structstate__machine__t}{state\+\_\+machine\+\_\+t}}
+\item 
+struct \mbox{\hyperlink{structstate__array__t}{state\+\_\+array\+\_\+t}}
+\item 
+struct \mbox{\hyperlink{structstate__function__t}{state\+\_\+function\+\_\+t}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \mbox{\hyperlink{contactor_8c_a3c464530ab3c39996461da251e7899c2}{contactor\+\_\+t}} \{ \mbox{\hyperlink{contactor_8c_a3c464530ab3c39996461da251e7899c2ac4cb1d670ccc8439be94ba52b4f39c89}{CONTACTOR\+\_\+\+HV\+\_\+\+POS}}
+, \mbox{\hyperlink{contactor_8c_a3c464530ab3c39996461da251e7899c2a91e00904cf7a160ae6b838c5c1b15b1e}{CONTACTOR\+\_\+\+HV\+\_\+\+NEG}}
+, \mbox{\hyperlink{contactor_8c_a3c464530ab3c39996461da251e7899c2a0f168f36f56f3c318f8b54005260ae23}{CONTACTOR\+\_\+\+HV\+\_\+\+PRE}}
+ \}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{contactor_8c_a4d75266fcfadcb3ad49fdedea6a47cf7}{PRINTF}} (const char $\ast$format,...)
+\item 
+void \mbox{\hyperlink{contactor_8c_ae6d1687fd5488af2c72bffcadf1729c5}{init\+\_\+contactor}} (void)
+\item 
+void \mbox{\hyperlink{contactor_8c_a188b3e2e0c6b73e8a3da54c8da60b4be}{request\+\_\+tractive\+\_\+system}} (bool active)
+\item 
+state\+\_\+t \mbox{\hyperlink{contactor_8c_a3847a4bf637bdc4df1f4cca7aeab1962}{get\+\_\+contactor\+\_\+state}} (void)
+\item 
+error\+\_\+t \mbox{\hyperlink{contactor_8c_acd100ff3a9eba6ef39cc29630928a2c1}{get\+\_\+contactor\+\_\+error}} (void)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Enumeration Type Documentation}
+\mbox{\Hypertarget{contactor_8c_a3c464530ab3c39996461da251e7899c2}\label{contactor_8c_a3c464530ab3c39996461da251e7899c2}} 
+\index{contactor.c@{contactor.c}!contactor\_t@{contactor\_t}}
+\index{contactor\_t@{contactor\_t}!contactor.c@{contactor.c}}
+\doxysubsubsection{\texorpdfstring{contactor\_t}{contactor\_t}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{contactor_8c_a3c464530ab3c39996461da251e7899c2}{contactor\+\_\+t}}}
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{CONTACTOR\_HV\_POS@{CONTACTOR\_HV\_POS}!contactor.c@{contactor.c}}\index{contactor.c@{contactor.c}!CONTACTOR\_HV\_POS@{CONTACTOR\_HV\_POS}}}\mbox{\Hypertarget{contactor_8c_a3c464530ab3c39996461da251e7899c2ac4cb1d670ccc8439be94ba52b4f39c89}\label{contactor_8c_a3c464530ab3c39996461da251e7899c2ac4cb1d670ccc8439be94ba52b4f39c89}} 
+CONTACTOR\+\_\+\+HV\+\_\+\+POS&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{CONTACTOR\_HV\_NEG@{CONTACTOR\_HV\_NEG}!contactor.c@{contactor.c}}\index{contactor.c@{contactor.c}!CONTACTOR\_HV\_NEG@{CONTACTOR\_HV\_NEG}}}\mbox{\Hypertarget{contactor_8c_a3c464530ab3c39996461da251e7899c2a91e00904cf7a160ae6b838c5c1b15b1e}\label{contactor_8c_a3c464530ab3c39996461da251e7899c2a91e00904cf7a160ae6b838c5c1b15b1e}} 
+CONTACTOR\+\_\+\+HV\+\_\+\+NEG&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{CONTACTOR\_HV\_PRE@{CONTACTOR\_HV\_PRE}!contactor.c@{contactor.c}}\index{contactor.c@{contactor.c}!CONTACTOR\_HV\_PRE@{CONTACTOR\_HV\_PRE}}}\mbox{\Hypertarget{contactor_8c_a3c464530ab3c39996461da251e7899c2a0f168f36f56f3c318f8b54005260ae23}\label{contactor_8c_a3c464530ab3c39996461da251e7899c2a0f168f36f56f3c318f8b54005260ae23}} 
+CONTACTOR\+\_\+\+HV\+\_\+\+PRE&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{contactor_8c_acd100ff3a9eba6ef39cc29630928a2c1}\label{contactor_8c_acd100ff3a9eba6ef39cc29630928a2c1}} 
+\index{contactor.c@{contactor.c}!get\_contactor\_error@{get\_contactor\_error}}
+\index{get\_contactor\_error@{get\_contactor\_error}!contactor.c@{contactor.c}}
+\doxysubsubsection{\texorpdfstring{get\_contactor\_error()}{get\_contactor\_error()}}
+{\footnotesize\ttfamily error\+\_\+t get\+\_\+contactor\+\_\+error (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{contactor_8c_a3847a4bf637bdc4df1f4cca7aeab1962}\label{contactor_8c_a3847a4bf637bdc4df1f4cca7aeab1962}} 
+\index{contactor.c@{contactor.c}!get\_contactor\_state@{get\_contactor\_state}}
+\index{get\_contactor\_state@{get\_contactor\_state}!contactor.c@{contactor.c}}
+\doxysubsubsection{\texorpdfstring{get\_contactor\_state()}{get\_contactor\_state()}}
+{\footnotesize\ttfamily state\+\_\+t get\+\_\+contactor\+\_\+state (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{contactor_8c_ae6d1687fd5488af2c72bffcadf1729c5}\label{contactor_8c_ae6d1687fd5488af2c72bffcadf1729c5}} 
+\index{contactor.c@{contactor.c}!init\_contactor@{init\_contactor}}
+\index{init\_contactor@{init\_contactor}!contactor.c@{contactor.c}}
+\doxysubsubsection{\texorpdfstring{init\_contactor()}{init\_contactor()}}
+{\footnotesize\ttfamily void init\+\_\+contactor (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{contactor_8c_a4d75266fcfadcb3ad49fdedea6a47cf7}\label{contactor_8c_a4d75266fcfadcb3ad49fdedea6a47cf7}} 
+\index{contactor.c@{contactor.c}!PRINTF@{PRINTF}}
+\index{PRINTF@{PRINTF}!contactor.c@{contactor.c}}
+\doxysubsubsection{\texorpdfstring{PRINTF()}{PRINTF()}}
+{\footnotesize\ttfamily void PRINTF (\begin{DoxyParamCaption}\item[{const char $\ast$}]{format,  }\item[{}]{... }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{contactor_8c_a188b3e2e0c6b73e8a3da54c8da60b4be}\label{contactor_8c_a188b3e2e0c6b73e8a3da54c8da60b4be}} 
+\index{contactor.c@{contactor.c}!request\_tractive\_system@{request\_tractive\_system}}
+\index{request\_tractive\_system@{request\_tractive\_system}!contactor.c@{contactor.c}}
+\doxysubsubsection{\texorpdfstring{request\_tractive\_system()}{request\_tractive\_system()}}
+{\footnotesize\ttfamily void request\+\_\+tractive\+\_\+system (\begin{DoxyParamCaption}\item[{bool}]{active }\end{DoxyParamCaption})}
+

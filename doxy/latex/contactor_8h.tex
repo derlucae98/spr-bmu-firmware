@@ -1,0 +1,178 @@
+\hypertarget{contactor_8h}{}\doxysection{include/contactor.h File Reference}
+\label{contactor_8h}\index{include/contactor.h@{include/contactor.h}}
+{\ttfamily \#include \char`\"{}S32\+K14x.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}Free\+RTOS.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}task.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}gpio.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}config.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$stdbool.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}sensors.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}wdt.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}math.\+h\char`\"{}}\newline
+Include dependency graph for contactor.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{contactor_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=178pt]{contactor_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \mbox{\hyperlink{contactor_8h_a2fb9b58e4e5f14f40af8b4a1425841f8}{event\+\_\+t}} \{ \newline
+\mbox{\hyperlink{contactor_8h_a2fb9b58e4e5f14f40af8b4a1425841f8a939a6cc6d749a232a23ff324dca6d48c}{EVENT\+\_\+\+NONE}}
+, \mbox{\hyperlink{contactor_8h_a2fb9b58e4e5f14f40af8b4a1425841f8a9bf4c8054891ec65cf83b8c45d4bc86b}{EVENT\+\_\+\+TS\+\_\+\+ACTIVATE}}
+, \mbox{\hyperlink{contactor_8h_a2fb9b58e4e5f14f40af8b4a1425841f8aaada5717924ac21f723064114992b247}{EVENT\+\_\+\+TS\+\_\+\+DEACTIVATE}}
+, \mbox{\hyperlink{contactor_8h_a2fb9b58e4e5f14f40af8b4a1425841f8a9a46573752d0ba34a1c3b6eef335833d}{EVENT\+\_\+\+PRE\+\_\+\+CHARGE\+\_\+\+SUCCESSFUL}}
+, \newline
+\mbox{\hyperlink{contactor_8h_a2fb9b58e4e5f14f40af8b4a1425841f8aa45fa5ecff86270d410d4c89c527898a}{EVENT\+\_\+\+ERROR}}
+, \mbox{\hyperlink{contactor_8h_a2fb9b58e4e5f14f40af8b4a1425841f8a771cf1b3cb60b1f134a3cc2502af8436}{EVENT\+\_\+\+ERROR\+\_\+\+CLEARED}}
+ \}
+\item 
+enum \mbox{\hyperlink{contactor_8h_aa0aafed44fec19806d8f9ad834be1248}{state\+\_\+t}} \{ \mbox{\hyperlink{contactor_8h_aa0aafed44fec19806d8f9ad834be1248a46854d200d334ed65c5b8542eee92421}{STATE\+\_\+\+STANDBY}}
+, \mbox{\hyperlink{contactor_8h_aa0aafed44fec19806d8f9ad834be1248ad7282505891a39cf1f9edb4e84d4d256}{STATE\+\_\+\+PRE\+\_\+\+CHARGE}}
+, \mbox{\hyperlink{contactor_8h_aa0aafed44fec19806d8f9ad834be1248af805c8414a8bce8b27b9bfd9e8772791}{STATE\+\_\+\+OPERATE}}
+, \mbox{\hyperlink{contactor_8h_aa0aafed44fec19806d8f9ad834be1248ad55c0bfe3a7d3ae983e81a98e3384d6c}{STATE\+\_\+\+ERROR}}
+ \}
+\item 
+enum \mbox{\hyperlink{contactor_8h_ac7659d73a8cdedc08e9f566bb406689c}{error\+\_\+t}} \{ \newline
+\mbox{\hyperlink{contactor_8h_ac7659d73a8cdedc08e9f566bb406689ca92d656c1adfbb45889148ba8725235c3}{ERROR\+\_\+\+NO\+\_\+\+ERROR}}
+, \mbox{\hyperlink{contactor_8h_ac7659d73a8cdedc08e9f566bb406689cab7005c10f33e0528251b56d2cf3d13f2}{ERROR\+\_\+\+SYSTEM\+\_\+\+NOT\+\_\+\+HEALTHY}}
+, \mbox{\hyperlink{contactor_8h_ac7659d73a8cdedc08e9f566bb406689caa1c6afaaf96583a618cc173449c47444}{ERROR\+\_\+\+CONTACTOR\+\_\+\+IMPLAUSIBLE}}
+, \mbox{\hyperlink{contactor_8h_ac7659d73a8cdedc08e9f566bb406689ca4b34fd4541413d43bb614fb8473411cc}{ERROR\+\_\+\+PRE\+\_\+\+CHARGE\+\_\+\+TOO\+\_\+\+SHORT}}
+, \newline
+\mbox{\hyperlink{contactor_8h_ac7659d73a8cdedc08e9f566bb406689caeeb539ab549359b079bb8917da57bd4e}{ERROR\+\_\+\+PRE\+\_\+\+CHARGE\+\_\+\+TIMEOUT}}
+ \}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{contactor_8h_aa0aafed44fec19806d8f9ad834be1248}{state\+\_\+t}} \mbox{\hyperlink{contactor_8h_a3847a4bf637bdc4df1f4cca7aeab1962}{get\+\_\+contactor\+\_\+state}} (void)
+\item 
+\mbox{\hyperlink{contactor_8h_ac7659d73a8cdedc08e9f566bb406689c}{error\+\_\+t}} \mbox{\hyperlink{contactor_8h_acd100ff3a9eba6ef39cc29630928a2c1}{get\+\_\+contactor\+\_\+error}} (void)
+\item 
+void \mbox{\hyperlink{contactor_8h_ae6d1687fd5488af2c72bffcadf1729c5}{init\+\_\+contactor}} (void)
+\item 
+void \mbox{\hyperlink{contactor_8h_a188b3e2e0c6b73e8a3da54c8da60b4be}{request\+\_\+tractive\+\_\+system}} (bool active)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Enumeration Type Documentation}
+\mbox{\Hypertarget{contactor_8h_ac7659d73a8cdedc08e9f566bb406689c}\label{contactor_8h_ac7659d73a8cdedc08e9f566bb406689c}} 
+\index{contactor.h@{contactor.h}!error\_t@{error\_t}}
+\index{error\_t@{error\_t}!contactor.h@{contactor.h}}
+\doxysubsubsection{\texorpdfstring{error\_t}{error\_t}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{contactor_8h_ac7659d73a8cdedc08e9f566bb406689c}{error\+\_\+t}}}
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_NO\_ERROR@{ERROR\_NO\_ERROR}!contactor.h@{contactor.h}}\index{contactor.h@{contactor.h}!ERROR\_NO\_ERROR@{ERROR\_NO\_ERROR}}}\mbox{\Hypertarget{contactor_8h_ac7659d73a8cdedc08e9f566bb406689ca92d656c1adfbb45889148ba8725235c3}\label{contactor_8h_ac7659d73a8cdedc08e9f566bb406689ca92d656c1adfbb45889148ba8725235c3}} 
+ERROR\+\_\+\+NO\+\_\+\+ERROR&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_SYSTEM\_NOT\_HEALTHY@{ERROR\_SYSTEM\_NOT\_HEALTHY}!contactor.h@{contactor.h}}\index{contactor.h@{contactor.h}!ERROR\_SYSTEM\_NOT\_HEALTHY@{ERROR\_SYSTEM\_NOT\_HEALTHY}}}\mbox{\Hypertarget{contactor_8h_ac7659d73a8cdedc08e9f566bb406689cab7005c10f33e0528251b56d2cf3d13f2}\label{contactor_8h_ac7659d73a8cdedc08e9f566bb406689cab7005c10f33e0528251b56d2cf3d13f2}} 
+ERROR\+\_\+\+SYSTEM\+\_\+\+NOT\+\_\+\+HEALTHY&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_CONTACTOR\_IMPLAUSIBLE@{ERROR\_CONTACTOR\_IMPLAUSIBLE}!contactor.h@{contactor.h}}\index{contactor.h@{contactor.h}!ERROR\_CONTACTOR\_IMPLAUSIBLE@{ERROR\_CONTACTOR\_IMPLAUSIBLE}}}\mbox{\Hypertarget{contactor_8h_ac7659d73a8cdedc08e9f566bb406689caa1c6afaaf96583a618cc173449c47444}\label{contactor_8h_ac7659d73a8cdedc08e9f566bb406689caa1c6afaaf96583a618cc173449c47444}} 
+ERROR\+\_\+\+CONTACTOR\+\_\+\+IMPLAUSIBLE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_PRE\_CHARGE\_TOO\_SHORT@{ERROR\_PRE\_CHARGE\_TOO\_SHORT}!contactor.h@{contactor.h}}\index{contactor.h@{contactor.h}!ERROR\_PRE\_CHARGE\_TOO\_SHORT@{ERROR\_PRE\_CHARGE\_TOO\_SHORT}}}\mbox{\Hypertarget{contactor_8h_ac7659d73a8cdedc08e9f566bb406689ca4b34fd4541413d43bb614fb8473411cc}\label{contactor_8h_ac7659d73a8cdedc08e9f566bb406689ca4b34fd4541413d43bb614fb8473411cc}} 
+ERROR\+\_\+\+PRE\+\_\+\+CHARGE\+\_\+\+TOO\+\_\+\+SHORT&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_PRE\_CHARGE\_TIMEOUT@{ERROR\_PRE\_CHARGE\_TIMEOUT}!contactor.h@{contactor.h}}\index{contactor.h@{contactor.h}!ERROR\_PRE\_CHARGE\_TIMEOUT@{ERROR\_PRE\_CHARGE\_TIMEOUT}}}\mbox{\Hypertarget{contactor_8h_ac7659d73a8cdedc08e9f566bb406689caeeb539ab549359b079bb8917da57bd4e}\label{contactor_8h_ac7659d73a8cdedc08e9f566bb406689caeeb539ab549359b079bb8917da57bd4e}} 
+ERROR\+\_\+\+PRE\+\_\+\+CHARGE\+\_\+\+TIMEOUT&\\
+\hline
+
+\end{DoxyEnumFields}
+\mbox{\Hypertarget{contactor_8h_a2fb9b58e4e5f14f40af8b4a1425841f8}\label{contactor_8h_a2fb9b58e4e5f14f40af8b4a1425841f8}} 
+\index{contactor.h@{contactor.h}!event\_t@{event\_t}}
+\index{event\_t@{event\_t}!contactor.h@{contactor.h}}
+\doxysubsubsection{\texorpdfstring{event\_t}{event\_t}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{contactor_8h_a2fb9b58e4e5f14f40af8b4a1425841f8}{event\+\_\+t}}}
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EVENT\_NONE@{EVENT\_NONE}!contactor.h@{contactor.h}}\index{contactor.h@{contactor.h}!EVENT\_NONE@{EVENT\_NONE}}}\mbox{\Hypertarget{contactor_8h_a2fb9b58e4e5f14f40af8b4a1425841f8a939a6cc6d749a232a23ff324dca6d48c}\label{contactor_8h_a2fb9b58e4e5f14f40af8b4a1425841f8a939a6cc6d749a232a23ff324dca6d48c}} 
+EVENT\+\_\+\+NONE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EVENT\_TS\_ACTIVATE@{EVENT\_TS\_ACTIVATE}!contactor.h@{contactor.h}}\index{contactor.h@{contactor.h}!EVENT\_TS\_ACTIVATE@{EVENT\_TS\_ACTIVATE}}}\mbox{\Hypertarget{contactor_8h_a2fb9b58e4e5f14f40af8b4a1425841f8a9bf4c8054891ec65cf83b8c45d4bc86b}\label{contactor_8h_a2fb9b58e4e5f14f40af8b4a1425841f8a9bf4c8054891ec65cf83b8c45d4bc86b}} 
+EVENT\+\_\+\+TS\+\_\+\+ACTIVATE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EVENT\_TS\_DEACTIVATE@{EVENT\_TS\_DEACTIVATE}!contactor.h@{contactor.h}}\index{contactor.h@{contactor.h}!EVENT\_TS\_DEACTIVATE@{EVENT\_TS\_DEACTIVATE}}}\mbox{\Hypertarget{contactor_8h_a2fb9b58e4e5f14f40af8b4a1425841f8aaada5717924ac21f723064114992b247}\label{contactor_8h_a2fb9b58e4e5f14f40af8b4a1425841f8aaada5717924ac21f723064114992b247}} 
+EVENT\+\_\+\+TS\+\_\+\+DEACTIVATE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EVENT\_PRE\_CHARGE\_SUCCESSFUL@{EVENT\_PRE\_CHARGE\_SUCCESSFUL}!contactor.h@{contactor.h}}\index{contactor.h@{contactor.h}!EVENT\_PRE\_CHARGE\_SUCCESSFUL@{EVENT\_PRE\_CHARGE\_SUCCESSFUL}}}\mbox{\Hypertarget{contactor_8h_a2fb9b58e4e5f14f40af8b4a1425841f8a9a46573752d0ba34a1c3b6eef335833d}\label{contactor_8h_a2fb9b58e4e5f14f40af8b4a1425841f8a9a46573752d0ba34a1c3b6eef335833d}} 
+EVENT\+\_\+\+PRE\+\_\+\+CHARGE\+\_\+\+SUCCESSFUL&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EVENT\_ERROR@{EVENT\_ERROR}!contactor.h@{contactor.h}}\index{contactor.h@{contactor.h}!EVENT\_ERROR@{EVENT\_ERROR}}}\mbox{\Hypertarget{contactor_8h_a2fb9b58e4e5f14f40af8b4a1425841f8aa45fa5ecff86270d410d4c89c527898a}\label{contactor_8h_a2fb9b58e4e5f14f40af8b4a1425841f8aa45fa5ecff86270d410d4c89c527898a}} 
+EVENT\+\_\+\+ERROR&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EVENT\_ERROR\_CLEARED@{EVENT\_ERROR\_CLEARED}!contactor.h@{contactor.h}}\index{contactor.h@{contactor.h}!EVENT\_ERROR\_CLEARED@{EVENT\_ERROR\_CLEARED}}}\mbox{\Hypertarget{contactor_8h_a2fb9b58e4e5f14f40af8b4a1425841f8a771cf1b3cb60b1f134a3cc2502af8436}\label{contactor_8h_a2fb9b58e4e5f14f40af8b4a1425841f8a771cf1b3cb60b1f134a3cc2502af8436}} 
+EVENT\+\_\+\+ERROR\+\_\+\+CLEARED&\\
+\hline
+
+\end{DoxyEnumFields}
+\mbox{\Hypertarget{contactor_8h_aa0aafed44fec19806d8f9ad834be1248}\label{contactor_8h_aa0aafed44fec19806d8f9ad834be1248}} 
+\index{contactor.h@{contactor.h}!state\_t@{state\_t}}
+\index{state\_t@{state\_t}!contactor.h@{contactor.h}}
+\doxysubsubsection{\texorpdfstring{state\_t}{state\_t}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{contactor_8h_aa0aafed44fec19806d8f9ad834be1248}{state\+\_\+t}}}
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{STATE\_STANDBY@{STATE\_STANDBY}!contactor.h@{contactor.h}}\index{contactor.h@{contactor.h}!STATE\_STANDBY@{STATE\_STANDBY}}}\mbox{\Hypertarget{contactor_8h_aa0aafed44fec19806d8f9ad834be1248a46854d200d334ed65c5b8542eee92421}\label{contactor_8h_aa0aafed44fec19806d8f9ad834be1248a46854d200d334ed65c5b8542eee92421}} 
+STATE\+\_\+\+STANDBY&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{STATE\_PRE\_CHARGE@{STATE\_PRE\_CHARGE}!contactor.h@{contactor.h}}\index{contactor.h@{contactor.h}!STATE\_PRE\_CHARGE@{STATE\_PRE\_CHARGE}}}\mbox{\Hypertarget{contactor_8h_aa0aafed44fec19806d8f9ad834be1248ad7282505891a39cf1f9edb4e84d4d256}\label{contactor_8h_aa0aafed44fec19806d8f9ad834be1248ad7282505891a39cf1f9edb4e84d4d256}} 
+STATE\+\_\+\+PRE\+\_\+\+CHARGE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{STATE\_OPERATE@{STATE\_OPERATE}!contactor.h@{contactor.h}}\index{contactor.h@{contactor.h}!STATE\_OPERATE@{STATE\_OPERATE}}}\mbox{\Hypertarget{contactor_8h_aa0aafed44fec19806d8f9ad834be1248af805c8414a8bce8b27b9bfd9e8772791}\label{contactor_8h_aa0aafed44fec19806d8f9ad834be1248af805c8414a8bce8b27b9bfd9e8772791}} 
+STATE\+\_\+\+OPERATE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{STATE\_ERROR@{STATE\_ERROR}!contactor.h@{contactor.h}}\index{contactor.h@{contactor.h}!STATE\_ERROR@{STATE\_ERROR}}}\mbox{\Hypertarget{contactor_8h_aa0aafed44fec19806d8f9ad834be1248ad55c0bfe3a7d3ae983e81a98e3384d6c}\label{contactor_8h_aa0aafed44fec19806d8f9ad834be1248ad55c0bfe3a7d3ae983e81a98e3384d6c}} 
+STATE\+\_\+\+ERROR&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{contactor_8h_acd100ff3a9eba6ef39cc29630928a2c1}\label{contactor_8h_acd100ff3a9eba6ef39cc29630928a2c1}} 
+\index{contactor.h@{contactor.h}!get\_contactor\_error@{get\_contactor\_error}}
+\index{get\_contactor\_error@{get\_contactor\_error}!contactor.h@{contactor.h}}
+\doxysubsubsection{\texorpdfstring{get\_contactor\_error()}{get\_contactor\_error()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{contactor_8h_ac7659d73a8cdedc08e9f566bb406689c}{error\+\_\+t}} get\+\_\+contactor\+\_\+error (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{contactor_8h_a3847a4bf637bdc4df1f4cca7aeab1962}\label{contactor_8h_a3847a4bf637bdc4df1f4cca7aeab1962}} 
+\index{contactor.h@{contactor.h}!get\_contactor\_state@{get\_contactor\_state}}
+\index{get\_contactor\_state@{get\_contactor\_state}!contactor.h@{contactor.h}}
+\doxysubsubsection{\texorpdfstring{get\_contactor\_state()}{get\_contactor\_state()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{contactor_8h_aa0aafed44fec19806d8f9ad834be1248}{state\+\_\+t}} get\+\_\+contactor\+\_\+state (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{contactor_8h_ae6d1687fd5488af2c72bffcadf1729c5}\label{contactor_8h_ae6d1687fd5488af2c72bffcadf1729c5}} 
+\index{contactor.h@{contactor.h}!init\_contactor@{init\_contactor}}
+\index{init\_contactor@{init\_contactor}!contactor.h@{contactor.h}}
+\doxysubsubsection{\texorpdfstring{init\_contactor()}{init\_contactor()}}
+{\footnotesize\ttfamily void init\+\_\+contactor (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{contactor_8h_a188b3e2e0c6b73e8a3da54c8da60b4be}\label{contactor_8h_a188b3e2e0c6b73e8a3da54c8da60b4be}} 
+\index{contactor.h@{contactor.h}!request\_tractive\_system@{request\_tractive\_system}}
+\index{request\_tractive\_system@{request\_tractive\_system}!contactor.h@{contactor.h}}
+\doxysubsubsection{\texorpdfstring{request\_tractive\_system()}{request\_tractive\_system()}}
+{\footnotesize\ttfamily void request\+\_\+tractive\+\_\+system (\begin{DoxyParamCaption}\item[{bool}]{active }\end{DoxyParamCaption})}
+

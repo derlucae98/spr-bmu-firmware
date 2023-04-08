@@ -1,0 +1,190 @@
+\hypertarget{group___p_d_b___peripheral___access___layer}{}\doxysection{PDB Peripheral Access Layer}
+\label{group___p_d_b___peripheral___access___layer}\index{PDB Peripheral Access Layer@{PDB Peripheral Access Layer}}
+Collaboration diagram for PDB Peripheral Access Layer\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{group___p_d_b___peripheral___access___layer}
+\end{center}
+\end{figure}
+\doxysubsection*{Modules}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{group___p_d_b___register___masks}{PDB Register Masks}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_p_d_b___type}{PDB\+\_\+\+Type}}
+\begin{DoxyCompactList}\small\item\em PDB -\/ Register Layout Typedef. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_ga08f3c32e2166b314f400e1fc6203bc61}{PDB\+\_\+\+CH\+\_\+\+COUNT}}~4u
+\begin{DoxyCompactList}\small\item\em PDB -\/ Size of Registers Arrays. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_ga92fcafb0da11b7d2a8a5740281ffbdcb}{PDB\+\_\+\+DLY\+\_\+\+COUNT}}~8u
+\item 
+\#define \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_gaba31f191d3fa71e1d13749b343214794}{PDB\+\_\+\+POn\+DLY\+\_\+\+COUNT}}~1u
+\item 
+\#define \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_ga58176c5fa19df7a345c8508525965d64}{PDB\+\_\+\+INSTANCE\+\_\+\+COUNT}}~(2u)
+\begin{DoxyCompactList}\small\item\em Number of instances of the PDB module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_gaca699dde276786b0443ef728ae1f01c0}{PDB0\+\_\+\+BASE}}~(0x40036000u)
+\begin{DoxyCompactList}\small\item\em Peripheral PDB0 base address. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_ga91cdd5c74efea207fd5cf60bb271b90c}{PDB0}}~((\mbox{\hyperlink{struct_p_d_b___type}{PDB\+\_\+\+Type}} $\ast$)\mbox{\hyperlink{group___p_d_b___peripheral___access___layer_gaca699dde276786b0443ef728ae1f01c0}{PDB0\+\_\+\+BASE}})
+\begin{DoxyCompactList}\small\item\em Peripheral PDB0 base pointer. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_gab72ec24f181af051aca6addea4dd2cac}{PDB1\+\_\+\+BASE}}~(0x40031000u)
+\begin{DoxyCompactList}\small\item\em Peripheral PDB1 base address. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_gaa6595d180331b60b35d066c77e36f7c5}{PDB1}}~((\mbox{\hyperlink{struct_p_d_b___type}{PDB\+\_\+\+Type}} $\ast$)\mbox{\hyperlink{group___p_d_b___peripheral___access___layer_gab72ec24f181af051aca6addea4dd2cac}{PDB1\+\_\+\+BASE}})
+\begin{DoxyCompactList}\small\item\em Peripheral PDB1 base pointer. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_ga2aac97276b35cabb3a49413841a8bbe2}{PDB\+\_\+\+BASE\+\_\+\+ADDRS}}~\{ \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_gaca699dde276786b0443ef728ae1f01c0}{PDB0\+\_\+\+BASE}}, \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_gab72ec24f181af051aca6addea4dd2cac}{PDB1\+\_\+\+BASE}} \}
+\begin{DoxyCompactList}\small\item\em Array initializer of PDB peripheral base addresses. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_ga6dce940c99da63282b1d28f65ed75293}{PDB\+\_\+\+BASE\+\_\+\+PTRS}}~\{ \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_ga91cdd5c74efea207fd5cf60bb271b90c}{PDB0}}, \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_gaa6595d180331b60b35d066c77e36f7c5}{PDB1}} \}
+\begin{DoxyCompactList}\small\item\em Array initializer of PDB peripheral base pointers. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_ga36eb0920a707e9a9d9bc87a64fa6778c}{PDB\+\_\+\+IRQS\+\_\+\+ARR\+\_\+\+COUNT}}~(1u)
+\begin{DoxyCompactList}\small\item\em Number of interrupt vector arrays for the PDB module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_gaa719088fdb89d8d6704940315f26fd93}{PDB\+\_\+\+IRQS\+\_\+\+CH\+\_\+\+COUNT}}~(1u)
+\begin{DoxyCompactList}\small\item\em Number of interrupt channels for the PDB module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_ga8e897cb723b12765718d641d60409ce3}{PDB\+\_\+\+IRQS}}~\{ \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8a88267c4e978fd991b88267fccba49c70}{PDB0\+\_\+\+IRQn}}, \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8a789cd743e930dfe612ced954acd47d1b}{PDB1\+\_\+\+IRQn}} \}
+\begin{DoxyCompactList}\small\item\em Interrupt vectors for the PDB peripheral type. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \mbox{\hyperlink{struct_p_d_b___type}{PDB\+\_\+\+Type}} $\ast$ \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_ga307cfc08b382a95ae86e5422472caeeb}{PDB\+\_\+\+Mem\+Map\+Ptr}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{group___p_d_b___peripheral___access___layer_ga91cdd5c74efea207fd5cf60bb271b90c}\label{group___p_d_b___peripheral___access___layer_ga91cdd5c74efea207fd5cf60bb271b90c}} 
+\index{PDB Peripheral Access Layer@{PDB Peripheral Access Layer}!PDB0@{PDB0}}
+\index{PDB0@{PDB0}!PDB Peripheral Access Layer@{PDB Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{PDB0}{PDB0}}
+{\footnotesize\ttfamily \#define PDB0~((\mbox{\hyperlink{struct_p_d_b___type}{PDB\+\_\+\+Type}} $\ast$)\mbox{\hyperlink{group___p_d_b___peripheral___access___layer_gaca699dde276786b0443ef728ae1f01c0}{PDB0\+\_\+\+BASE}})}
+
+
+
+Peripheral PDB0 base pointer. 
+
+\mbox{\Hypertarget{group___p_d_b___peripheral___access___layer_gaca699dde276786b0443ef728ae1f01c0}\label{group___p_d_b___peripheral___access___layer_gaca699dde276786b0443ef728ae1f01c0}} 
+\index{PDB Peripheral Access Layer@{PDB Peripheral Access Layer}!PDB0\_BASE@{PDB0\_BASE}}
+\index{PDB0\_BASE@{PDB0\_BASE}!PDB Peripheral Access Layer@{PDB Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{PDB0\_BASE}{PDB0\_BASE}}
+{\footnotesize\ttfamily \#define PDB0\+\_\+\+BASE~(0x40036000u)}
+
+
+
+Peripheral PDB0 base address. 
+
+\mbox{\Hypertarget{group___p_d_b___peripheral___access___layer_gaa6595d180331b60b35d066c77e36f7c5}\label{group___p_d_b___peripheral___access___layer_gaa6595d180331b60b35d066c77e36f7c5}} 
+\index{PDB Peripheral Access Layer@{PDB Peripheral Access Layer}!PDB1@{PDB1}}
+\index{PDB1@{PDB1}!PDB Peripheral Access Layer@{PDB Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{PDB1}{PDB1}}
+{\footnotesize\ttfamily \#define PDB1~((\mbox{\hyperlink{struct_p_d_b___type}{PDB\+\_\+\+Type}} $\ast$)\mbox{\hyperlink{group___p_d_b___peripheral___access___layer_gab72ec24f181af051aca6addea4dd2cac}{PDB1\+\_\+\+BASE}})}
+
+
+
+Peripheral PDB1 base pointer. 
+
+\mbox{\Hypertarget{group___p_d_b___peripheral___access___layer_gab72ec24f181af051aca6addea4dd2cac}\label{group___p_d_b___peripheral___access___layer_gab72ec24f181af051aca6addea4dd2cac}} 
+\index{PDB Peripheral Access Layer@{PDB Peripheral Access Layer}!PDB1\_BASE@{PDB1\_BASE}}
+\index{PDB1\_BASE@{PDB1\_BASE}!PDB Peripheral Access Layer@{PDB Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{PDB1\_BASE}{PDB1\_BASE}}
+{\footnotesize\ttfamily \#define PDB1\+\_\+\+BASE~(0x40031000u)}
+
+
+
+Peripheral PDB1 base address. 
+
+\mbox{\Hypertarget{group___p_d_b___peripheral___access___layer_ga2aac97276b35cabb3a49413841a8bbe2}\label{group___p_d_b___peripheral___access___layer_ga2aac97276b35cabb3a49413841a8bbe2}} 
+\index{PDB Peripheral Access Layer@{PDB Peripheral Access Layer}!PDB\_BASE\_ADDRS@{PDB\_BASE\_ADDRS}}
+\index{PDB\_BASE\_ADDRS@{PDB\_BASE\_ADDRS}!PDB Peripheral Access Layer@{PDB Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{PDB\_BASE\_ADDRS}{PDB\_BASE\_ADDRS}}
+{\footnotesize\ttfamily \#define PDB\+\_\+\+BASE\+\_\+\+ADDRS~\{ \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_gaca699dde276786b0443ef728ae1f01c0}{PDB0\+\_\+\+BASE}}, \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_gab72ec24f181af051aca6addea4dd2cac}{PDB1\+\_\+\+BASE}} \}}
+
+
+
+Array initializer of PDB peripheral base addresses. 
+
+\mbox{\Hypertarget{group___p_d_b___peripheral___access___layer_ga6dce940c99da63282b1d28f65ed75293}\label{group___p_d_b___peripheral___access___layer_ga6dce940c99da63282b1d28f65ed75293}} 
+\index{PDB Peripheral Access Layer@{PDB Peripheral Access Layer}!PDB\_BASE\_PTRS@{PDB\_BASE\_PTRS}}
+\index{PDB\_BASE\_PTRS@{PDB\_BASE\_PTRS}!PDB Peripheral Access Layer@{PDB Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{PDB\_BASE\_PTRS}{PDB\_BASE\_PTRS}}
+{\footnotesize\ttfamily \#define PDB\+\_\+\+BASE\+\_\+\+PTRS~\{ \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_ga91cdd5c74efea207fd5cf60bb271b90c}{PDB0}}, \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_gaa6595d180331b60b35d066c77e36f7c5}{PDB1}} \}}
+
+
+
+Array initializer of PDB peripheral base pointers. 
+
+\mbox{\Hypertarget{group___p_d_b___peripheral___access___layer_ga08f3c32e2166b314f400e1fc6203bc61}\label{group___p_d_b___peripheral___access___layer_ga08f3c32e2166b314f400e1fc6203bc61}} 
+\index{PDB Peripheral Access Layer@{PDB Peripheral Access Layer}!PDB\_CH\_COUNT@{PDB\_CH\_COUNT}}
+\index{PDB\_CH\_COUNT@{PDB\_CH\_COUNT}!PDB Peripheral Access Layer@{PDB Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{PDB\_CH\_COUNT}{PDB\_CH\_COUNT}}
+{\footnotesize\ttfamily \#define PDB\+\_\+\+CH\+\_\+\+COUNT~4u}
+
+
+
+PDB -\/ Size of Registers Arrays. 
+
+\mbox{\Hypertarget{group___p_d_b___peripheral___access___layer_ga92fcafb0da11b7d2a8a5740281ffbdcb}\label{group___p_d_b___peripheral___access___layer_ga92fcafb0da11b7d2a8a5740281ffbdcb}} 
+\index{PDB Peripheral Access Layer@{PDB Peripheral Access Layer}!PDB\_DLY\_COUNT@{PDB\_DLY\_COUNT}}
+\index{PDB\_DLY\_COUNT@{PDB\_DLY\_COUNT}!PDB Peripheral Access Layer@{PDB Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{PDB\_DLY\_COUNT}{PDB\_DLY\_COUNT}}
+{\footnotesize\ttfamily \#define PDB\+\_\+\+DLY\+\_\+\+COUNT~8u}
+
+\mbox{\Hypertarget{group___p_d_b___peripheral___access___layer_ga58176c5fa19df7a345c8508525965d64}\label{group___p_d_b___peripheral___access___layer_ga58176c5fa19df7a345c8508525965d64}} 
+\index{PDB Peripheral Access Layer@{PDB Peripheral Access Layer}!PDB\_INSTANCE\_COUNT@{PDB\_INSTANCE\_COUNT}}
+\index{PDB\_INSTANCE\_COUNT@{PDB\_INSTANCE\_COUNT}!PDB Peripheral Access Layer@{PDB Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{PDB\_INSTANCE\_COUNT}{PDB\_INSTANCE\_COUNT}}
+{\footnotesize\ttfamily \#define PDB\+\_\+\+INSTANCE\+\_\+\+COUNT~(2u)}
+
+
+
+Number of instances of the PDB module. 
+
+\mbox{\Hypertarget{group___p_d_b___peripheral___access___layer_ga8e897cb723b12765718d641d60409ce3}\label{group___p_d_b___peripheral___access___layer_ga8e897cb723b12765718d641d60409ce3}} 
+\index{PDB Peripheral Access Layer@{PDB Peripheral Access Layer}!PDB\_IRQS@{PDB\_IRQS}}
+\index{PDB\_IRQS@{PDB\_IRQS}!PDB Peripheral Access Layer@{PDB Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{PDB\_IRQS}{PDB\_IRQS}}
+{\footnotesize\ttfamily \#define PDB\+\_\+\+IRQS~\{ \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8a88267c4e978fd991b88267fccba49c70}{PDB0\+\_\+\+IRQn}}, \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8a789cd743e930dfe612ced954acd47d1b}{PDB1\+\_\+\+IRQn}} \}}
+
+
+
+Interrupt vectors for the PDB peripheral type. 
+
+\mbox{\Hypertarget{group___p_d_b___peripheral___access___layer_ga36eb0920a707e9a9d9bc87a64fa6778c}\label{group___p_d_b___peripheral___access___layer_ga36eb0920a707e9a9d9bc87a64fa6778c}} 
+\index{PDB Peripheral Access Layer@{PDB Peripheral Access Layer}!PDB\_IRQS\_ARR\_COUNT@{PDB\_IRQS\_ARR\_COUNT}}
+\index{PDB\_IRQS\_ARR\_COUNT@{PDB\_IRQS\_ARR\_COUNT}!PDB Peripheral Access Layer@{PDB Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{PDB\_IRQS\_ARR\_COUNT}{PDB\_IRQS\_ARR\_COUNT}}
+{\footnotesize\ttfamily \#define PDB\+\_\+\+IRQS\+\_\+\+ARR\+\_\+\+COUNT~(1u)}
+
+
+
+Number of interrupt vector arrays for the PDB module. 
+
+\mbox{\Hypertarget{group___p_d_b___peripheral___access___layer_gaa719088fdb89d8d6704940315f26fd93}\label{group___p_d_b___peripheral___access___layer_gaa719088fdb89d8d6704940315f26fd93}} 
+\index{PDB Peripheral Access Layer@{PDB Peripheral Access Layer}!PDB\_IRQS\_CH\_COUNT@{PDB\_IRQS\_CH\_COUNT}}
+\index{PDB\_IRQS\_CH\_COUNT@{PDB\_IRQS\_CH\_COUNT}!PDB Peripheral Access Layer@{PDB Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{PDB\_IRQS\_CH\_COUNT}{PDB\_IRQS\_CH\_COUNT}}
+{\footnotesize\ttfamily \#define PDB\+\_\+\+IRQS\+\_\+\+CH\+\_\+\+COUNT~(1u)}
+
+
+
+Number of interrupt channels for the PDB module. 
+
+\mbox{\Hypertarget{group___p_d_b___peripheral___access___layer_gaba31f191d3fa71e1d13749b343214794}\label{group___p_d_b___peripheral___access___layer_gaba31f191d3fa71e1d13749b343214794}} 
+\index{PDB Peripheral Access Layer@{PDB Peripheral Access Layer}!PDB\_POnDLY\_COUNT@{PDB\_POnDLY\_COUNT}}
+\index{PDB\_POnDLY\_COUNT@{PDB\_POnDLY\_COUNT}!PDB Peripheral Access Layer@{PDB Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{PDB\_POnDLY\_COUNT}{PDB\_POnDLY\_COUNT}}
+{\footnotesize\ttfamily \#define PDB\+\_\+\+POn\+DLY\+\_\+\+COUNT~1u}
+
+
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{group___p_d_b___peripheral___access___layer_ga307cfc08b382a95ae86e5422472caeeb}\label{group___p_d_b___peripheral___access___layer_ga307cfc08b382a95ae86e5422472caeeb}} 
+\index{PDB Peripheral Access Layer@{PDB Peripheral Access Layer}!PDB\_MemMapPtr@{PDB\_MemMapPtr}}
+\index{PDB\_MemMapPtr@{PDB\_MemMapPtr}!PDB Peripheral Access Layer@{PDB Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{PDB\_MemMapPtr}{PDB\_MemMapPtr}}
+{\footnotesize\ttfamily typedef  struct \mbox{\hyperlink{struct_p_d_b___type}{PDB\+\_\+\+Type}} $\ast$ \mbox{\hyperlink{group___p_d_b___peripheral___access___layer_ga307cfc08b382a95ae86e5422472caeeb}{PDB\+\_\+\+Mem\+Map\+Ptr}}}
+

@@ -1,0 +1,197 @@
+\hypertarget{struct_p_d_b___type}{}\doxysection{PDB\+\_\+\+Type Struct Reference}
+\label{struct_p_d_b___type}\index{PDB\_Type@{PDB\_Type}}
+
+
+PDB -\/ Register Layout Typedef.  
+
+
+
+
+{\ttfamily \#include $<$S32\+K148.\+h$>$}
+
+\doxysubsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t \mbox{\hyperlink{struct_p_d_b___type_a71c139861c5c28b6a6e81b2b1c72946a}{SC}}
+\begin{DoxyCompactList}\small\item\em Status and Control register, offset\+: 0x0. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t \mbox{\hyperlink{struct_p_d_b___type_aa35a6713b1e2aafa0749f986730795cb}{MOD}}
+\begin{DoxyCompactList}\small\item\em Modulus register, offset\+: 0x4. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{_s32_k148_8h_af63697ed9952cc71e1225efe205f6cd3}{\+\_\+\+\_\+I}} uint32\+\_\+t \mbox{\hyperlink{struct_p_d_b___type_a5a2def14363813fcf6287e3edd1104bf}{CNT}}
+\begin{DoxyCompactList}\small\item\em Counter register, offset\+: 0x8. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t \mbox{\hyperlink{struct_p_d_b___type_a84172a8f32e3e8ab454c186f973d63be}{IDLY}}
+\begin{DoxyCompactList}\small\item\em Interrupt Delay register, offset\+: 0xC. \end{DoxyCompactList}\item 
+\begin{tabbing}
+xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=\kill
+struct \{\\
+\>\mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\_\_IO}} uint32\_t \mbox{\hyperlink{struct_p_d_b___type_a7bf92f3ccb47d979d85a1c09ca148024}{C1}}\\
+\>\>{\em Channel n Control register 1, array offset: 0x10, array step: 0x28. }\\
+\>\mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\_\_IO}} uint32\_t \mbox{\hyperlink{struct_p_d_b___type_ababb54850c6689ddd1ac5723d7551f6a}{S}}\\
+\>\>{\em Channel n Status register, array offset: 0x14, array step: 0x28. }\\
+\>\mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\_\_IO}} uint32\_t \mbox{\hyperlink{struct_p_d_b___type_a74c1e637acff50fe5a91fb3a3d3e3221}{DLY}} \mbox{[}\mbox{\hyperlink{group___p_d_b___peripheral___access___layer_ga92fcafb0da11b7d2a8a5740281ffbdcb}{PDB\_DLY\_COUNT}}\mbox{]}\\
+\>\>{\em Channel n Delay 0 register..Channel n Delay 7 register, array offset: 0x18, array step: index$\ast$0x28, index2$\ast$0x4. }\\
+\} \mbox{\hyperlink{struct_p_d_b___type_ae8c344861889bf1ef3d8d38030687066}{CH}} \mbox{[}\mbox{\hyperlink{group___p_d_b___peripheral___access___layer_ga08f3c32e2166b314f400e1fc6203bc61}{PDB\_CH\_COUNT}}\mbox{]}\\
+
+\end{tabbing}\item 
+uint8\+\_\+t \mbox{\hyperlink{struct_p_d_b___type_a5a13ed975cf814cbf6b36bbbc3e02fd0}{RESERVED\+\_\+0}} \mbox{[}224\mbox{]}
+\item 
+\mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t \mbox{\hyperlink{struct_p_d_b___type_afd7953396f7b3622bc91168b9cfd6aae}{POEN}}
+\begin{DoxyCompactList}\small\item\em Pulse-\/\+Out n Enable register, offset\+: 0x190. \end{DoxyCompactList}\item 
+\begin{tabbing}
+xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=\kill
+union \{\\
+\>\mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\_\_IO}} uint32\_t \mbox{\hyperlink{struct_p_d_b___type_a415eab8345d99e6df14798c514b091b3}{PODLY}}\\
+\>\>{\em Pulse-\/Out n Delay register, array offset: 0x194, array step: 0x4. }\\
+\>struct \{\\
+\>\>\mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\_\_IO}} uint16\_t \mbox{\hyperlink{struct_p_d_b___type_a21a3232c4107b696fa5cb822b19d0310}{DLY2}}\\
+\>\>\>{\em PDB1\_DLY2 register...PDB0\_DLY2 register., array offset: 0x194, array step: 0x4. }\\
+\>\>\mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\_\_IO}} uint16\_t \mbox{\hyperlink{struct_p_d_b___type_a62e7b82766416dc56c2adbc57e73aa11}{DLY1}}\\
+\>\>\>{\em PDB1\_DLY1 register...PDB0\_DLY1 register., array offset: 0x196, array step: 0x4. }\\
+\>\} \mbox{\hyperlink{struct_p_d_b___type_ade28256450a6cdda2b2094e06f146249}{ACCESS16BIT}}\\
+\} \mbox{\hyperlink{struct_p_d_b___type_a98d27378af47232c77c7e87af5a1f779}{POnDLY}} \mbox{[}\mbox{\hyperlink{group___p_d_b___peripheral___access___layer_gaba31f191d3fa71e1d13749b343214794}{PDB\_POnDLY\_COUNT}}\mbox{]}\\
+
+\end{tabbing}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+PDB -\/ Register Layout Typedef. 
+
+\doxysubsection{Field Documentation}
+\mbox{\Hypertarget{struct_p_d_b___type_ade28256450a6cdda2b2094e06f146249}\label{struct_p_d_b___type_ade28256450a6cdda2b2094e06f146249}} 
+\index{PDB\_Type@{PDB\_Type}!ACCESS16BIT@{ACCESS16BIT}}
+\index{ACCESS16BIT@{ACCESS16BIT}!PDB\_Type@{PDB\_Type}}
+\doxysubsubsection{\texorpdfstring{}{}}
+{\footnotesize\ttfamily struct \{ ... \}  ACCESS16\+BIT}
+
+\mbox{\Hypertarget{struct_p_d_b___type_a7bf92f3ccb47d979d85a1c09ca148024}\label{struct_p_d_b___type_a7bf92f3ccb47d979d85a1c09ca148024}} 
+\index{PDB\_Type@{PDB\_Type}!C1@{C1}}
+\index{C1@{C1}!PDB\_Type@{PDB\_Type}}
+\doxysubsubsection{\texorpdfstring{C1}{C1}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t C1}
+
+
+
+Channel n Control register 1, array offset\+: 0x10, array step\+: 0x28. 
+
+\mbox{\Hypertarget{struct_p_d_b___type_ae8c344861889bf1ef3d8d38030687066}\label{struct_p_d_b___type_ae8c344861889bf1ef3d8d38030687066}} 
+\index{PDB\_Type@{PDB\_Type}!CH@{CH}}
+\index{CH@{CH}!PDB\_Type@{PDB\_Type}}
+\doxysubsubsection{\texorpdfstring{}{}}
+{\footnotesize\ttfamily struct \{ ... \}  CH\mbox{[}\mbox{\hyperlink{group___p_d_b___peripheral___access___layer_ga08f3c32e2166b314f400e1fc6203bc61}{PDB\+\_\+\+CH\+\_\+\+COUNT}}\mbox{]}}
+
+\mbox{\Hypertarget{struct_p_d_b___type_a5a2def14363813fcf6287e3edd1104bf}\label{struct_p_d_b___type_a5a2def14363813fcf6287e3edd1104bf}} 
+\index{PDB\_Type@{PDB\_Type}!CNT@{CNT}}
+\index{CNT@{CNT}!PDB\_Type@{PDB\_Type}}
+\doxysubsubsection{\texorpdfstring{CNT}{CNT}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_s32_k148_8h_af63697ed9952cc71e1225efe205f6cd3}{\+\_\+\+\_\+I}} uint32\+\_\+t CNT}
+
+
+
+Counter register, offset\+: 0x8. 
+
+\mbox{\Hypertarget{struct_p_d_b___type_a74c1e637acff50fe5a91fb3a3d3e3221}\label{struct_p_d_b___type_a74c1e637acff50fe5a91fb3a3d3e3221}} 
+\index{PDB\_Type@{PDB\_Type}!DLY@{DLY}}
+\index{DLY@{DLY}!PDB\_Type@{PDB\_Type}}
+\doxysubsubsection{\texorpdfstring{DLY}{DLY}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t DLY\mbox{[}\mbox{\hyperlink{group___p_d_b___peripheral___access___layer_ga92fcafb0da11b7d2a8a5740281ffbdcb}{PDB\+\_\+\+DLY\+\_\+\+COUNT}}\mbox{]}}
+
+
+
+Channel n Delay 0 register..Channel n Delay 7 register, array offset\+: 0x18, array step\+: index$\ast$0x28, index2$\ast$0x4. 
+
+\mbox{\Hypertarget{struct_p_d_b___type_a62e7b82766416dc56c2adbc57e73aa11}\label{struct_p_d_b___type_a62e7b82766416dc56c2adbc57e73aa11}} 
+\index{PDB\_Type@{PDB\_Type}!DLY1@{DLY1}}
+\index{DLY1@{DLY1}!PDB\_Type@{PDB\_Type}}
+\doxysubsubsection{\texorpdfstring{DLY1}{DLY1}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint16\+\_\+t DLY1}
+
+
+
+PDB1\+\_\+\+DLY1 register...PDB0\+\_\+\+DLY1 register., array offset\+: 0x196, array step\+: 0x4. 
+
+\mbox{\Hypertarget{struct_p_d_b___type_a21a3232c4107b696fa5cb822b19d0310}\label{struct_p_d_b___type_a21a3232c4107b696fa5cb822b19d0310}} 
+\index{PDB\_Type@{PDB\_Type}!DLY2@{DLY2}}
+\index{DLY2@{DLY2}!PDB\_Type@{PDB\_Type}}
+\doxysubsubsection{\texorpdfstring{DLY2}{DLY2}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint16\+\_\+t DLY2}
+
+
+
+PDB1\+\_\+\+DLY2 register...PDB0\+\_\+\+DLY2 register., array offset\+: 0x194, array step\+: 0x4. 
+
+\mbox{\Hypertarget{struct_p_d_b___type_a84172a8f32e3e8ab454c186f973d63be}\label{struct_p_d_b___type_a84172a8f32e3e8ab454c186f973d63be}} 
+\index{PDB\_Type@{PDB\_Type}!IDLY@{IDLY}}
+\index{IDLY@{IDLY}!PDB\_Type@{PDB\_Type}}
+\doxysubsubsection{\texorpdfstring{IDLY}{IDLY}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t IDLY}
+
+
+
+Interrupt Delay register, offset\+: 0xC. 
+
+\mbox{\Hypertarget{struct_p_d_b___type_aa35a6713b1e2aafa0749f986730795cb}\label{struct_p_d_b___type_aa35a6713b1e2aafa0749f986730795cb}} 
+\index{PDB\_Type@{PDB\_Type}!MOD@{MOD}}
+\index{MOD@{MOD}!PDB\_Type@{PDB\_Type}}
+\doxysubsubsection{\texorpdfstring{MOD}{MOD}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t MOD}
+
+
+
+Modulus register, offset\+: 0x4. 
+
+\mbox{\Hypertarget{struct_p_d_b___type_a415eab8345d99e6df14798c514b091b3}\label{struct_p_d_b___type_a415eab8345d99e6df14798c514b091b3}} 
+\index{PDB\_Type@{PDB\_Type}!PODLY@{PODLY}}
+\index{PODLY@{PODLY}!PDB\_Type@{PDB\_Type}}
+\doxysubsubsection{\texorpdfstring{PODLY}{PODLY}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t PODLY}
+
+
+
+Pulse-\/\+Out n Delay register, array offset\+: 0x194, array step\+: 0x4. 
+
+\mbox{\Hypertarget{struct_p_d_b___type_afd7953396f7b3622bc91168b9cfd6aae}\label{struct_p_d_b___type_afd7953396f7b3622bc91168b9cfd6aae}} 
+\index{PDB\_Type@{PDB\_Type}!POEN@{POEN}}
+\index{POEN@{POEN}!PDB\_Type@{PDB\_Type}}
+\doxysubsubsection{\texorpdfstring{POEN}{POEN}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t POEN}
+
+
+
+Pulse-\/\+Out n Enable register, offset\+: 0x190. 
+
+\mbox{\Hypertarget{struct_p_d_b___type_a98d27378af47232c77c7e87af5a1f779}\label{struct_p_d_b___type_a98d27378af47232c77c7e87af5a1f779}} 
+\index{PDB\_Type@{PDB\_Type}!POnDLY@{POnDLY}}
+\index{POnDLY@{POnDLY}!PDB\_Type@{PDB\_Type}}
+\doxysubsubsection{\texorpdfstring{}{}}
+{\footnotesize\ttfamily union \{ ... \}  POn\+DLY\mbox{[}\mbox{\hyperlink{group___p_d_b___peripheral___access___layer_gaba31f191d3fa71e1d13749b343214794}{PDB\+\_\+\+POn\+DLY\+\_\+\+COUNT}}\mbox{]}}
+
+\mbox{\Hypertarget{struct_p_d_b___type_a5a13ed975cf814cbf6b36bbbc3e02fd0}\label{struct_p_d_b___type_a5a13ed975cf814cbf6b36bbbc3e02fd0}} 
+\index{PDB\_Type@{PDB\_Type}!RESERVED\_0@{RESERVED\_0}}
+\index{RESERVED\_0@{RESERVED\_0}!PDB\_Type@{PDB\_Type}}
+\doxysubsubsection{\texorpdfstring{RESERVED\_0}{RESERVED\_0}}
+{\footnotesize\ttfamily uint8\+\_\+t RESERVED\+\_\+0\mbox{[}224\mbox{]}}
+
+\mbox{\Hypertarget{struct_p_d_b___type_ababb54850c6689ddd1ac5723d7551f6a}\label{struct_p_d_b___type_ababb54850c6689ddd1ac5723d7551f6a}} 
+\index{PDB\_Type@{PDB\_Type}!S@{S}}
+\index{S@{S}!PDB\_Type@{PDB\_Type}}
+\doxysubsubsection{\texorpdfstring{S}{S}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t S}
+
+
+
+Channel n Status register, array offset\+: 0x14, array step\+: 0x28. 
+
+\mbox{\Hypertarget{struct_p_d_b___type_a71c139861c5c28b6a6e81b2b1c72946a}\label{struct_p_d_b___type_a71c139861c5c28b6a6e81b2b1c72946a}} 
+\index{PDB\_Type@{PDB\_Type}!SC@{SC}}
+\index{SC@{SC}!PDB\_Type@{PDB\_Type}}
+\doxysubsubsection{\texorpdfstring{SC}{SC}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t SC}
+
+
+
+Status and Control register, offset\+: 0x0. 
+
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/\mbox{\hyperlink{_s32_k148_8h}{S32\+K148.\+h}}\end{DoxyCompactItemize}

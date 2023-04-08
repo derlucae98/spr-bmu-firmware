@@ -1,0 +1,206 @@
+\hypertarget{s32__core__cm4_8h}{}\doxysection{include/s32\+\_\+core\+\_\+cm4.h File Reference}
+\label{s32__core__cm4_8h}\index{include/s32\_core\_cm4.h@{include/s32\_core\_cm4.h}}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{s32__core__cm4_8h_a320d09cd2c8a77995e5ce8d1433c162c}{BKPT\+\_\+\+ASM}}~\+\_\+\+\_\+asm(\char`\"{}BKPT \#0\textbackslash{}n\textbackslash{}t\char`\"{})
+\begin{DoxyCompactList}\small\item\em BKPT\+\_\+\+ASM. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{s32__core__cm4_8h_a7ca2cec1256c982e354114e155314354}{ENABLE\+\_\+\+INTERRUPTS}}()~\+\_\+\+\_\+asm(\char`\"{}cpsie i\char`\"{})
+\begin{DoxyCompactList}\small\item\em Enable FPU. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{s32__core__cm4_8h_ac136489c5ba4794566532004267967f8}{DISABLE\+\_\+\+INTERRUPTS}}()~\+\_\+\+\_\+asm(\char`\"{}cpsid i\char`\"{})
+\begin{DoxyCompactList}\small\item\em Disable interrupts. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{s32__core__cm4_8h_a6da196406c7ba56523a509d1094b9de6}{STANDBY}}()~\+\_\+\+\_\+asm(\char`\"{}wfi\char`\"{})
+\begin{DoxyCompactList}\small\item\em Enter low-\/power standby state WFI (Wait For Interrupt) makes the processor suspend execution (Clock is stopped) until an IRQ interrupts. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{s32__core__cm4_8h_ad99fda6bb7696991797c925f968234b9}{NOP}}()~\+\_\+\+\_\+asm volatile (\char`\"{}nop\char`\"{})
+\begin{DoxyCompactList}\small\item\em No-\/op. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{s32__core__cm4_8h_a70e9bf80a539411fb57f4e7d283411f0}{REV\+\_\+\+BYTES\+\_\+32}}(a,  b)
+\begin{DoxyCompactList}\small\item\em Reverse byte order in a word. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{s32__core__cm4_8h_ad817f22c105f70a16dc03da6a1934c15}{REV\+\_\+\+BYTES\+\_\+16}}(a,  b)
+\begin{DoxyCompactList}\small\item\em Reverse byte order in each halfword independently. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{s32__core__cm4_8h_ab2f74c84ec4d070b0ca004d20176066a}{START\+\_\+\+FUNCTION\+\_\+\+DECLARATION\+\_\+\+RAMSECTION}}
+\begin{DoxyCompactList}\small\item\em Places a function in RAM. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{s32__core__cm4_8h_a005816f09816c665d164af9237d01d10}{END\+\_\+\+FUNCTION\+\_\+\+DECLARATION\+\_\+\+RAMSECTION}}~;
+\item 
+\#define \mbox{\hyperlink{s32__core__cm4_8h_a736f0a1f6f66cf91c4287616d489ff0a}{START\+\_\+\+FUNCTION\+\_\+\+DEFINITION\+\_\+\+RAMSECTION}}
+\item 
+\#define \mbox{\hyperlink{s32__core__cm4_8h_ae943f361fbc2eb8a71848ce3069881bc}{END\+\_\+\+FUNCTION\+\_\+\+DEFINITION\+\_\+\+RAMSECTION}}
+\item 
+\#define \mbox{\hyperlink{s32__core__cm4_8h_a5f549f81055f268199e03db50c24223c}{DISABLE\+\_\+\+CHECK\+\_\+\+RAMSECTION\+\_\+\+FUNCTION\+\_\+\+CALL}}
+\item 
+\#define \mbox{\hyperlink{s32__core__cm4_8h_ae3943fee5099e89928f0cd7896561189}{ENABLE\+\_\+\+CHECK\+\_\+\+RAMSECTION\+\_\+\+FUNCTION\+\_\+\+CALL}}
+\item 
+\#define \mbox{\hyperlink{s32__core__cm4_8h_a15a94f3ffc05fffdfbd070516bdc1cb3}{GET\+\_\+\+CORE\+\_\+\+ID}}()~0U
+\begin{DoxyCompactList}\small\item\em Get Core ID. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{s32__core__cm4_8h_a8e7a3bf6003d72a62606f343c2db6245}{ALIGNED}}(x)
+\begin{DoxyCompactList}\small\item\em Data alignment. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{s32__core__cm4_8h_a38f9e07ea8f3c72a96f1b5df638fccf8}{PLACE\+\_\+\+IN\+\_\+\+SECTION}}(x)
+\begin{DoxyCompactList}\small\item\em Section placement. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{s32__core__cm4_8h_a5c53072291d53d2ecfeed4b61bcc480f}{CORE\+\_\+\+LITTLE\+\_\+\+ENDIAN}}
+\begin{DoxyCompactList}\small\item\em Endianness. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{s32__core__cm4_8h_a8e7a3bf6003d72a62606f343c2db6245}\label{s32__core__cm4_8h_a8e7a3bf6003d72a62606f343c2db6245}} 
+\index{s32\_core\_cm4.h@{s32\_core\_cm4.h}!ALIGNED@{ALIGNED}}
+\index{ALIGNED@{ALIGNED}!s32\_core\_cm4.h@{s32\_core\_cm4.h}}
+\doxysubsubsection{\texorpdfstring{ALIGNED}{ALIGNED}}
+{\footnotesize\ttfamily \#define ALIGNED(\begin{DoxyParamCaption}\item[{}]{x }\end{DoxyParamCaption})}
+
+
+
+Data alignment. 
+
+\mbox{\Hypertarget{s32__core__cm4_8h_a320d09cd2c8a77995e5ce8d1433c162c}\label{s32__core__cm4_8h_a320d09cd2c8a77995e5ce8d1433c162c}} 
+\index{s32\_core\_cm4.h@{s32\_core\_cm4.h}!BKPT\_ASM@{BKPT\_ASM}}
+\index{BKPT\_ASM@{BKPT\_ASM}!s32\_core\_cm4.h@{s32\_core\_cm4.h}}
+\doxysubsubsection{\texorpdfstring{BKPT\_ASM}{BKPT\_ASM}}
+{\footnotesize\ttfamily \#define BKPT\+\_\+\+ASM~\+\_\+\+\_\+asm(\char`\"{}BKPT \#0\textbackslash{}n\textbackslash{}t\char`\"{})}
+
+
+
+BKPT\+\_\+\+ASM. 
+
+Macro to be used to trigger an debug interrupt \mbox{\Hypertarget{s32__core__cm4_8h_a5c53072291d53d2ecfeed4b61bcc480f}\label{s32__core__cm4_8h_a5c53072291d53d2ecfeed4b61bcc480f}} 
+\index{s32\_core\_cm4.h@{s32\_core\_cm4.h}!CORE\_LITTLE\_ENDIAN@{CORE\_LITTLE\_ENDIAN}}
+\index{CORE\_LITTLE\_ENDIAN@{CORE\_LITTLE\_ENDIAN}!s32\_core\_cm4.h@{s32\_core\_cm4.h}}
+\doxysubsubsection{\texorpdfstring{CORE\_LITTLE\_ENDIAN}{CORE\_LITTLE\_ENDIAN}}
+{\footnotesize\ttfamily \#define CORE\+\_\+\+LITTLE\+\_\+\+ENDIAN}
+
+
+
+Endianness. 
+
+\mbox{\Hypertarget{s32__core__cm4_8h_a5f549f81055f268199e03db50c24223c}\label{s32__core__cm4_8h_a5f549f81055f268199e03db50c24223c}} 
+\index{s32\_core\_cm4.h@{s32\_core\_cm4.h}!DISABLE\_CHECK\_RAMSECTION\_FUNCTION\_CALL@{DISABLE\_CHECK\_RAMSECTION\_FUNCTION\_CALL}}
+\index{DISABLE\_CHECK\_RAMSECTION\_FUNCTION\_CALL@{DISABLE\_CHECK\_RAMSECTION\_FUNCTION\_CALL}!s32\_core\_cm4.h@{s32\_core\_cm4.h}}
+\doxysubsubsection{\texorpdfstring{DISABLE\_CHECK\_RAMSECTION\_FUNCTION\_CALL}{DISABLE\_CHECK\_RAMSECTION\_FUNCTION\_CALL}}
+{\footnotesize\ttfamily \#define DISABLE\+\_\+\+CHECK\+\_\+\+RAMSECTION\+\_\+\+FUNCTION\+\_\+\+CALL}
+
+\mbox{\Hypertarget{s32__core__cm4_8h_ac136489c5ba4794566532004267967f8}\label{s32__core__cm4_8h_ac136489c5ba4794566532004267967f8}} 
+\index{s32\_core\_cm4.h@{s32\_core\_cm4.h}!DISABLE\_INTERRUPTS@{DISABLE\_INTERRUPTS}}
+\index{DISABLE\_INTERRUPTS@{DISABLE\_INTERRUPTS}!s32\_core\_cm4.h@{s32\_core\_cm4.h}}
+\doxysubsubsection{\texorpdfstring{DISABLE\_INTERRUPTS}{DISABLE\_INTERRUPTS}}
+{\footnotesize\ttfamily \#define DISABLE\+\_\+\+INTERRUPTS(\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})~\+\_\+\+\_\+asm(\char`\"{}cpsid i\char`\"{})}
+
+
+
+Disable interrupts. 
+
+\mbox{\Hypertarget{s32__core__cm4_8h_ae3943fee5099e89928f0cd7896561189}\label{s32__core__cm4_8h_ae3943fee5099e89928f0cd7896561189}} 
+\index{s32\_core\_cm4.h@{s32\_core\_cm4.h}!ENABLE\_CHECK\_RAMSECTION\_FUNCTION\_CALL@{ENABLE\_CHECK\_RAMSECTION\_FUNCTION\_CALL}}
+\index{ENABLE\_CHECK\_RAMSECTION\_FUNCTION\_CALL@{ENABLE\_CHECK\_RAMSECTION\_FUNCTION\_CALL}!s32\_core\_cm4.h@{s32\_core\_cm4.h}}
+\doxysubsubsection{\texorpdfstring{ENABLE\_CHECK\_RAMSECTION\_FUNCTION\_CALL}{ENABLE\_CHECK\_RAMSECTION\_FUNCTION\_CALL}}
+{\footnotesize\ttfamily \#define ENABLE\+\_\+\+CHECK\+\_\+\+RAMSECTION\+\_\+\+FUNCTION\+\_\+\+CALL}
+
+\mbox{\Hypertarget{s32__core__cm4_8h_a7ca2cec1256c982e354114e155314354}\label{s32__core__cm4_8h_a7ca2cec1256c982e354114e155314354}} 
+\index{s32\_core\_cm4.h@{s32\_core\_cm4.h}!ENABLE\_INTERRUPTS@{ENABLE\_INTERRUPTS}}
+\index{ENABLE\_INTERRUPTS@{ENABLE\_INTERRUPTS}!s32\_core\_cm4.h@{s32\_core\_cm4.h}}
+\doxysubsubsection{\texorpdfstring{ENABLE\_INTERRUPTS}{ENABLE\_INTERRUPTS}}
+{\footnotesize\ttfamily \#define ENABLE\+\_\+\+INTERRUPTS(\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})~\+\_\+\+\_\+asm(\char`\"{}cpsie i\char`\"{})}
+
+
+
+Enable FPU. 
+
+ENABLE\+\_\+\+FPU indicates whether System\+Init will enable the Floating point unit (FPU)
+
+Enable interrupts \mbox{\Hypertarget{s32__core__cm4_8h_a005816f09816c665d164af9237d01d10}\label{s32__core__cm4_8h_a005816f09816c665d164af9237d01d10}} 
+\index{s32\_core\_cm4.h@{s32\_core\_cm4.h}!END\_FUNCTION\_DECLARATION\_RAMSECTION@{END\_FUNCTION\_DECLARATION\_RAMSECTION}}
+\index{END\_FUNCTION\_DECLARATION\_RAMSECTION@{END\_FUNCTION\_DECLARATION\_RAMSECTION}!s32\_core\_cm4.h@{s32\_core\_cm4.h}}
+\doxysubsubsection{\texorpdfstring{END\_FUNCTION\_DECLARATION\_RAMSECTION}{END\_FUNCTION\_DECLARATION\_RAMSECTION}}
+{\footnotesize\ttfamily \#define END\+\_\+\+FUNCTION\+\_\+\+DECLARATION\+\_\+\+RAMSECTION~;}
+
+\mbox{\Hypertarget{s32__core__cm4_8h_ae943f361fbc2eb8a71848ce3069881bc}\label{s32__core__cm4_8h_ae943f361fbc2eb8a71848ce3069881bc}} 
+\index{s32\_core\_cm4.h@{s32\_core\_cm4.h}!END\_FUNCTION\_DEFINITION\_RAMSECTION@{END\_FUNCTION\_DEFINITION\_RAMSECTION}}
+\index{END\_FUNCTION\_DEFINITION\_RAMSECTION@{END\_FUNCTION\_DEFINITION\_RAMSECTION}!s32\_core\_cm4.h@{s32\_core\_cm4.h}}
+\doxysubsubsection{\texorpdfstring{END\_FUNCTION\_DEFINITION\_RAMSECTION}{END\_FUNCTION\_DEFINITION\_RAMSECTION}}
+{\footnotesize\ttfamily \#define END\+\_\+\+FUNCTION\+\_\+\+DEFINITION\+\_\+\+RAMSECTION}
+
+\mbox{\Hypertarget{s32__core__cm4_8h_a15a94f3ffc05fffdfbd070516bdc1cb3}\label{s32__core__cm4_8h_a15a94f3ffc05fffdfbd070516bdc1cb3}} 
+\index{s32\_core\_cm4.h@{s32\_core\_cm4.h}!GET\_CORE\_ID@{GET\_CORE\_ID}}
+\index{GET\_CORE\_ID@{GET\_CORE\_ID}!s32\_core\_cm4.h@{s32\_core\_cm4.h}}
+\doxysubsubsection{\texorpdfstring{GET\_CORE\_ID}{GET\_CORE\_ID}}
+{\footnotesize\ttfamily \#define GET\+\_\+\+CORE\+\_\+\+ID(\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})~0U}
+
+
+
+Get Core ID. 
+
+GET\+\_\+\+CORE\+\_\+\+ID returns the processor identification number for cm4 \mbox{\Hypertarget{s32__core__cm4_8h_ad99fda6bb7696991797c925f968234b9}\label{s32__core__cm4_8h_ad99fda6bb7696991797c925f968234b9}} 
+\index{s32\_core\_cm4.h@{s32\_core\_cm4.h}!NOP@{NOP}}
+\index{NOP@{NOP}!s32\_core\_cm4.h@{s32\_core\_cm4.h}}
+\doxysubsubsection{\texorpdfstring{NOP}{NOP}}
+{\footnotesize\ttfamily \#define NOP(\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})~\+\_\+\+\_\+asm volatile (\char`\"{}nop\char`\"{})}
+
+
+
+No-\/op. 
+
+\mbox{\Hypertarget{s32__core__cm4_8h_a38f9e07ea8f3c72a96f1b5df638fccf8}\label{s32__core__cm4_8h_a38f9e07ea8f3c72a96f1b5df638fccf8}} 
+\index{s32\_core\_cm4.h@{s32\_core\_cm4.h}!PLACE\_IN\_SECTION@{PLACE\_IN\_SECTION}}
+\index{PLACE\_IN\_SECTION@{PLACE\_IN\_SECTION}!s32\_core\_cm4.h@{s32\_core\_cm4.h}}
+\doxysubsubsection{\texorpdfstring{PLACE\_IN\_SECTION}{PLACE\_IN\_SECTION}}
+{\footnotesize\ttfamily \#define PLACE\+\_\+\+IN\+\_\+\+SECTION(\begin{DoxyParamCaption}\item[{}]{x }\end{DoxyParamCaption})}
+
+
+
+Section placement. 
+
+\mbox{\Hypertarget{s32__core__cm4_8h_ad817f22c105f70a16dc03da6a1934c15}\label{s32__core__cm4_8h_ad817f22c105f70a16dc03da6a1934c15}} 
+\index{s32\_core\_cm4.h@{s32\_core\_cm4.h}!REV\_BYTES\_16@{REV\_BYTES\_16}}
+\index{REV\_BYTES\_16@{REV\_BYTES\_16}!s32\_core\_cm4.h@{s32\_core\_cm4.h}}
+\doxysubsubsection{\texorpdfstring{REV\_BYTES\_16}{REV\_BYTES\_16}}
+{\footnotesize\ttfamily \#define REV\+\_\+\+BYTES\+\_\+16(\begin{DoxyParamCaption}\item[{}]{a,  }\item[{}]{b }\end{DoxyParamCaption})}
+
+{\bfseries Value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{                                (b = ((a \& 0xFF000000U) >> 8U) | ((a \& 0xFF0000U) << 8U) \(\backslash\)}
+\DoxyCodeLine{                                | ((a \& 0xFF00U) >> 8U) | ((a \& 0xFFU) << 8U))}
+
+\end{DoxyCode}
+
+
+Reverse byte order in each halfword independently. 
+
+\mbox{\Hypertarget{s32__core__cm4_8h_a70e9bf80a539411fb57f4e7d283411f0}\label{s32__core__cm4_8h_a70e9bf80a539411fb57f4e7d283411f0}} 
+\index{s32\_core\_cm4.h@{s32\_core\_cm4.h}!REV\_BYTES\_32@{REV\_BYTES\_32}}
+\index{REV\_BYTES\_32@{REV\_BYTES\_32}!s32\_core\_cm4.h@{s32\_core\_cm4.h}}
+\doxysubsubsection{\texorpdfstring{REV\_BYTES\_32}{REV\_BYTES\_32}}
+{\footnotesize\ttfamily \#define REV\+\_\+\+BYTES\+\_\+32(\begin{DoxyParamCaption}\item[{}]{a,  }\item[{}]{b }\end{DoxyParamCaption})}
+
+{\bfseries Value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{                                (b = ((a \& 0xFF000000U) >> 24U) | ((a \& 0xFF0000U) >> 8U) \(\backslash\)}
+\DoxyCodeLine{                                | ((a \& 0xFF00U) << 8U) | ((a \& 0xFFU) << 24U))}
+
+\end{DoxyCode}
+
+
+Reverse byte order in a word. 
+
+\mbox{\Hypertarget{s32__core__cm4_8h_a6da196406c7ba56523a509d1094b9de6}\label{s32__core__cm4_8h_a6da196406c7ba56523a509d1094b9de6}} 
+\index{s32\_core\_cm4.h@{s32\_core\_cm4.h}!STANDBY@{STANDBY}}
+\index{STANDBY@{STANDBY}!s32\_core\_cm4.h@{s32\_core\_cm4.h}}
+\doxysubsubsection{\texorpdfstring{STANDBY}{STANDBY}}
+{\footnotesize\ttfamily \#define STANDBY(\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})~\+\_\+\+\_\+asm(\char`\"{}wfi\char`\"{})}
+
+
+
+Enter low-\/power standby state WFI (Wait For Interrupt) makes the processor suspend execution (Clock is stopped) until an IRQ interrupts. 
+
+\mbox{\Hypertarget{s32__core__cm4_8h_ab2f74c84ec4d070b0ca004d20176066a}\label{s32__core__cm4_8h_ab2f74c84ec4d070b0ca004d20176066a}} 
+\index{s32\_core\_cm4.h@{s32\_core\_cm4.h}!START\_FUNCTION\_DECLARATION\_RAMSECTION@{START\_FUNCTION\_DECLARATION\_RAMSECTION}}
+\index{START\_FUNCTION\_DECLARATION\_RAMSECTION@{START\_FUNCTION\_DECLARATION\_RAMSECTION}!s32\_core\_cm4.h@{s32\_core\_cm4.h}}
+\doxysubsubsection{\texorpdfstring{START\_FUNCTION\_DECLARATION\_RAMSECTION}{START\_FUNCTION\_DECLARATION\_RAMSECTION}}
+{\footnotesize\ttfamily \#define START\+\_\+\+FUNCTION\+\_\+\+DECLARATION\+\_\+\+RAMSECTION}
+
+
+
+Places a function in RAM. 
+
+\mbox{\Hypertarget{s32__core__cm4_8h_a736f0a1f6f66cf91c4287616d489ff0a}\label{s32__core__cm4_8h_a736f0a1f6f66cf91c4287616d489ff0a}} 
+\index{s32\_core\_cm4.h@{s32\_core\_cm4.h}!START\_FUNCTION\_DEFINITION\_RAMSECTION@{START\_FUNCTION\_DEFINITION\_RAMSECTION}}
+\index{START\_FUNCTION\_DEFINITION\_RAMSECTION@{START\_FUNCTION\_DEFINITION\_RAMSECTION}!s32\_core\_cm4.h@{s32\_core\_cm4.h}}
+\doxysubsubsection{\texorpdfstring{START\_FUNCTION\_DEFINITION\_RAMSECTION}{START\_FUNCTION\_DEFINITION\_RAMSECTION}}
+{\footnotesize\ttfamily \#define START\+\_\+\+FUNCTION\+\_\+\+DEFINITION\+\_\+\+RAMSECTION}
+

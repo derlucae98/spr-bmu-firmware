@@ -103,15 +103,15 @@ static ltc_mutex_give_t     prv_ltc_mutex_give;
 static void send_command(commandLTC_t command);
 static void broadcast(commandLTC_t command);
 static void broadcast_transmit(commandLTC_t command, uint8_t sendPayload[][PAYLOADLEN]);
-static void broadcast_receive(commandLTC_t command, uint8_t recPayload[][PAYLOADLEN], uint8_t *recPEC);
+static void broadcast_receive(commandLTC_t command, uint8_t recPayload[][PAYLOADLEN], LTCError_t *status);
 static void broadcast_stcomm(void);
 static inline uint16_t calc_pec(uint8_t len, const uint8_t *data);
-static void check_pec(uint8_t payload[][8], uint8_t *result);
-static void set_config(uint8_t CFGR0, uint8_t gates[][MAXCELLS]);
-static void read_cell_voltage_registers_and_convert_to_voltage(uint16_t voltage[][MAXCELLS], uint8_t voltageStatus[][MAXCELLS]);
+static void check_pec(uint8_t payload[][8], LTCError_t *result);
+static void set_config(uint8_t CFGR0, uint8_t gates[][MAX_NUM_OF_CELLS]);
+static void read_cell_voltage_registers_and_convert_to_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], LTCError_t voltageStatus[][MAX_NUM_OF_CELLS]);
 static void set_mux_channel(uint8_t temperature_channel);
 static inline uint8_t return_mux_command_byte(uint8_t channel);
-static void get_gpio_voltage(uint16_t voltGPIO[][2], uint8_t *voltGPIOStatus);
+static void get_gpio_voltage(uint16_t voltGPIO[][2], LTCError_t *voltGPIOStatus);
 static uint16_t calc_temperature_from_voltage(uint16_t B, uint16_t temp_voltage);
 
 
@@ -189,7 +189,7 @@ static void broadcast_transmit(commandLTC_t command, uint8_t sendPayload[][PAYLO
     prv_ltc_deassert_cs();
 }
 
-static void broadcast_receive(commandLTC_t command, uint8_t recPayload[][PAYLOADLEN], uint8_t *recPEC) {
+static void broadcast_receive(commandLTC_t command, uint8_t recPayload[][PAYLOADLEN], uint8_t *status) {
     uint8_t tempRecPayload[NUMBEROFSLAVES][8]; //Holds payload and received PEC. PEC will be removed
 
     prv_ltc_assert_cs();
@@ -203,7 +203,7 @@ static void broadcast_receive(commandLTC_t command, uint8_t recPayload[][PAYLOAD
     for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
         memcpy(&recPayload[slave][0], &tempRecPayload[slave][0], 6); //Copy only the first 6 bytes per payload
     }
-    check_pec(tempRecPayload, recPEC);
+    check_pec(tempRecPayload, status);
 }
 
 static void broadcast_stcomm(void) {
@@ -245,7 +245,7 @@ uint16_t calc_pec(uint8_t len, const uint8_t *data) {
     return PEC << 1;
 }
 
-void check_pec(uint8_t payload[][8], uint8_t *result) {
+void check_pec(uint8_t payload[][8], LTCError_t *result) {
     uint16_t PEC_should;
     uint16_t PEC_is;
 
@@ -270,7 +270,7 @@ void ltc6811_wake_daisy_chain(void) {
     }
 }
 
-void set_config(uint8_t CFGR0, uint8_t gates[][MAXCELLS]) {
+void set_config(uint8_t CFGR0, uint8_t gates[][MAX_NUM_OF_CELLS]) {
     //Config register and balancing control use the same command.
 
     uint8_t payload[NUMBEROFSLAVES][PAYLOADLEN];
@@ -294,7 +294,7 @@ void set_config(uint8_t CFGR0, uint8_t gates[][MAXCELLS]) {
     broadcast_transmit(WRCFGA, payload);
 }
 
-void ltc6811_get_voltage(uint16_t voltage[][MAXCELLS], uint8_t voltageStatus[][MAXCELLS]) {
+void ltc6811_get_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], LTCError_t voltageStatus[][MAX_NUM_OF_CELLS]) {
     //Change the ADCOPT bit to enable 3 kHz mode
     set_config(prvConfig | CFGR0_ADCOPT, NULL);
     //Start ADC conversion
@@ -306,66 +306,66 @@ void ltc6811_get_voltage(uint16_t voltage[][MAXCELLS], uint8_t voltageStatus[][M
 
     read_cell_voltage_registers_and_convert_to_voltage(voltage, voltageStatus);
     for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
-        for (size_t cell = 0; cell < MAXCELLS; cell++) {
+        for (size_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
             voltage[slave][cell] /= 10; //chop off the 100 uV digit
         }
     }
 }
 
-void read_cell_voltage_registers_and_convert_to_voltage(uint16_t voltage[][MAXCELLS], uint8_t voltageStatus[][MAXCELLS]) {
+void read_cell_voltage_registers_and_convert_to_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], LTCError_t voltageStatus[][MAX_NUM_OF_CELLS]) {
     uint8_t payload[NUMBEROFSLAVES][PAYLOADLEN];
-    uint8_t pec[NUMBEROFSLAVES];
+    LTCError_t status[NUMBEROFSLAVES];
 
     //Load Cell Voltage Register A
-    broadcast_receive(RDCVA, payload, pec);
+    broadcast_receive(RDCVA, payload, status);
     //Set cell voltages 1 to 3
     for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
         voltage[slave][0] = ((payload[slave][1] << 8) | payload[slave][0]);
         voltage[slave][1] = ((payload[slave][3] << 8) | payload[slave][2]);
         voltage[slave][2] = ((payload[slave][5] << 8) | payload[slave][4]);
 
-        voltageStatus[slave][0] = pec[slave];
-        voltageStatus[slave][1] = pec[slave];
-        voltageStatus[slave][2] = pec[slave];
+        voltageStatus[slave][0] = status[slave];
+        voltageStatus[slave][1] = status[slave];
+        voltageStatus[slave][2] = status[slave];
     }
 
     //Load Cell Voltage Register B
-    broadcast_receive(RDCVB, payload, pec);
+    broadcast_receive(RDCVB, payload, status);
     //Set cell voltages 4 to 6
     for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
         voltage[slave][3] = ((payload[slave][1] << 8) | payload[slave][0]);
         voltage[slave][4] = ((payload[slave][3] << 8) | payload[slave][2]);
         voltage[slave][5] = ((payload[slave][5] << 8) | payload[slave][4]);
 
-        voltageStatus[slave][3] = pec[slave];
-        voltageStatus[slave][4] = pec[slave];
-        voltageStatus[slave][5] = pec[slave];
+        voltageStatus[slave][3] = status[slave];
+        voltageStatus[slave][4] = status[slave];
+        voltageStatus[slave][5] = status[slave];
     }
 
     //Load Cell Voltage Register C
-    broadcast_receive(RDCVC, payload, pec);
+    broadcast_receive(RDCVC, payload, status);
     //Set cell voltages 7 to 9
     for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
         voltage[slave][6] = ((payload[slave][1] << 8) | payload[slave][0]);
         voltage[slave][7] = ((payload[slave][3] << 8) | payload[slave][2]);
         voltage[slave][8] = ((payload[slave][5] << 8) | payload[slave][4]);
 
-        voltageStatus[slave][6] = pec[slave];
-        voltageStatus[slave][7] = pec[slave];
-        voltageStatus[slave][8] = pec[slave];
+        voltageStatus[slave][6] = status[slave];
+        voltageStatus[slave][7] = status[slave];
+        voltageStatus[slave][8] = status[slave];
     }
 
     //Load Cell Voltage Register D
-    broadcast_receive(RDCVD, payload, pec);
+    broadcast_receive(RDCVD, payload, status);
     //Set cell voltages 10 to 12
     for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
         voltage[slave][9] = ((payload[slave][1] << 8) | payload[slave][0]);
         voltage[slave][10] = ((payload[slave][3] << 8) | payload[slave][2]);
         voltage[slave][11] = ((payload[slave][5] << 8) | payload[slave][4]);
 
-        voltageStatus[slave][9]  = pec[slave];
-        voltageStatus[slave][10] = pec[slave];
-        voltageStatus[slave][11] = pec[slave];
+        voltageStatus[slave][9]  = status[slave];
+        voltageStatus[slave][10] = status[slave];
+        voltageStatus[slave][11] = status[slave];
     }
 }
 
@@ -395,25 +395,25 @@ inline uint8_t return_mux_command_byte(uint8_t channel) {
     return cmd_mux;
 }
 
-void get_gpio_voltage(uint16_t voltGPIO[][2], uint8_t *voltGPIOStatus) {
+void get_gpio_voltage(uint16_t voltGPIO[][2], LTCError_t *voltGPIOStatus) {
     uint8_t payload_auxa[NUMBEROFSLAVES][PAYLOADLEN];
-    uint8_t pec[NUMBEROFSLAVES];
+    LTCError_t status[NUMBEROFSLAVES];
     broadcast(ADAXD_FAST_ALL);
 
     vTaskDelay(pdMS_TO_TICKS(2));
 
-    broadcast_receive(RDAUXA, payload_auxa, pec);
+    broadcast_receive(RDAUXA, payload_auxa, status);
 
     for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
-        voltGPIOStatus[slave] = pec[slave];
+        voltGPIOStatus[slave] = status[slave];
         voltGPIO[slave][0] = (payload_auxa[slave][1] << 8) | payload_auxa[slave][0]; //GPIO1
         voltGPIO[slave][1] = (payload_auxa[slave][3] << 8) | payload_auxa[slave][2]; //GPIO2
     }
 }
 
-void ltc6811_get_temperatures_in_degC(uint16_t temperature[][MAXTEMPSENS], uint8_t temperatureStatus[][MAXTEMPSENS], uint8_t startChannel, uint8_t len) {
+void ltc6811_get_temperatures_in_degC(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], LTCError_t temperatureStatus[][MAX_NUM_OF_TEMPSENS], uint8_t startChannel, uint8_t len) {
     uint16_t voltGPIO[NUMBEROFSLAVES][2]; //GPIO1 and GPIO2 are converted simultaneously
-    uint8_t status[NUMBEROFSLAVES];
+    LTCError_t status[NUMBEROFSLAVES];
 
     for (size_t channel = startChannel; channel < startChannel + len; channel++) {
         set_mux_channel(channel);
@@ -524,12 +524,12 @@ void ltc6811_get_uid(uint32_t UID[]) {
     memcpy(UID, uid, sizeof(uint32_t) * NUMBEROFSLAVES);
 }
 
-void ltc6811_open_wire_check(uint8_t result[][MAXCELLS+1]) {
-    uint16_t voltage_pup[NUMBEROFSLAVES][MAXCELLS];
-    uint8_t pec_pup[NUMBEROFSLAVES][MAXCELLS];
-    uint16_t voltage_pdn[NUMBEROFSLAVES][MAXCELLS];
-    uint8_t pec_pdn[NUMBEROFSLAVES][MAXCELLS];
-    int32_t volt_diff[NUMBEROFSLAVES][MAXCELLS];
+void ltc6811_open_wire_check(LTCError_t result[][MAX_NUM_OF_CELLS+1]) {
+    uint16_t voltage_pup[NUMBEROFSLAVES][MAX_NUM_OF_CELLS];
+    uint8_t pec_pup[NUMBEROFSLAVES][MAX_NUM_OF_CELLS];
+    uint16_t voltage_pdn[NUMBEROFSLAVES][MAX_NUM_OF_CELLS];
+    uint8_t pec_pdn[NUMBEROFSLAVES][MAX_NUM_OF_CELLS];
+    int32_t volt_diff[NUMBEROFSLAVES][MAX_NUM_OF_CELLS];
 
     //Algorithm described in LTC6811 datasheet
 
@@ -552,12 +552,12 @@ void ltc6811_open_wire_check(uint8_t result[][MAXCELLS+1]) {
     read_cell_voltage_registers_and_convert_to_voltage(voltage_pdn, pec_pdn);
 
     for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
-        for (size_t cell = 1; cell < MAXCELLS; cell++) {
+        for (size_t cell = 1; cell < MAX_NUM_OF_CELLS; cell++) {
             volt_diff[slave][cell] = voltage_pup[slave][cell]
                                             - voltage_pdn[slave][cell];
         }
 
-        for (size_t cell = 0; cell < MAXCELLS - 1; cell++) {
+        for (size_t cell = 0; cell < MAX_NUM_OF_CELLS - 1; cell++) {
             if (volt_diff[slave][cell + 1] + 4000 < 0) {
                 result[slave][cell + 1] = OPENCELLWIRE;
             } else {
@@ -579,6 +579,6 @@ void ltc6811_open_wire_check(uint8_t result[][MAXCELLS+1]) {
     }
 }
 
-void ltc6811_set_balancing_gates(uint8_t gates[][MAXCELLS]) {
+void ltc6811_set_balancing_gates(uint8_t gates[][MAX_NUM_OF_CELLS]) {
     set_config(prvConfig, gates);
 }

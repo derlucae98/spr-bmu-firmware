@@ -1,0 +1,69 @@
+\hypertarget{sensors_8h}{}\doxysection{include/sensors.h File Reference}
+\label{sensors_8h}\index{include/sensors.h@{include/sensors.h}}
+{\ttfamily \#include $<$stdbool.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}S32\+K14x.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}Free\+RTOS.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}task.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}mcp356x.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}spi.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}gpio.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}config.\+h\char`\"{}}\newline
+Include dependency graph for sensors.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{sensors_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=215pt]{sensors_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structadc__calibration__t}{adc\+\_\+calibration\+\_\+t}}
+\item 
+struct \mbox{\hyperlink{structadc__data__t}{adc\+\_\+data\+\_\+t}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{structadc__data__t}{adc\+\_\+data\+\_\+t}} $\ast$ \mbox{\hyperlink{sensors_8h_af714a16bf5ed7ebb3ca7ee3699043e85}{get\+\_\+adc\+\_\+data}} (Tick\+Type\+\_\+t blocktime)
+\item 
+void \mbox{\hyperlink{sensors_8h_ae8c8aec00021b978400289a731847938}{release\+\_\+adc\+\_\+data}} (void)
+\item 
+bool \mbox{\hyperlink{sensors_8h_ab611f39eb1483b16fc35f3bf51928495}{copy\+\_\+adc\+\_\+data}} (\mbox{\hyperlink{structadc__data__t}{adc\+\_\+data\+\_\+t}} $\ast$dest, Tick\+Type\+\_\+t blocktime)
+\item 
+bool \mbox{\hyperlink{sensors_8h_a3d7b3a08f92c17af6f1729e423a8e138}{init\+\_\+adc}} (void)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{sensors_8h_ab611f39eb1483b16fc35f3bf51928495}\label{sensors_8h_ab611f39eb1483b16fc35f3bf51928495}} 
+\index{sensors.h@{sensors.h}!copy\_adc\_data@{copy\_adc\_data}}
+\index{copy\_adc\_data@{copy\_adc\_data}!sensors.h@{sensors.h}}
+\doxysubsubsection{\texorpdfstring{copy\_adc\_data()}{copy\_adc\_data()}}
+{\footnotesize\ttfamily bool copy\+\_\+adc\+\_\+data (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structadc__data__t}{adc\+\_\+data\+\_\+t}} $\ast$}]{dest,  }\item[{Tick\+Type\+\_\+t}]{blocktime }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{sensors_8h_af714a16bf5ed7ebb3ca7ee3699043e85}\label{sensors_8h_af714a16bf5ed7ebb3ca7ee3699043e85}} 
+\index{sensors.h@{sensors.h}!get\_adc\_data@{get\_adc\_data}}
+\index{get\_adc\_data@{get\_adc\_data}!sensors.h@{sensors.h}}
+\doxysubsubsection{\texorpdfstring{get\_adc\_data()}{get\_adc\_data()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structadc__data__t}{adc\+\_\+data\+\_\+t}}$\ast$ get\+\_\+adc\+\_\+data (\begin{DoxyParamCaption}\item[{Tick\+Type\+\_\+t}]{blocktime }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{sensors_8h_a3d7b3a08f92c17af6f1729e423a8e138}\label{sensors_8h_a3d7b3a08f92c17af6f1729e423a8e138}} 
+\index{sensors.h@{sensors.h}!init\_adc@{init\_adc}}
+\index{init\_adc@{init\_adc}!sensors.h@{sensors.h}}
+\doxysubsubsection{\texorpdfstring{init\_adc()}{init\_adc()}}
+{\footnotesize\ttfamily bool init\+\_\+adc (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{sensors_8h_ae8c8aec00021b978400289a731847938}\label{sensors_8h_ae8c8aec00021b978400289a731847938}} 
+\index{sensors.h@{sensors.h}!release\_adc\_data@{release\_adc\_data}}
+\index{release\_adc\_data@{release\_adc\_data}!sensors.h@{sensors.h}}
+\doxysubsubsection{\texorpdfstring{release\_adc\_data()}{release\_adc\_data()}}
+{\footnotesize\ttfamily void release\+\_\+adc\+\_\+data (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+

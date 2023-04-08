@@ -16,12 +16,13 @@
 #include "LTC6811.h"
 #include "spi.h"
 
+#define MAX_NUM_OF_STACKS 12
 
 typedef struct {
-    uint16_t cellVoltage[MAXSTACKS][MAXCELLS];
-    uint8_t cellVoltageStatus[MAXSTACKS][MAXCELLS+1];
-    uint16_t temperature[MAXSTACKS][MAXTEMPSENS];
-    uint8_t temperatureStatus[MAXSTACKS][MAXTEMPSENS];
+    uint16_t cellVoltage[MAX_NUM_OF_STACKS][MAX_NUM_OF_CELLS];
+    uint8_t cellVoltageStatus[MAX_NUM_OF_STACKS][MAX_NUM_OF_CELLS+1];
+    uint16_t temperature[MAX_NUM_OF_STACKS][MAX_NUM_OF_TEMPSENS];
+    uint8_t temperatureStatus[MAX_NUM_OF_STACKS][MAX_NUM_OF_TEMPSENS];
     uint16_t packVoltage;
 
     uint16_t minCellVolt;
@@ -34,16 +35,16 @@ typedef struct {
     bool temperatureValid;
 } stacks_data_t;
 
-extern uint32_t stacksUID[MAXSTACKS];
+extern uint32_t stacksUID[MAX_NUM_OF_STACKS];
 
-uint16_t max_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks);
-uint16_t min_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks);
-uint16_t avg_cell_voltage(uint16_t voltage[][MAXCELLS], uint8_t stacks);
-bool check_voltage_validity(uint8_t voltageStatus[][MAXCELLS+1], uint8_t stacks);
-bool check_temperature_validity(uint8_t temperatureStatus[][MAXTEMPSENS], uint8_t stacks);
-uint16_t max_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stacks);
-uint16_t min_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stacks);
-uint16_t avg_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stacks);
+uint16_t max_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks);
+uint16_t min_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks);
+uint16_t avg_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks);
+bool check_voltage_validity(uint8_t voltageStatus[][MAX_NUM_OF_CELLS+1], uint8_t stacks);
+bool check_temperature_validity(uint8_t temperatureStatus[][MAX_NUM_OF_TEMPSENS], uint8_t stacks);
+uint16_t max_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8_t stacks);
+uint16_t min_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8_t stacks);
+uint16_t avg_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8_t stacks);
 void init_stacks(void);
 
 
@@ -54,6 +55,6 @@ void release_stacks_data(void);
 
 
 void control_balancing(bool enabled);
-void get_balancing_status(uint8_t gates[NUMBEROFSLAVES][MAXCELLS]);
+void get_balancing_status(uint8_t gates[NUMBEROFSLAVES][MAX_NUM_OF_CELLS]);
 
 #endif /* STACKS_H_ */

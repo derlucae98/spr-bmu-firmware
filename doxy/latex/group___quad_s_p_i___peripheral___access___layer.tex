@@ -1,0 +1,158 @@
+\hypertarget{group___quad_s_p_i___peripheral___access___layer}{}\doxysection{Quad\+SPI Peripheral Access Layer}
+\label{group___quad_s_p_i___peripheral___access___layer}\index{QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}}
+Collaboration diagram for Quad\+SPI Peripheral Access Layer\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{group___quad_s_p_i___peripheral___access___layer}
+\end{center}
+\end{figure}
+\doxysubsection*{Modules}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{group___quad_s_p_i___register___masks}{Quad\+SPI Register Masks}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_quad_s_p_i___type}{Quad\+SPI\+\_\+\+Type}}
+\begin{DoxyCompactList}\small\item\em Quad\+SPI -\/ Register Layout Typedef. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{group___quad_s_p_i___peripheral___access___layer_gacfa13bb787d1e165f2652c270ecda646}{Quad\+SPI\+\_\+\+RBDR\+\_\+\+COUNT}}~32u
+\begin{DoxyCompactList}\small\item\em Quad\+SPI -\/ Size of Registers Arrays. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___quad_s_p_i___peripheral___access___layer_ga587da3c2e407f7c87dd247d003e9518b}{Quad\+SPI\+\_\+\+LUT\+\_\+\+COUNT}}~64u
+\item 
+\#define \mbox{\hyperlink{group___quad_s_p_i___peripheral___access___layer_gaeb34c052a479d3328ccd47e09a29878c}{Quad\+SPI\+\_\+\+INSTANCE\+\_\+\+COUNT}}~(1u)
+\begin{DoxyCompactList}\small\item\em Number of instances of the Quad\+SPI module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___quad_s_p_i___peripheral___access___layer_gaf01856dd63fd013538e6dccc0edf2eee}{Quad\+SPI\+\_\+\+BASE}}~(0x40076000u)
+\begin{DoxyCompactList}\small\item\em Peripheral Quad\+SPI base address. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___quad_s_p_i___peripheral___access___layer_gaeae0806c4321d14dd09f3f5a9a60cd31}{Quad\+SPI}}~((\mbox{\hyperlink{struct_quad_s_p_i___type}{Quad\+SPI\+\_\+\+Type}} $\ast$)\mbox{\hyperlink{group___quad_s_p_i___peripheral___access___layer_gaf01856dd63fd013538e6dccc0edf2eee}{Quad\+SPI\+\_\+\+BASE}})
+\begin{DoxyCompactList}\small\item\em Peripheral Quad\+SPI base pointer. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___quad_s_p_i___peripheral___access___layer_ga9eb8fa32611589c0785614784ba7aa66}{Quad\+SPI\+\_\+\+BASE\+\_\+\+ADDRS}}~\{ \mbox{\hyperlink{group___quad_s_p_i___peripheral___access___layer_gaf01856dd63fd013538e6dccc0edf2eee}{Quad\+SPI\+\_\+\+BASE}} \}
+\begin{DoxyCompactList}\small\item\em Array initializer of Quad\+SPI peripheral base addresses. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___quad_s_p_i___peripheral___access___layer_ga2e68f652eea88172e0c4c9d60079620e}{Quad\+SPI\+\_\+\+BASE\+\_\+\+PTRS}}~\{ \mbox{\hyperlink{group___quad_s_p_i___peripheral___access___layer_gaeae0806c4321d14dd09f3f5a9a60cd31}{Quad\+SPI}} \}
+\begin{DoxyCompactList}\small\item\em Array initializer of Quad\+SPI peripheral base pointers. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___quad_s_p_i___peripheral___access___layer_gab255a032d5b5ca7c78c1a7fa8d328094}{Quad\+SPI\+\_\+\+IRQS\+\_\+\+ARR\+\_\+\+COUNT}}~(1u)
+\begin{DoxyCompactList}\small\item\em Number of interrupt vector arrays for the Quad\+SPI module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___quad_s_p_i___peripheral___access___layer_ga83446f5d80fb73c6dcae01616e8525d4}{Quad\+SPI\+\_\+\+IRQS\+\_\+\+CH\+\_\+\+COUNT}}~(1u)
+\begin{DoxyCompactList}\small\item\em Number of interrupt channels for the Quad\+SPI module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___quad_s_p_i___peripheral___access___layer_ga5f87f0d17a460178b96122782fef23d0}{Quad\+SPI\+\_\+\+IRQS}}~\{ \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8ac65ccf7b7c60881ca7fd3f8ff4cd27b6}{QSPI\+\_\+\+IRQn}} \}
+\begin{DoxyCompactList}\small\item\em Interrupt vectors for the Quad\+SPI peripheral type. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \mbox{\hyperlink{struct_quad_s_p_i___type}{Quad\+SPI\+\_\+\+Type}} $\ast$ \mbox{\hyperlink{group___quad_s_p_i___peripheral___access___layer_gacbe0298dfd10c57c7ada2510c267da73}{Quad\+SPI\+\_\+\+Mem\+Map\+Ptr}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{group___quad_s_p_i___peripheral___access___layer_gaeae0806c4321d14dd09f3f5a9a60cd31}\label{group___quad_s_p_i___peripheral___access___layer_gaeae0806c4321d14dd09f3f5a9a60cd31}} 
+\index{QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}!QuadSPI@{QuadSPI}}
+\index{QuadSPI@{QuadSPI}!QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{QuadSPI}{QuadSPI}}
+{\footnotesize\ttfamily \#define Quad\+SPI~((\mbox{\hyperlink{struct_quad_s_p_i___type}{Quad\+SPI\+\_\+\+Type}} $\ast$)\mbox{\hyperlink{group___quad_s_p_i___peripheral___access___layer_gaf01856dd63fd013538e6dccc0edf2eee}{Quad\+SPI\+\_\+\+BASE}})}
+
+
+
+Peripheral Quad\+SPI base pointer. 
+
+\mbox{\Hypertarget{group___quad_s_p_i___peripheral___access___layer_gaf01856dd63fd013538e6dccc0edf2eee}\label{group___quad_s_p_i___peripheral___access___layer_gaf01856dd63fd013538e6dccc0edf2eee}} 
+\index{QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}!QuadSPI\_BASE@{QuadSPI\_BASE}}
+\index{QuadSPI\_BASE@{QuadSPI\_BASE}!QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{QuadSPI\_BASE}{QuadSPI\_BASE}}
+{\footnotesize\ttfamily \#define Quad\+SPI\+\_\+\+BASE~(0x40076000u)}
+
+
+
+Peripheral Quad\+SPI base address. 
+
+\mbox{\Hypertarget{group___quad_s_p_i___peripheral___access___layer_ga9eb8fa32611589c0785614784ba7aa66}\label{group___quad_s_p_i___peripheral___access___layer_ga9eb8fa32611589c0785614784ba7aa66}} 
+\index{QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}!QuadSPI\_BASE\_ADDRS@{QuadSPI\_BASE\_ADDRS}}
+\index{QuadSPI\_BASE\_ADDRS@{QuadSPI\_BASE\_ADDRS}!QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{QuadSPI\_BASE\_ADDRS}{QuadSPI\_BASE\_ADDRS}}
+{\footnotesize\ttfamily \#define Quad\+SPI\+\_\+\+BASE\+\_\+\+ADDRS~\{ \mbox{\hyperlink{group___quad_s_p_i___peripheral___access___layer_gaf01856dd63fd013538e6dccc0edf2eee}{Quad\+SPI\+\_\+\+BASE}} \}}
+
+
+
+Array initializer of Quad\+SPI peripheral base addresses. 
+
+\mbox{\Hypertarget{group___quad_s_p_i___peripheral___access___layer_ga2e68f652eea88172e0c4c9d60079620e}\label{group___quad_s_p_i___peripheral___access___layer_ga2e68f652eea88172e0c4c9d60079620e}} 
+\index{QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}!QuadSPI\_BASE\_PTRS@{QuadSPI\_BASE\_PTRS}}
+\index{QuadSPI\_BASE\_PTRS@{QuadSPI\_BASE\_PTRS}!QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{QuadSPI\_BASE\_PTRS}{QuadSPI\_BASE\_PTRS}}
+{\footnotesize\ttfamily \#define Quad\+SPI\+\_\+\+BASE\+\_\+\+PTRS~\{ \mbox{\hyperlink{group___quad_s_p_i___peripheral___access___layer_gaeae0806c4321d14dd09f3f5a9a60cd31}{Quad\+SPI}} \}}
+
+
+
+Array initializer of Quad\+SPI peripheral base pointers. 
+
+\mbox{\Hypertarget{group___quad_s_p_i___peripheral___access___layer_gaeb34c052a479d3328ccd47e09a29878c}\label{group___quad_s_p_i___peripheral___access___layer_gaeb34c052a479d3328ccd47e09a29878c}} 
+\index{QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}!QuadSPI\_INSTANCE\_COUNT@{QuadSPI\_INSTANCE\_COUNT}}
+\index{QuadSPI\_INSTANCE\_COUNT@{QuadSPI\_INSTANCE\_COUNT}!QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{QuadSPI\_INSTANCE\_COUNT}{QuadSPI\_INSTANCE\_COUNT}}
+{\footnotesize\ttfamily \#define Quad\+SPI\+\_\+\+INSTANCE\+\_\+\+COUNT~(1u)}
+
+
+
+Number of instances of the Quad\+SPI module. 
+
+\mbox{\Hypertarget{group___quad_s_p_i___peripheral___access___layer_ga5f87f0d17a460178b96122782fef23d0}\label{group___quad_s_p_i___peripheral___access___layer_ga5f87f0d17a460178b96122782fef23d0}} 
+\index{QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}!QuadSPI\_IRQS@{QuadSPI\_IRQS}}
+\index{QuadSPI\_IRQS@{QuadSPI\_IRQS}!QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{QuadSPI\_IRQS}{QuadSPI\_IRQS}}
+{\footnotesize\ttfamily \#define Quad\+SPI\+\_\+\+IRQS~\{ \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8ac65ccf7b7c60881ca7fd3f8ff4cd27b6}{QSPI\+\_\+\+IRQn}} \}}
+
+
+
+Interrupt vectors for the Quad\+SPI peripheral type. 
+
+\mbox{\Hypertarget{group___quad_s_p_i___peripheral___access___layer_gab255a032d5b5ca7c78c1a7fa8d328094}\label{group___quad_s_p_i___peripheral___access___layer_gab255a032d5b5ca7c78c1a7fa8d328094}} 
+\index{QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}!QuadSPI\_IRQS\_ARR\_COUNT@{QuadSPI\_IRQS\_ARR\_COUNT}}
+\index{QuadSPI\_IRQS\_ARR\_COUNT@{QuadSPI\_IRQS\_ARR\_COUNT}!QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{QuadSPI\_IRQS\_ARR\_COUNT}{QuadSPI\_IRQS\_ARR\_COUNT}}
+{\footnotesize\ttfamily \#define Quad\+SPI\+\_\+\+IRQS\+\_\+\+ARR\+\_\+\+COUNT~(1u)}
+
+
+
+Number of interrupt vector arrays for the Quad\+SPI module. 
+
+\mbox{\Hypertarget{group___quad_s_p_i___peripheral___access___layer_ga83446f5d80fb73c6dcae01616e8525d4}\label{group___quad_s_p_i___peripheral___access___layer_ga83446f5d80fb73c6dcae01616e8525d4}} 
+\index{QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}!QuadSPI\_IRQS\_CH\_COUNT@{QuadSPI\_IRQS\_CH\_COUNT}}
+\index{QuadSPI\_IRQS\_CH\_COUNT@{QuadSPI\_IRQS\_CH\_COUNT}!QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{QuadSPI\_IRQS\_CH\_COUNT}{QuadSPI\_IRQS\_CH\_COUNT}}
+{\footnotesize\ttfamily \#define Quad\+SPI\+\_\+\+IRQS\+\_\+\+CH\+\_\+\+COUNT~(1u)}
+
+
+
+Number of interrupt channels for the Quad\+SPI module. 
+
+\mbox{\Hypertarget{group___quad_s_p_i___peripheral___access___layer_ga587da3c2e407f7c87dd247d003e9518b}\label{group___quad_s_p_i___peripheral___access___layer_ga587da3c2e407f7c87dd247d003e9518b}} 
+\index{QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}!QuadSPI\_LUT\_COUNT@{QuadSPI\_LUT\_COUNT}}
+\index{QuadSPI\_LUT\_COUNT@{QuadSPI\_LUT\_COUNT}!QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{QuadSPI\_LUT\_COUNT}{QuadSPI\_LUT\_COUNT}}
+{\footnotesize\ttfamily \#define Quad\+SPI\+\_\+\+LUT\+\_\+\+COUNT~64u}
+
+\mbox{\Hypertarget{group___quad_s_p_i___peripheral___access___layer_gacfa13bb787d1e165f2652c270ecda646}\label{group___quad_s_p_i___peripheral___access___layer_gacfa13bb787d1e165f2652c270ecda646}} 
+\index{QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}!QuadSPI\_RBDR\_COUNT@{QuadSPI\_RBDR\_COUNT}}
+\index{QuadSPI\_RBDR\_COUNT@{QuadSPI\_RBDR\_COUNT}!QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{QuadSPI\_RBDR\_COUNT}{QuadSPI\_RBDR\_COUNT}}
+{\footnotesize\ttfamily \#define Quad\+SPI\+\_\+\+RBDR\+\_\+\+COUNT~32u}
+
+
+
+Quad\+SPI -\/ Size of Registers Arrays. 
+
+
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{group___quad_s_p_i___peripheral___access___layer_gacbe0298dfd10c57c7ada2510c267da73}\label{group___quad_s_p_i___peripheral___access___layer_gacbe0298dfd10c57c7ada2510c267da73}} 
+\index{QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}!QuadSPI\_MemMapPtr@{QuadSPI\_MemMapPtr}}
+\index{QuadSPI\_MemMapPtr@{QuadSPI\_MemMapPtr}!QuadSPI Peripheral Access Layer@{QuadSPI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{QuadSPI\_MemMapPtr}{QuadSPI\_MemMapPtr}}
+{\footnotesize\ttfamily typedef  struct \mbox{\hyperlink{struct_quad_s_p_i___type}{Quad\+SPI\+\_\+\+Type}} $\ast$ \mbox{\hyperlink{group___quad_s_p_i___peripheral___access___layer_gacbe0298dfd10c57c7ada2510c267da73}{Quad\+SPI\+\_\+\+Mem\+Map\+Ptr}}}
+

@@ -1,0 +1,166 @@
+\hypertarget{struct_l_p_i_t___type}{}\doxysection{LPIT\+\_\+\+Type Struct Reference}
+\label{struct_l_p_i_t___type}\index{LPIT\_Type@{LPIT\_Type}}
+
+
+LPIT -\/ Register Layout Typedef.  
+
+
+
+
+{\ttfamily \#include $<$S32\+K148.\+h$>$}
+
+\doxysubsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{_s32_k148_8h_af63697ed9952cc71e1225efe205f6cd3}{\+\_\+\+\_\+I}} uint32\+\_\+t \mbox{\hyperlink{struct_l_p_i_t___type_ab20ff3f0387cbcc2652477ed5d2702df}{VERID}}
+\begin{DoxyCompactList}\small\item\em Version ID Register, offset\+: 0x0. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{_s32_k148_8h_af63697ed9952cc71e1225efe205f6cd3}{\+\_\+\+\_\+I}} uint32\+\_\+t \mbox{\hyperlink{struct_l_p_i_t___type_a96563b10e1e91f05203f88047408044a}{PARAM}}
+\begin{DoxyCompactList}\small\item\em Parameter Register, offset\+: 0x4. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t \mbox{\hyperlink{struct_l_p_i_t___type_a27af4e9f888f0b7b1e8da7e002d98798}{MCR}}
+\begin{DoxyCompactList}\small\item\em Module Control Register, offset\+: 0x8. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t \mbox{\hyperlink{struct_l_p_i_t___type_acdd4c1b5466be103fb2bb2a225b1d3a9}{MSR}}
+\begin{DoxyCompactList}\small\item\em Module Status Register, offset\+: 0xC. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t \mbox{\hyperlink{struct_l_p_i_t___type_ab8c726eadd1fbefee006fc4d595f26bc}{MIER}}
+\begin{DoxyCompactList}\small\item\em Module Interrupt Enable Register, offset\+: 0x10. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t \mbox{\hyperlink{struct_l_p_i_t___type_aa4407fba8ebd0a4d19a0acfcbfc69f63}{SETTEN}}
+\begin{DoxyCompactList}\small\item\em Set Timer Enable Register, offset\+: 0x14. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t \mbox{\hyperlink{struct_l_p_i_t___type_af96a404e43a03d7fb52376960783eacd}{CLRTEN}}
+\begin{DoxyCompactList}\small\item\em Clear Timer Enable Register, offset\+: 0x18. \end{DoxyCompactList}\item 
+uint8\+\_\+t \mbox{\hyperlink{struct_l_p_i_t___type_a71277aaa40be4473ac2521981f273bd3}{RESERVED\+\_\+0}} \mbox{[}4\mbox{]}
+\item 
+\begin{tabbing}
+xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=\kill
+struct \{\\
+\>\mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\_\_IO}} uint32\_t \mbox{\hyperlink{struct_l_p_i_t___type_acdfacdcfd5ff57d92b1769e3540a1862}{TVAL}}\\
+\>\>{\em Timer Value Register, array offset: 0x20, array step: 0x10. }\\
+\>\mbox{\hyperlink{_s32_k148_8h_af63697ed9952cc71e1225efe205f6cd3}{\_\_I}} uint32\_t \mbox{\hyperlink{struct_l_p_i_t___type_ad4fcb6f0bd4cbbc890593eeb21152a92}{CVAL}}\\
+\>\>{\em Current Timer Value, array offset: 0x24, array step: 0x10. }\\
+\>\mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\_\_IO}} uint32\_t \mbox{\hyperlink{struct_l_p_i_t___type_ad205d7250cea8af8b177be3e861193d8}{TCTRL}}\\
+\>\>{\em Timer Control Register, array offset: 0x28, array step: 0x10. }\\
+\>uint8\_t \mbox{\hyperlink{struct_l_p_i_t___type_a71277aaa40be4473ac2521981f273bd3}{RESERVED\_0}} \mbox{[}4\mbox{]}\\
+\} \mbox{\hyperlink{struct_l_p_i_t___type_a2a29bea30dcc86bbe96b8943e8599bb9}{TMR}} \mbox{[}\mbox{\hyperlink{group___l_p_i_t___peripheral___access___layer_ga64f036c76bcc32fa8ea42d76f2ee1b9b}{LPIT\_TMR\_COUNT}}\mbox{]}\\
+
+\end{tabbing}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+LPIT -\/ Register Layout Typedef. 
+
+\doxysubsection{Field Documentation}
+\mbox{\Hypertarget{struct_l_p_i_t___type_af96a404e43a03d7fb52376960783eacd}\label{struct_l_p_i_t___type_af96a404e43a03d7fb52376960783eacd}} 
+\index{LPIT\_Type@{LPIT\_Type}!CLRTEN@{CLRTEN}}
+\index{CLRTEN@{CLRTEN}!LPIT\_Type@{LPIT\_Type}}
+\doxysubsubsection{\texorpdfstring{CLRTEN}{CLRTEN}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t CLRTEN}
+
+
+
+Clear Timer Enable Register, offset\+: 0x18. 
+
+\mbox{\Hypertarget{struct_l_p_i_t___type_ad4fcb6f0bd4cbbc890593eeb21152a92}\label{struct_l_p_i_t___type_ad4fcb6f0bd4cbbc890593eeb21152a92}} 
+\index{LPIT\_Type@{LPIT\_Type}!CVAL@{CVAL}}
+\index{CVAL@{CVAL}!LPIT\_Type@{LPIT\_Type}}
+\doxysubsubsection{\texorpdfstring{CVAL}{CVAL}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_s32_k148_8h_af63697ed9952cc71e1225efe205f6cd3}{\+\_\+\+\_\+I}} uint32\+\_\+t CVAL}
+
+
+
+Current Timer Value, array offset\+: 0x24, array step\+: 0x10. 
+
+\mbox{\Hypertarget{struct_l_p_i_t___type_a27af4e9f888f0b7b1e8da7e002d98798}\label{struct_l_p_i_t___type_a27af4e9f888f0b7b1e8da7e002d98798}} 
+\index{LPIT\_Type@{LPIT\_Type}!MCR@{MCR}}
+\index{MCR@{MCR}!LPIT\_Type@{LPIT\_Type}}
+\doxysubsubsection{\texorpdfstring{MCR}{MCR}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t MCR}
+
+
+
+Module Control Register, offset\+: 0x8. 
+
+\mbox{\Hypertarget{struct_l_p_i_t___type_ab8c726eadd1fbefee006fc4d595f26bc}\label{struct_l_p_i_t___type_ab8c726eadd1fbefee006fc4d595f26bc}} 
+\index{LPIT\_Type@{LPIT\_Type}!MIER@{MIER}}
+\index{MIER@{MIER}!LPIT\_Type@{LPIT\_Type}}
+\doxysubsubsection{\texorpdfstring{MIER}{MIER}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t MIER}
+
+
+
+Module Interrupt Enable Register, offset\+: 0x10. 
+
+\mbox{\Hypertarget{struct_l_p_i_t___type_acdd4c1b5466be103fb2bb2a225b1d3a9}\label{struct_l_p_i_t___type_acdd4c1b5466be103fb2bb2a225b1d3a9}} 
+\index{LPIT\_Type@{LPIT\_Type}!MSR@{MSR}}
+\index{MSR@{MSR}!LPIT\_Type@{LPIT\_Type}}
+\doxysubsubsection{\texorpdfstring{MSR}{MSR}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t MSR}
+
+
+
+Module Status Register, offset\+: 0xC. 
+
+\mbox{\Hypertarget{struct_l_p_i_t___type_a96563b10e1e91f05203f88047408044a}\label{struct_l_p_i_t___type_a96563b10e1e91f05203f88047408044a}} 
+\index{LPIT\_Type@{LPIT\_Type}!PARAM@{PARAM}}
+\index{PARAM@{PARAM}!LPIT\_Type@{LPIT\_Type}}
+\doxysubsubsection{\texorpdfstring{PARAM}{PARAM}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_s32_k148_8h_af63697ed9952cc71e1225efe205f6cd3}{\+\_\+\+\_\+I}} uint32\+\_\+t PARAM}
+
+
+
+Parameter Register, offset\+: 0x4. 
+
+\mbox{\Hypertarget{struct_l_p_i_t___type_a71277aaa40be4473ac2521981f273bd3}\label{struct_l_p_i_t___type_a71277aaa40be4473ac2521981f273bd3}} 
+\index{LPIT\_Type@{LPIT\_Type}!RESERVED\_0@{RESERVED\_0}}
+\index{RESERVED\_0@{RESERVED\_0}!LPIT\_Type@{LPIT\_Type}}
+\doxysubsubsection{\texorpdfstring{RESERVED\_0}{RESERVED\_0}}
+{\footnotesize\ttfamily uint8\+\_\+t RESERVED\+\_\+0\mbox{[}4\mbox{]}}
+
+\mbox{\Hypertarget{struct_l_p_i_t___type_aa4407fba8ebd0a4d19a0acfcbfc69f63}\label{struct_l_p_i_t___type_aa4407fba8ebd0a4d19a0acfcbfc69f63}} 
+\index{LPIT\_Type@{LPIT\_Type}!SETTEN@{SETTEN}}
+\index{SETTEN@{SETTEN}!LPIT\_Type@{LPIT\_Type}}
+\doxysubsubsection{\texorpdfstring{SETTEN}{SETTEN}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t SETTEN}
+
+
+
+Set Timer Enable Register, offset\+: 0x14. 
+
+\mbox{\Hypertarget{struct_l_p_i_t___type_ad205d7250cea8af8b177be3e861193d8}\label{struct_l_p_i_t___type_ad205d7250cea8af8b177be3e861193d8}} 
+\index{LPIT\_Type@{LPIT\_Type}!TCTRL@{TCTRL}}
+\index{TCTRL@{TCTRL}!LPIT\_Type@{LPIT\_Type}}
+\doxysubsubsection{\texorpdfstring{TCTRL}{TCTRL}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t TCTRL}
+
+
+
+Timer Control Register, array offset\+: 0x28, array step\+: 0x10. 
+
+\mbox{\Hypertarget{struct_l_p_i_t___type_a2a29bea30dcc86bbe96b8943e8599bb9}\label{struct_l_p_i_t___type_a2a29bea30dcc86bbe96b8943e8599bb9}} 
+\index{LPIT\_Type@{LPIT\_Type}!TMR@{TMR}}
+\index{TMR@{TMR}!LPIT\_Type@{LPIT\_Type}}
+\doxysubsubsection{\texorpdfstring{}{}}
+{\footnotesize\ttfamily struct \{ ... \}  TMR\mbox{[}\mbox{\hyperlink{group___l_p_i_t___peripheral___access___layer_ga64f036c76bcc32fa8ea42d76f2ee1b9b}{LPIT\+\_\+\+TMR\+\_\+\+COUNT}}\mbox{]}}
+
+\mbox{\Hypertarget{struct_l_p_i_t___type_acdfacdcfd5ff57d92b1769e3540a1862}\label{struct_l_p_i_t___type_acdfacdcfd5ff57d92b1769e3540a1862}} 
+\index{LPIT\_Type@{LPIT\_Type}!TVAL@{TVAL}}
+\index{TVAL@{TVAL}!LPIT\_Type@{LPIT\_Type}}
+\doxysubsubsection{\texorpdfstring{TVAL}{TVAL}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_s32_k148_8h_aec43007d9998a0a0e01faede4133d6be}{\+\_\+\+\_\+\+IO}} uint32\+\_\+t TVAL}
+
+
+
+Timer Value Register, array offset\+: 0x20, array step\+: 0x10. 
+
+\mbox{\Hypertarget{struct_l_p_i_t___type_ab20ff3f0387cbcc2652477ed5d2702df}\label{struct_l_p_i_t___type_ab20ff3f0387cbcc2652477ed5d2702df}} 
+\index{LPIT\_Type@{LPIT\_Type}!VERID@{VERID}}
+\index{VERID@{VERID}!LPIT\_Type@{LPIT\_Type}}
+\doxysubsubsection{\texorpdfstring{VERID}{VERID}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_s32_k148_8h_af63697ed9952cc71e1225efe205f6cd3}{\+\_\+\+\_\+I}} uint32\+\_\+t VERID}
+
+
+
+Version ID Register, offset\+: 0x0. 
+
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/\mbox{\hyperlink{_s32_k148_8h}{S32\+K148.\+h}}\end{DoxyCompactItemize}

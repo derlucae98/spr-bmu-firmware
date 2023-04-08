@@ -13,11 +13,11 @@ static void handle_diag_request(can_msg_t *msg);
 static void send_diag_response(can_msg_t *msg);
 
 typedef struct {
-    uint32_t UID[MAXSTACKS];
-    uint16_t cellVoltage[MAXSTACKS][MAXCELLS];
-    uint8_t cellVoltageStatus[MAXSTACKS][MAXCELLS+1];
-    uint16_t temperature[MAXSTACKS][MAXTEMPSENS];
-    uint8_t temperatureStatus[MAXSTACKS][MAXTEMPSENS];
+    uint32_t UID[MAX_NUM_OF_STACKS];
+    uint16_t cellVoltage[MAX_NUM_OF_STACKS][MAX_NUM_OF_CELLS];
+    uint8_t cellVoltageStatus[MAX_NUM_OF_STACKS][MAX_NUM_OF_CELLS+1];
+    uint16_t temperature[MAX_NUM_OF_STACKS][MAX_NUM_OF_TEMPSENS];
+    uint8_t temperatureStatus[MAX_NUM_OF_STACKS][MAX_NUM_OF_TEMPSENS];
 
     //BMS_Info_1
     uint16_t minCellVolt;
@@ -71,7 +71,7 @@ static void can_send_task(void *p) {
     can_msg_t msg;
     can_data_t canData;
     memset(&canData, 0, sizeof(can_data_t));
-    uint8_t balance[MAXSTACKS][MAXCELLS];
+    uint8_t balance[MAX_NUM_OF_STACKS][MAX_NUM_OF_CELLS];
     memset(balance, 0, sizeof(balance));
 
     while (1) {
@@ -294,7 +294,7 @@ static void can_send_task(void *p) {
         msg.DLC = 5;
         can_send(CAN0, &msg);
 
-        if (counter < MAXSTACKS-1) {
+        if (counter < MAX_NUM_OF_STACKS-1) {
             counter++;
         } else {
             counter = 0;
@@ -359,7 +359,7 @@ static void handle_diag_request(can_msg_t *msg) {
         }
     case 0x03: //Get balancing
         {
-            uint8_t balance[MAXSTACKS][MAXCELLS];
+            uint8_t balance[MAX_NUM_OF_STACKS][MAX_NUM_OF_CELLS];
             get_balancing_status(balance);
             resp.DLC = 5;
             resp.ID = 0xD;

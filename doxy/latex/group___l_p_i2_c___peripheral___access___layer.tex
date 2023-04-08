@@ -1,0 +1,182 @@
+\hypertarget{group___l_p_i2_c___peripheral___access___layer}{}\doxysection{LPI2C Peripheral Access Layer}
+\label{group___l_p_i2_c___peripheral___access___layer}\index{LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}}
+Collaboration diagram for LPI2C Peripheral Access Layer\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{group___l_p_i2_c___peripheral___access___layer}
+\end{center}
+\end{figure}
+\doxysubsection*{Modules}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{group___l_p_i2_c___register___masks}{LPI2\+C Register Masks}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_l_p_i2_c___type}{LPI2\+C\+\_\+\+Type}}
+\begin{DoxyCompactList}\small\item\em LPI2C -\/ Size of Registers Arrays. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_gabc391c8d75d4160407ee4197c09a52bf}{LPI2\+C\+\_\+\+INSTANCE\+\_\+\+COUNT}}~(2u)
+\begin{DoxyCompactList}\small\item\em Number of instances of the LPI2C module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_gabdd14194513906fe41137b0797d109ba}{LPI2\+C0\+\_\+\+BASE}}~(0x40066000u)
+\begin{DoxyCompactList}\small\item\em Peripheral LPI2\+C0 base address. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_ga7701382ade504d7eddda8c1231279cec}{LPI2\+C0}}~((\mbox{\hyperlink{struct_l_p_i2_c___type}{LPI2\+C\+\_\+\+Type}} $\ast$)\mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_gabdd14194513906fe41137b0797d109ba}{LPI2\+C0\+\_\+\+BASE}})
+\begin{DoxyCompactList}\small\item\em Peripheral LPI2\+C0 base pointer. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_gaa59fe0e839ae800bc9ce95903b184fb0}{LPI2\+C1\+\_\+\+BASE}}~(0x40067000u)
+\begin{DoxyCompactList}\small\item\em Peripheral LPI2\+C1 base address. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_gae9ef15442986812d986ae9cc6b4cdf88}{LPI2\+C1}}~((\mbox{\hyperlink{struct_l_p_i2_c___type}{LPI2\+C\+\_\+\+Type}} $\ast$)\mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_gaa59fe0e839ae800bc9ce95903b184fb0}{LPI2\+C1\+\_\+\+BASE}})
+\begin{DoxyCompactList}\small\item\em Peripheral LPI2\+C1 base pointer. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_ga5e9ac84e0af904cbab68bcc02674da6f}{LPI2\+C\+\_\+\+BASE\+\_\+\+ADDRS}}~\{ \mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_gabdd14194513906fe41137b0797d109ba}{LPI2\+C0\+\_\+\+BASE}}, \mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_gaa59fe0e839ae800bc9ce95903b184fb0}{LPI2\+C1\+\_\+\+BASE}} \}
+\begin{DoxyCompactList}\small\item\em Array initializer of LPI2C peripheral base addresses. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_ga9389abaa0248cd70e7bd4486a0198f4f}{LPI2\+C\+\_\+\+BASE\+\_\+\+PTRS}}~\{ \mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_ga7701382ade504d7eddda8c1231279cec}{LPI2\+C0}}, \mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_gae9ef15442986812d986ae9cc6b4cdf88}{LPI2\+C1}} \}
+\begin{DoxyCompactList}\small\item\em Array initializer of LPI2C peripheral base pointers. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_ga499e1757fe30f5cc3a3d7ffa99068351}{LPI2\+C\+\_\+\+IRQS\+\_\+\+ARR\+\_\+\+COUNT}}~(2u)
+\begin{DoxyCompactList}\small\item\em Number of interrupt vector arrays for the LPI2C module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_gabec6c77b1767ad6ae280879085ac9d52}{LPI2\+C\+\_\+\+MASTER\+\_\+\+IRQS\+\_\+\+CH\+\_\+\+COUNT}}~(1u)
+\begin{DoxyCompactList}\small\item\em Number of interrupt channels for the MASTER type of LPI2C module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_ga90595059fe846995b8157b2a0d465f85}{LPI2\+C\+\_\+\+SLAVE\+\_\+\+IRQS\+\_\+\+CH\+\_\+\+COUNT}}~(1u)
+\begin{DoxyCompactList}\small\item\em Number of interrupt channels for the SLAVE type of LPI2C module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_ga9bb76232a6e6b0adb2d45cb099444d1d}{LPI2\+C\+\_\+\+MASTER\+\_\+\+IRQS}}~\{ \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8afb5a57206d153fc2508abfedb2aec17d}{LPI2\+C0\+\_\+\+Master\+\_\+\+IRQn}}, \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8a04b285c34361a7655b96250d78d1d094}{LPI2\+C1\+\_\+\+Master\+\_\+\+IRQn}} \}
+\begin{DoxyCompactList}\small\item\em Interrupt vectors for the LPI2C peripheral type. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_gabc6627abd2301a883ea59b343b2c77ac}{LPI2\+C\+\_\+\+SLAVE\+\_\+\+IRQS}}~\{ \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8a6fd3054a4bfa086fa044b625e7365fcf}{LPI2\+C0\+\_\+\+Slave\+\_\+\+IRQn}}, \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8ab27cbe301c60114c3cbd8991c60b265c}{LPI2\+C1\+\_\+\+Slave\+\_\+\+IRQn}} \}
+\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \mbox{\hyperlink{struct_l_p_i2_c___type}{LPI2\+C\+\_\+\+Type}} $\ast$ \mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_ga3cacc94cce26bfc1d686e0105da1afa2}{LPI2\+C\+\_\+\+Mem\+Map\+Ptr}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{group___l_p_i2_c___peripheral___access___layer_ga7701382ade504d7eddda8c1231279cec}\label{group___l_p_i2_c___peripheral___access___layer_ga7701382ade504d7eddda8c1231279cec}} 
+\index{LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}!LPI2C0@{LPI2C0}}
+\index{LPI2C0@{LPI2C0}!LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{LPI2C0}{LPI2C0}}
+{\footnotesize\ttfamily \#define LPI2\+C0~((\mbox{\hyperlink{struct_l_p_i2_c___type}{LPI2\+C\+\_\+\+Type}} $\ast$)\mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_gabdd14194513906fe41137b0797d109ba}{LPI2\+C0\+\_\+\+BASE}})}
+
+
+
+Peripheral LPI2\+C0 base pointer. 
+
+\mbox{\Hypertarget{group___l_p_i2_c___peripheral___access___layer_gabdd14194513906fe41137b0797d109ba}\label{group___l_p_i2_c___peripheral___access___layer_gabdd14194513906fe41137b0797d109ba}} 
+\index{LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}!LPI2C0\_BASE@{LPI2C0\_BASE}}
+\index{LPI2C0\_BASE@{LPI2C0\_BASE}!LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{LPI2C0\_BASE}{LPI2C0\_BASE}}
+{\footnotesize\ttfamily \#define LPI2\+C0\+\_\+\+BASE~(0x40066000u)}
+
+
+
+Peripheral LPI2\+C0 base address. 
+
+\mbox{\Hypertarget{group___l_p_i2_c___peripheral___access___layer_gae9ef15442986812d986ae9cc6b4cdf88}\label{group___l_p_i2_c___peripheral___access___layer_gae9ef15442986812d986ae9cc6b4cdf88}} 
+\index{LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}!LPI2C1@{LPI2C1}}
+\index{LPI2C1@{LPI2C1}!LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{LPI2C1}{LPI2C1}}
+{\footnotesize\ttfamily \#define LPI2\+C1~((\mbox{\hyperlink{struct_l_p_i2_c___type}{LPI2\+C\+\_\+\+Type}} $\ast$)\mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_gaa59fe0e839ae800bc9ce95903b184fb0}{LPI2\+C1\+\_\+\+BASE}})}
+
+
+
+Peripheral LPI2\+C1 base pointer. 
+
+\mbox{\Hypertarget{group___l_p_i2_c___peripheral___access___layer_gaa59fe0e839ae800bc9ce95903b184fb0}\label{group___l_p_i2_c___peripheral___access___layer_gaa59fe0e839ae800bc9ce95903b184fb0}} 
+\index{LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}!LPI2C1\_BASE@{LPI2C1\_BASE}}
+\index{LPI2C1\_BASE@{LPI2C1\_BASE}!LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{LPI2C1\_BASE}{LPI2C1\_BASE}}
+{\footnotesize\ttfamily \#define LPI2\+C1\+\_\+\+BASE~(0x40067000u)}
+
+
+
+Peripheral LPI2\+C1 base address. 
+
+\mbox{\Hypertarget{group___l_p_i2_c___peripheral___access___layer_ga5e9ac84e0af904cbab68bcc02674da6f}\label{group___l_p_i2_c___peripheral___access___layer_ga5e9ac84e0af904cbab68bcc02674da6f}} 
+\index{LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}!LPI2C\_BASE\_ADDRS@{LPI2C\_BASE\_ADDRS}}
+\index{LPI2C\_BASE\_ADDRS@{LPI2C\_BASE\_ADDRS}!LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{LPI2C\_BASE\_ADDRS}{LPI2C\_BASE\_ADDRS}}
+{\footnotesize\ttfamily \#define LPI2\+C\+\_\+\+BASE\+\_\+\+ADDRS~\{ \mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_gabdd14194513906fe41137b0797d109ba}{LPI2\+C0\+\_\+\+BASE}}, \mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_gaa59fe0e839ae800bc9ce95903b184fb0}{LPI2\+C1\+\_\+\+BASE}} \}}
+
+
+
+Array initializer of LPI2C peripheral base addresses. 
+
+\mbox{\Hypertarget{group___l_p_i2_c___peripheral___access___layer_ga9389abaa0248cd70e7bd4486a0198f4f}\label{group___l_p_i2_c___peripheral___access___layer_ga9389abaa0248cd70e7bd4486a0198f4f}} 
+\index{LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}!LPI2C\_BASE\_PTRS@{LPI2C\_BASE\_PTRS}}
+\index{LPI2C\_BASE\_PTRS@{LPI2C\_BASE\_PTRS}!LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{LPI2C\_BASE\_PTRS}{LPI2C\_BASE\_PTRS}}
+{\footnotesize\ttfamily \#define LPI2\+C\+\_\+\+BASE\+\_\+\+PTRS~\{ \mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_ga7701382ade504d7eddda8c1231279cec}{LPI2\+C0}}, \mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_gae9ef15442986812d986ae9cc6b4cdf88}{LPI2\+C1}} \}}
+
+
+
+Array initializer of LPI2C peripheral base pointers. 
+
+\mbox{\Hypertarget{group___l_p_i2_c___peripheral___access___layer_gabc391c8d75d4160407ee4197c09a52bf}\label{group___l_p_i2_c___peripheral___access___layer_gabc391c8d75d4160407ee4197c09a52bf}} 
+\index{LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}!LPI2C\_INSTANCE\_COUNT@{LPI2C\_INSTANCE\_COUNT}}
+\index{LPI2C\_INSTANCE\_COUNT@{LPI2C\_INSTANCE\_COUNT}!LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{LPI2C\_INSTANCE\_COUNT}{LPI2C\_INSTANCE\_COUNT}}
+{\footnotesize\ttfamily \#define LPI2\+C\+\_\+\+INSTANCE\+\_\+\+COUNT~(2u)}
+
+
+
+Number of instances of the LPI2C module. 
+
+\mbox{\Hypertarget{group___l_p_i2_c___peripheral___access___layer_ga499e1757fe30f5cc3a3d7ffa99068351}\label{group___l_p_i2_c___peripheral___access___layer_ga499e1757fe30f5cc3a3d7ffa99068351}} 
+\index{LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}!LPI2C\_IRQS\_ARR\_COUNT@{LPI2C\_IRQS\_ARR\_COUNT}}
+\index{LPI2C\_IRQS\_ARR\_COUNT@{LPI2C\_IRQS\_ARR\_COUNT}!LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{LPI2C\_IRQS\_ARR\_COUNT}{LPI2C\_IRQS\_ARR\_COUNT}}
+{\footnotesize\ttfamily \#define LPI2\+C\+\_\+\+IRQS\+\_\+\+ARR\+\_\+\+COUNT~(2u)}
+
+
+
+Number of interrupt vector arrays for the LPI2C module. 
+
+\mbox{\Hypertarget{group___l_p_i2_c___peripheral___access___layer_ga9bb76232a6e6b0adb2d45cb099444d1d}\label{group___l_p_i2_c___peripheral___access___layer_ga9bb76232a6e6b0adb2d45cb099444d1d}} 
+\index{LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}!LPI2C\_MASTER\_IRQS@{LPI2C\_MASTER\_IRQS}}
+\index{LPI2C\_MASTER\_IRQS@{LPI2C\_MASTER\_IRQS}!LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{LPI2C\_MASTER\_IRQS}{LPI2C\_MASTER\_IRQS}}
+{\footnotesize\ttfamily \#define LPI2\+C\+\_\+\+MASTER\+\_\+\+IRQS~\{ \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8afb5a57206d153fc2508abfedb2aec17d}{LPI2\+C0\+\_\+\+Master\+\_\+\+IRQn}}, \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8a04b285c34361a7655b96250d78d1d094}{LPI2\+C1\+\_\+\+Master\+\_\+\+IRQn}} \}}
+
+
+
+Interrupt vectors for the LPI2C peripheral type. 
+
+\mbox{\Hypertarget{group___l_p_i2_c___peripheral___access___layer_gabec6c77b1767ad6ae280879085ac9d52}\label{group___l_p_i2_c___peripheral___access___layer_gabec6c77b1767ad6ae280879085ac9d52}} 
+\index{LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}!LPI2C\_MASTER\_IRQS\_CH\_COUNT@{LPI2C\_MASTER\_IRQS\_CH\_COUNT}}
+\index{LPI2C\_MASTER\_IRQS\_CH\_COUNT@{LPI2C\_MASTER\_IRQS\_CH\_COUNT}!LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{LPI2C\_MASTER\_IRQS\_CH\_COUNT}{LPI2C\_MASTER\_IRQS\_CH\_COUNT}}
+{\footnotesize\ttfamily \#define LPI2\+C\+\_\+\+MASTER\+\_\+\+IRQS\+\_\+\+CH\+\_\+\+COUNT~(1u)}
+
+
+
+Number of interrupt channels for the MASTER type of LPI2C module. 
+
+\mbox{\Hypertarget{group___l_p_i2_c___peripheral___access___layer_gabc6627abd2301a883ea59b343b2c77ac}\label{group___l_p_i2_c___peripheral___access___layer_gabc6627abd2301a883ea59b343b2c77ac}} 
+\index{LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}!LPI2C\_SLAVE\_IRQS@{LPI2C\_SLAVE\_IRQS}}
+\index{LPI2C\_SLAVE\_IRQS@{LPI2C\_SLAVE\_IRQS}!LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{LPI2C\_SLAVE\_IRQS}{LPI2C\_SLAVE\_IRQS}}
+{\footnotesize\ttfamily \#define LPI2\+C\+\_\+\+SLAVE\+\_\+\+IRQS~\{ \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8a6fd3054a4bfa086fa044b625e7365fcf}{LPI2\+C0\+\_\+\+Slave\+\_\+\+IRQn}}, \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8ab27cbe301c60114c3cbd8991c60b265c}{LPI2\+C1\+\_\+\+Slave\+\_\+\+IRQn}} \}}
+
+\mbox{\Hypertarget{group___l_p_i2_c___peripheral___access___layer_ga90595059fe846995b8157b2a0d465f85}\label{group___l_p_i2_c___peripheral___access___layer_ga90595059fe846995b8157b2a0d465f85}} 
+\index{LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}!LPI2C\_SLAVE\_IRQS\_CH\_COUNT@{LPI2C\_SLAVE\_IRQS\_CH\_COUNT}}
+\index{LPI2C\_SLAVE\_IRQS\_CH\_COUNT@{LPI2C\_SLAVE\_IRQS\_CH\_COUNT}!LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{LPI2C\_SLAVE\_IRQS\_CH\_COUNT}{LPI2C\_SLAVE\_IRQS\_CH\_COUNT}}
+{\footnotesize\ttfamily \#define LPI2\+C\+\_\+\+SLAVE\+\_\+\+IRQS\+\_\+\+CH\+\_\+\+COUNT~(1u)}
+
+
+
+Number of interrupt channels for the SLAVE type of LPI2C module. 
+
+
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{group___l_p_i2_c___peripheral___access___layer_ga3cacc94cce26bfc1d686e0105da1afa2}\label{group___l_p_i2_c___peripheral___access___layer_ga3cacc94cce26bfc1d686e0105da1afa2}} 
+\index{LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}!LPI2C\_MemMapPtr@{LPI2C\_MemMapPtr}}
+\index{LPI2C\_MemMapPtr@{LPI2C\_MemMapPtr}!LPI2C Peripheral Access Layer@{LPI2C Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{LPI2C\_MemMapPtr}{LPI2C\_MemMapPtr}}
+{\footnotesize\ttfamily typedef  struct \mbox{\hyperlink{struct_l_p_i2_c___type}{LPI2\+C\+\_\+\+Type}} $\ast$ \mbox{\hyperlink{group___l_p_i2_c___peripheral___access___layer_ga3cacc94cce26bfc1d686e0105da1afa2}{LPI2\+C\+\_\+\+Mem\+Map\+Ptr}}}
+

@@ -1,0 +1,27 @@
+var struct_s_c_g___type =
+[
+    [ "CLKOUTCNFG", "struct_s_c_g___type.html#a0470cd9d014910ae0d5457f4de8111ce", null ],
+    [ "CSR", "struct_s_c_g___type.html#acd255125147b6bc68e375da0b0a1f16b", null ],
+    [ "FIRCCFG", "struct_s_c_g___type.html#a0579b90bff4b64f2a191c559b644d22b", null ],
+    [ "FIRCCSR", "struct_s_c_g___type.html#a787db7d225aa78f8a3dc6c81b898be18", null ],
+    [ "FIRCDIV", "struct_s_c_g___type.html#afebf2fbd0e6135741ff9a4726b7601b8", null ],
+    [ "HCCR", "struct_s_c_g___type.html#ac71d217beff3fa43fd14b5a9bea66849", null ],
+    [ "PARAM", "struct_s_c_g___type.html#a96563b10e1e91f05203f88047408044a", null ],
+    [ "RCCR", "struct_s_c_g___type.html#a288abe71896d422d8c855cfb161c8d15", null ],
+    [ "RESERVED_0", "struct_s_c_g___type.html#ab5b3e978eb3ceb8a2aadaeeab28db00b", null ],
+    [ "RESERVED_1", "struct_s_c_g___type.html#a61db19a90c3279434af03d476575ceb4", null ],
+    [ "RESERVED_2", "struct_s_c_g___type.html#ab768a2a7d51ec3694e6fe76ad6902cb0", null ],
+    [ "RESERVED_3", "struct_s_c_g___type.html#ab53988b8451f19b5c55903658dd4d5aa", null ],
+    [ "RESERVED_4", "struct_s_c_g___type.html#aa993af8fdb2b83294238cbc7c88e662a", null ],
+    [ "SIRCCFG", "struct_s_c_g___type.html#a49e4839ba6a6a0b81b7bab095e193c08", null ],
+    [ "SIRCCSR", "struct_s_c_g___type.html#abe943c98a81445664e92fa41247fb9a8", null ],
+    [ "SIRCDIV", "struct_s_c_g___type.html#a9c3af6ea0a8bf5dfad21891ab12b86e4", null ],
+    [ "SOSCCFG", "struct_s_c_g___type.html#a974e44b7adfaa015ec1df15e8d6ea728", null ],
+    [ "SOSCCSR", "struct_s_c_g___type.html#a2cbd7ee2913a475f931ca2f4d2bbb698", null ],
+    [ "SOSCDIV", "struct_s_c_g___type.html#ac17c77ec0c9279696e7ee69d74558d47", null ],
+    [ "SPLLCFG", "struct_s_c_g___type.html#a44825f9c5c8eb3fc1a175efb84ba14be", null ],
+    [ "SPLLCSR", "struct_s_c_g___type.html#a7ec8f5994bcbe98141d05dc829417df7", null ],
+    [ "SPLLDIV", "struct_s_c_g___type.html#af9c22f1d3fbfc4a2f6445da4338befd1", null ],
+    [ "VCCR", "struct_s_c_g___type.html#a697344e75543c71d76b265916e4cffba", null ],
+    [ "VERID", "struct_s_c_g___type.html#ab20ff3f0387cbcc2652477ed5d2702df", null ]
+];

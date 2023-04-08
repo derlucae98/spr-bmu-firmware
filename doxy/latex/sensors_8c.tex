@@ -1,0 +1,57 @@
+\hypertarget{sensors_8c}{}\doxysection{src/sensors.c File Reference}
+\label{sensors_8c}\index{src/sensors.c@{src/sensors.c}}
+{\ttfamily \#include \char`\"{}sensors.\+h\char`\"{}}\newline
+Include dependency graph for sensors.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=156pt]{sensors_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{sensors_8c_a4d75266fcfadcb3ad49fdedea6a47cf7}{PRINTF}} (const char $\ast$format,...)
+\item 
+void \mbox{\hyperlink{sensors_8c_ae8c8aec00021b978400289a731847938}{release\+\_\+adc\+\_\+data}} (void)
+\item 
+adc\+\_\+data\+\_\+t $\ast$ \mbox{\hyperlink{sensors_8c_af714a16bf5ed7ebb3ca7ee3699043e85}{get\+\_\+adc\+\_\+data}} (Tick\+Type\+\_\+t blocktime)
+\item 
+bool \mbox{\hyperlink{sensors_8c_ab611f39eb1483b16fc35f3bf51928495}{copy\+\_\+adc\+\_\+data}} (adc\+\_\+data\+\_\+t $\ast$dest, Tick\+Type\+\_\+t blocktime)
+\item 
+bool \mbox{\hyperlink{sensors_8c_a3d7b3a08f92c17af6f1729e423a8e138}{init\+\_\+adc}} (void)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{sensors_8c_ab611f39eb1483b16fc35f3bf51928495}\label{sensors_8c_ab611f39eb1483b16fc35f3bf51928495}} 
+\index{sensors.c@{sensors.c}!copy\_adc\_data@{copy\_adc\_data}}
+\index{copy\_adc\_data@{copy\_adc\_data}!sensors.c@{sensors.c}}
+\doxysubsubsection{\texorpdfstring{copy\_adc\_data()}{copy\_adc\_data()}}
+{\footnotesize\ttfamily bool copy\+\_\+adc\+\_\+data (\begin{DoxyParamCaption}\item[{adc\+\_\+data\+\_\+t $\ast$}]{dest,  }\item[{Tick\+Type\+\_\+t}]{blocktime }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{sensors_8c_af714a16bf5ed7ebb3ca7ee3699043e85}\label{sensors_8c_af714a16bf5ed7ebb3ca7ee3699043e85}} 
+\index{sensors.c@{sensors.c}!get\_adc\_data@{get\_adc\_data}}
+\index{get\_adc\_data@{get\_adc\_data}!sensors.c@{sensors.c}}
+\doxysubsubsection{\texorpdfstring{get\_adc\_data()}{get\_adc\_data()}}
+{\footnotesize\ttfamily adc\+\_\+data\+\_\+t$\ast$ get\+\_\+adc\+\_\+data (\begin{DoxyParamCaption}\item[{Tick\+Type\+\_\+t}]{blocktime }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{sensors_8c_a3d7b3a08f92c17af6f1729e423a8e138}\label{sensors_8c_a3d7b3a08f92c17af6f1729e423a8e138}} 
+\index{sensors.c@{sensors.c}!init\_adc@{init\_adc}}
+\index{init\_adc@{init\_adc}!sensors.c@{sensors.c}}
+\doxysubsubsection{\texorpdfstring{init\_adc()}{init\_adc()}}
+{\footnotesize\ttfamily bool init\+\_\+adc (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{sensors_8c_a4d75266fcfadcb3ad49fdedea6a47cf7}\label{sensors_8c_a4d75266fcfadcb3ad49fdedea6a47cf7}} 
+\index{sensors.c@{sensors.c}!PRINTF@{PRINTF}}
+\index{PRINTF@{PRINTF}!sensors.c@{sensors.c}}
+\doxysubsubsection{\texorpdfstring{PRINTF()}{PRINTF()}}
+{\footnotesize\ttfamily void PRINTF (\begin{DoxyParamCaption}\item[{const char $\ast$}]{format,  }\item[{}]{... }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{sensors_8c_ae8c8aec00021b978400289a731847938}\label{sensors_8c_ae8c8aec00021b978400289a731847938}} 
+\index{sensors.c@{sensors.c}!release\_adc\_data@{release\_adc\_data}}
+\index{release\_adc\_data@{release\_adc\_data}!sensors.c@{sensors.c}}
+\doxysubsubsection{\texorpdfstring{release\_adc\_data()}{release\_adc\_data()}}
+{\footnotesize\ttfamily void release\+\_\+adc\+\_\+data (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+

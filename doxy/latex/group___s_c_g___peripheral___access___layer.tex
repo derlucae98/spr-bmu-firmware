@@ -1,0 +1,138 @@
+\hypertarget{group___s_c_g___peripheral___access___layer}{}\doxysection{SCG Peripheral Access Layer}
+\label{group___s_c_g___peripheral___access___layer}\index{SCG Peripheral Access Layer@{SCG Peripheral Access Layer}}
+Collaboration diagram for SCG Peripheral Access Layer\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{group___s_c_g___peripheral___access___layer}
+\end{center}
+\end{figure}
+\doxysubsection*{Modules}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{group___s_c_g___register___masks}{SCG Register Masks}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_s_c_g___type}{SCG\+\_\+\+Type}}
+\begin{DoxyCompactList}\small\item\em SCG -\/ Size of Registers Arrays. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{group___s_c_g___peripheral___access___layer_ga2952de6414d8d8f404e72dad3472e9f0}{SCG\+\_\+\+INSTANCE\+\_\+\+COUNT}}~(1u)
+\begin{DoxyCompactList}\small\item\em Number of instances of the SCG module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___s_c_g___peripheral___access___layer_ga6af2b552cd9887eb9550d93dc3fb5c7e}{SCG\+\_\+\+BASE}}~(0x40064000u)
+\begin{DoxyCompactList}\small\item\em Peripheral SCG base address. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___s_c_g___peripheral___access___layer_ga503d35adf19c660f1284fcb8aba2f0a1}{SCG}}~((\mbox{\hyperlink{struct_s_c_g___type}{SCG\+\_\+\+Type}} $\ast$)\mbox{\hyperlink{group___s_c_g___peripheral___access___layer_ga6af2b552cd9887eb9550d93dc3fb5c7e}{SCG\+\_\+\+BASE}})
+\begin{DoxyCompactList}\small\item\em Peripheral SCG base pointer. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___s_c_g___peripheral___access___layer_gae3125ae26a84d7c8408611b3715913ae}{SCG\+\_\+\+BASE\+\_\+\+ADDRS}}~\{ \mbox{\hyperlink{group___s_c_g___peripheral___access___layer_ga6af2b552cd9887eb9550d93dc3fb5c7e}{SCG\+\_\+\+BASE}} \}
+\begin{DoxyCompactList}\small\item\em Array initializer of SCG peripheral base addresses. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___s_c_g___peripheral___access___layer_ga5bbd0220d607443ff23b08a0e094d253}{SCG\+\_\+\+BASE\+\_\+\+PTRS}}~\{ \mbox{\hyperlink{group___s_c_g___peripheral___access___layer_ga503d35adf19c660f1284fcb8aba2f0a1}{SCG}} \}
+\begin{DoxyCompactList}\small\item\em Array initializer of SCG peripheral base pointers. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___s_c_g___peripheral___access___layer_gad8631924085ef8d844217e5e9a8ef167}{SCG\+\_\+\+IRQS\+\_\+\+ARR\+\_\+\+COUNT}}~(1u)
+\begin{DoxyCompactList}\small\item\em Number of interrupt vector arrays for the SCG module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___s_c_g___peripheral___access___layer_ga37109f15a4ba6d886621a159f7655fe8}{SCG\+\_\+\+IRQS\+\_\+\+CH\+\_\+\+COUNT}}~(1u)
+\begin{DoxyCompactList}\small\item\em Number of interrupt channels for the SCG module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___s_c_g___peripheral___access___layer_ga755d173b21396930bf4f54854685568b}{SCG\+\_\+\+IRQS}}~\{ \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8ae8a3344fccdd744fcc9e864c05c6d1ad}{SCG\+\_\+\+IRQn}} \}
+\begin{DoxyCompactList}\small\item\em Interrupt vectors for the SCG peripheral type. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \mbox{\hyperlink{struct_s_c_g___type}{SCG\+\_\+\+Type}} $\ast$ \mbox{\hyperlink{group___s_c_g___peripheral___access___layer_ga219b6cd28834b21fd469092f7bfcaf17}{SCG\+\_\+\+Mem\+Map\+Ptr}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{group___s_c_g___peripheral___access___layer_ga503d35adf19c660f1284fcb8aba2f0a1}\label{group___s_c_g___peripheral___access___layer_ga503d35adf19c660f1284fcb8aba2f0a1}} 
+\index{SCG Peripheral Access Layer@{SCG Peripheral Access Layer}!SCG@{SCG}}
+\index{SCG@{SCG}!SCG Peripheral Access Layer@{SCG Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SCG}{SCG}}
+{\footnotesize\ttfamily \#define SCG~((\mbox{\hyperlink{struct_s_c_g___type}{SCG\+\_\+\+Type}} $\ast$)\mbox{\hyperlink{group___s_c_g___peripheral___access___layer_ga6af2b552cd9887eb9550d93dc3fb5c7e}{SCG\+\_\+\+BASE}})}
+
+
+
+Peripheral SCG base pointer. 
+
+\mbox{\Hypertarget{group___s_c_g___peripheral___access___layer_ga6af2b552cd9887eb9550d93dc3fb5c7e}\label{group___s_c_g___peripheral___access___layer_ga6af2b552cd9887eb9550d93dc3fb5c7e}} 
+\index{SCG Peripheral Access Layer@{SCG Peripheral Access Layer}!SCG\_BASE@{SCG\_BASE}}
+\index{SCG\_BASE@{SCG\_BASE}!SCG Peripheral Access Layer@{SCG Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SCG\_BASE}{SCG\_BASE}}
+{\footnotesize\ttfamily \#define SCG\+\_\+\+BASE~(0x40064000u)}
+
+
+
+Peripheral SCG base address. 
+
+\mbox{\Hypertarget{group___s_c_g___peripheral___access___layer_gae3125ae26a84d7c8408611b3715913ae}\label{group___s_c_g___peripheral___access___layer_gae3125ae26a84d7c8408611b3715913ae}} 
+\index{SCG Peripheral Access Layer@{SCG Peripheral Access Layer}!SCG\_BASE\_ADDRS@{SCG\_BASE\_ADDRS}}
+\index{SCG\_BASE\_ADDRS@{SCG\_BASE\_ADDRS}!SCG Peripheral Access Layer@{SCG Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SCG\_BASE\_ADDRS}{SCG\_BASE\_ADDRS}}
+{\footnotesize\ttfamily \#define SCG\+\_\+\+BASE\+\_\+\+ADDRS~\{ \mbox{\hyperlink{group___s_c_g___peripheral___access___layer_ga6af2b552cd9887eb9550d93dc3fb5c7e}{SCG\+\_\+\+BASE}} \}}
+
+
+
+Array initializer of SCG peripheral base addresses. 
+
+\mbox{\Hypertarget{group___s_c_g___peripheral___access___layer_ga5bbd0220d607443ff23b08a0e094d253}\label{group___s_c_g___peripheral___access___layer_ga5bbd0220d607443ff23b08a0e094d253}} 
+\index{SCG Peripheral Access Layer@{SCG Peripheral Access Layer}!SCG\_BASE\_PTRS@{SCG\_BASE\_PTRS}}
+\index{SCG\_BASE\_PTRS@{SCG\_BASE\_PTRS}!SCG Peripheral Access Layer@{SCG Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SCG\_BASE\_PTRS}{SCG\_BASE\_PTRS}}
+{\footnotesize\ttfamily \#define SCG\+\_\+\+BASE\+\_\+\+PTRS~\{ \mbox{\hyperlink{group___s_c_g___peripheral___access___layer_ga503d35adf19c660f1284fcb8aba2f0a1}{SCG}} \}}
+
+
+
+Array initializer of SCG peripheral base pointers. 
+
+\mbox{\Hypertarget{group___s_c_g___peripheral___access___layer_ga2952de6414d8d8f404e72dad3472e9f0}\label{group___s_c_g___peripheral___access___layer_ga2952de6414d8d8f404e72dad3472e9f0}} 
+\index{SCG Peripheral Access Layer@{SCG Peripheral Access Layer}!SCG\_INSTANCE\_COUNT@{SCG\_INSTANCE\_COUNT}}
+\index{SCG\_INSTANCE\_COUNT@{SCG\_INSTANCE\_COUNT}!SCG Peripheral Access Layer@{SCG Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SCG\_INSTANCE\_COUNT}{SCG\_INSTANCE\_COUNT}}
+{\footnotesize\ttfamily \#define SCG\+\_\+\+INSTANCE\+\_\+\+COUNT~(1u)}
+
+
+
+Number of instances of the SCG module. 
+
+\mbox{\Hypertarget{group___s_c_g___peripheral___access___layer_ga755d173b21396930bf4f54854685568b}\label{group___s_c_g___peripheral___access___layer_ga755d173b21396930bf4f54854685568b}} 
+\index{SCG Peripheral Access Layer@{SCG Peripheral Access Layer}!SCG\_IRQS@{SCG\_IRQS}}
+\index{SCG\_IRQS@{SCG\_IRQS}!SCG Peripheral Access Layer@{SCG Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SCG\_IRQS}{SCG\_IRQS}}
+{\footnotesize\ttfamily \#define SCG\+\_\+\+IRQS~\{ \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8ae8a3344fccdd744fcc9e864c05c6d1ad}{SCG\+\_\+\+IRQn}} \}}
+
+
+
+Interrupt vectors for the SCG peripheral type. 
+
+\mbox{\Hypertarget{group___s_c_g___peripheral___access___layer_gad8631924085ef8d844217e5e9a8ef167}\label{group___s_c_g___peripheral___access___layer_gad8631924085ef8d844217e5e9a8ef167}} 
+\index{SCG Peripheral Access Layer@{SCG Peripheral Access Layer}!SCG\_IRQS\_ARR\_COUNT@{SCG\_IRQS\_ARR\_COUNT}}
+\index{SCG\_IRQS\_ARR\_COUNT@{SCG\_IRQS\_ARR\_COUNT}!SCG Peripheral Access Layer@{SCG Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SCG\_IRQS\_ARR\_COUNT}{SCG\_IRQS\_ARR\_COUNT}}
+{\footnotesize\ttfamily \#define SCG\+\_\+\+IRQS\+\_\+\+ARR\+\_\+\+COUNT~(1u)}
+
+
+
+Number of interrupt vector arrays for the SCG module. 
+
+\mbox{\Hypertarget{group___s_c_g___peripheral___access___layer_ga37109f15a4ba6d886621a159f7655fe8}\label{group___s_c_g___peripheral___access___layer_ga37109f15a4ba6d886621a159f7655fe8}} 
+\index{SCG Peripheral Access Layer@{SCG Peripheral Access Layer}!SCG\_IRQS\_CH\_COUNT@{SCG\_IRQS\_CH\_COUNT}}
+\index{SCG\_IRQS\_CH\_COUNT@{SCG\_IRQS\_CH\_COUNT}!SCG Peripheral Access Layer@{SCG Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SCG\_IRQS\_CH\_COUNT}{SCG\_IRQS\_CH\_COUNT}}
+{\footnotesize\ttfamily \#define SCG\+\_\+\+IRQS\+\_\+\+CH\+\_\+\+COUNT~(1u)}
+
+
+
+Number of interrupt channels for the SCG module. 
+
+
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{group___s_c_g___peripheral___access___layer_ga219b6cd28834b21fd469092f7bfcaf17}\label{group___s_c_g___peripheral___access___layer_ga219b6cd28834b21fd469092f7bfcaf17}} 
+\index{SCG Peripheral Access Layer@{SCG Peripheral Access Layer}!SCG\_MemMapPtr@{SCG\_MemMapPtr}}
+\index{SCG\_MemMapPtr@{SCG\_MemMapPtr}!SCG Peripheral Access Layer@{SCG Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SCG\_MemMapPtr}{SCG\_MemMapPtr}}
+{\footnotesize\ttfamily typedef  struct \mbox{\hyperlink{struct_s_c_g___type}{SCG\+\_\+\+Type}} $\ast$ \mbox{\hyperlink{group___s_c_g___peripheral___access___layer_ga219b6cd28834b21fd469092f7bfcaf17}{SCG\+\_\+\+Mem\+Map\+Ptr}}}
+

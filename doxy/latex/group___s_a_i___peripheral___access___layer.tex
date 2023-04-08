@@ -1,0 +1,218 @@
+\hypertarget{group___s_a_i___peripheral___access___layer}{}\doxysection{SAI Peripheral Access Layer}
+\label{group___s_a_i___peripheral___access___layer}\index{SAI Peripheral Access Layer@{SAI Peripheral Access Layer}}
+Collaboration diagram for SAI Peripheral Access Layer\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{group___s_a_i___peripheral___access___layer}
+\end{center}
+\end{figure}
+\doxysubsection*{Modules}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{group___s_a_i___register___masks}{SAI Register Masks}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_s_a_i___type}{SAI\+\_\+\+Type}}
+\begin{DoxyCompactList}\small\item\em SAI -\/ Register Layout Typedef. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_ga4061dd10b1ff207976ddbef550e98416}{SAI\+\_\+\+TDR\+\_\+\+COUNT}}~4u
+\begin{DoxyCompactList}\small\item\em SAI -\/ Size of Registers Arrays. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_gaeba8ea617f6be01005ce8632e0ddaa9f}{SAI\+\_\+\+TFR\+\_\+\+COUNT}}~4u
+\item 
+\#define \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_ga80c0651f963a273ca7ead4752a436d50}{SAI\+\_\+\+RDR\+\_\+\+COUNT}}~4u
+\item 
+\#define \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_ga7fc5fd1954fef3e26e0a859c35fe5302}{SAI\+\_\+\+RFR\+\_\+\+COUNT}}~4u
+\item 
+\#define \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_gaa9d15802c23b172e4fb1aff1db438195}{SAI\+\_\+\+INSTANCE\+\_\+\+COUNT}}~(2u)
+\begin{DoxyCompactList}\small\item\em Number of instances of the SAI module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_ga1b8cded57cd80abbebc001daeaeb56a3}{SAI0\+\_\+\+BASE}}~(0x40054000u)
+\begin{DoxyCompactList}\small\item\em Peripheral SAI0 base address. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_gafbd67abb882f6e02e0eef8c965a93860}{SAI0}}~((\mbox{\hyperlink{struct_s_a_i___type}{SAI\+\_\+\+Type}} $\ast$)\mbox{\hyperlink{group___s_a_i___peripheral___access___layer_ga1b8cded57cd80abbebc001daeaeb56a3}{SAI0\+\_\+\+BASE}})
+\begin{DoxyCompactList}\small\item\em Peripheral SAI0 base pointer. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_ga24c1053b754946b512f9c31123e09d21}{SAI1\+\_\+\+BASE}}~(0x40055000u)
+\begin{DoxyCompactList}\small\item\em Peripheral SAI1 base address. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_gaa878b214698fcf74a3268d07562abbb2}{SAI1}}~((\mbox{\hyperlink{struct_s_a_i___type}{SAI\+\_\+\+Type}} $\ast$)\mbox{\hyperlink{group___s_a_i___peripheral___access___layer_ga24c1053b754946b512f9c31123e09d21}{SAI1\+\_\+\+BASE}})
+\begin{DoxyCompactList}\small\item\em Peripheral SAI1 base pointer. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_ga2286afee5ba4bb4476574d345f2c9bdf}{SAI\+\_\+\+BASE\+\_\+\+ADDRS}}~\{ \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_ga1b8cded57cd80abbebc001daeaeb56a3}{SAI0\+\_\+\+BASE}}, \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_ga24c1053b754946b512f9c31123e09d21}{SAI1\+\_\+\+BASE}} \}
+\begin{DoxyCompactList}\small\item\em Array initializer of SAI peripheral base addresses. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_ga053c7fa2b1f2852e53f616d4cbb881d1}{SAI\+\_\+\+BASE\+\_\+\+PTRS}}~\{ \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_gafbd67abb882f6e02e0eef8c965a93860}{SAI0}}, \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_gaa878b214698fcf74a3268d07562abbb2}{SAI1}} \}
+\begin{DoxyCompactList}\small\item\em Array initializer of SAI peripheral base pointers. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_ga65d56890c234df91392cdcafb2f7206e}{SAI\+\_\+\+IRQS\+\_\+\+ARR\+\_\+\+COUNT}}~(2u)
+\begin{DoxyCompactList}\small\item\em Number of interrupt vector arrays for the SAI module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_ga28f99547627b1218cbdbb188bb41d8e9}{SAI\+\_\+\+RX\+\_\+\+IRQS\+\_\+\+CH\+\_\+\+COUNT}}~(1u)
+\begin{DoxyCompactList}\small\item\em Number of interrupt channels for the RX type of SAI module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_ga78324027a848926bac133340d3ef9d92}{SAI\+\_\+\+TX\+\_\+\+IRQS\+\_\+\+CH\+\_\+\+COUNT}}~(1u)
+\begin{DoxyCompactList}\small\item\em Number of interrupt channels for the TX type of SAI module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_ga0439f9ae3594a9c42098b86876178c4c}{SAI\+\_\+\+RX\+\_\+\+IRQS}}~\{ \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8abb24c2233ba90a896236546f0ad00ad3}{SAI0\+\_\+\+Rx\+\_\+\+IRQn}}, \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8af933365a0945ef64c365e2368d28ccfc}{SAI1\+\_\+\+Rx\+\_\+\+IRQn}} \}
+\begin{DoxyCompactList}\small\item\em Interrupt vectors for the SAI peripheral type. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_ga6d95bfa28d7247005f7d2c86c52d5e98}{SAI\+\_\+\+TX\+\_\+\+IRQS}}~\{ \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8a62871f50bc5cd9a4322a59ba66836003}{SAI0\+\_\+\+Tx\+\_\+\+IRQn}}, \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8aaed9f167e37606408e2d8e3a51fff71c}{SAI1\+\_\+\+Tx\+\_\+\+IRQn}} \}
+\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \mbox{\hyperlink{struct_s_a_i___type}{SAI\+\_\+\+Type}} $\ast$ \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_ga3cc3d147d63bc51f5a6da6df4c6f4371}{SAI\+\_\+\+Mem\+Map\+Ptr}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{group___s_a_i___peripheral___access___layer_gafbd67abb882f6e02e0eef8c965a93860}\label{group___s_a_i___peripheral___access___layer_gafbd67abb882f6e02e0eef8c965a93860}} 
+\index{SAI Peripheral Access Layer@{SAI Peripheral Access Layer}!SAI0@{SAI0}}
+\index{SAI0@{SAI0}!SAI Peripheral Access Layer@{SAI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SAI0}{SAI0}}
+{\footnotesize\ttfamily \#define SAI0~((\mbox{\hyperlink{struct_s_a_i___type}{SAI\+\_\+\+Type}} $\ast$)\mbox{\hyperlink{group___s_a_i___peripheral___access___layer_ga1b8cded57cd80abbebc001daeaeb56a3}{SAI0\+\_\+\+BASE}})}
+
+
+
+Peripheral SAI0 base pointer. 
+
+\mbox{\Hypertarget{group___s_a_i___peripheral___access___layer_ga1b8cded57cd80abbebc001daeaeb56a3}\label{group___s_a_i___peripheral___access___layer_ga1b8cded57cd80abbebc001daeaeb56a3}} 
+\index{SAI Peripheral Access Layer@{SAI Peripheral Access Layer}!SAI0\_BASE@{SAI0\_BASE}}
+\index{SAI0\_BASE@{SAI0\_BASE}!SAI Peripheral Access Layer@{SAI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SAI0\_BASE}{SAI0\_BASE}}
+{\footnotesize\ttfamily \#define SAI0\+\_\+\+BASE~(0x40054000u)}
+
+
+
+Peripheral SAI0 base address. 
+
+\mbox{\Hypertarget{group___s_a_i___peripheral___access___layer_gaa878b214698fcf74a3268d07562abbb2}\label{group___s_a_i___peripheral___access___layer_gaa878b214698fcf74a3268d07562abbb2}} 
+\index{SAI Peripheral Access Layer@{SAI Peripheral Access Layer}!SAI1@{SAI1}}
+\index{SAI1@{SAI1}!SAI Peripheral Access Layer@{SAI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SAI1}{SAI1}}
+{\footnotesize\ttfamily \#define SAI1~((\mbox{\hyperlink{struct_s_a_i___type}{SAI\+\_\+\+Type}} $\ast$)\mbox{\hyperlink{group___s_a_i___peripheral___access___layer_ga24c1053b754946b512f9c31123e09d21}{SAI1\+\_\+\+BASE}})}
+
+
+
+Peripheral SAI1 base pointer. 
+
+\mbox{\Hypertarget{group___s_a_i___peripheral___access___layer_ga24c1053b754946b512f9c31123e09d21}\label{group___s_a_i___peripheral___access___layer_ga24c1053b754946b512f9c31123e09d21}} 
+\index{SAI Peripheral Access Layer@{SAI Peripheral Access Layer}!SAI1\_BASE@{SAI1\_BASE}}
+\index{SAI1\_BASE@{SAI1\_BASE}!SAI Peripheral Access Layer@{SAI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SAI1\_BASE}{SAI1\_BASE}}
+{\footnotesize\ttfamily \#define SAI1\+\_\+\+BASE~(0x40055000u)}
+
+
+
+Peripheral SAI1 base address. 
+
+\mbox{\Hypertarget{group___s_a_i___peripheral___access___layer_ga2286afee5ba4bb4476574d345f2c9bdf}\label{group___s_a_i___peripheral___access___layer_ga2286afee5ba4bb4476574d345f2c9bdf}} 
+\index{SAI Peripheral Access Layer@{SAI Peripheral Access Layer}!SAI\_BASE\_ADDRS@{SAI\_BASE\_ADDRS}}
+\index{SAI\_BASE\_ADDRS@{SAI\_BASE\_ADDRS}!SAI Peripheral Access Layer@{SAI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SAI\_BASE\_ADDRS}{SAI\_BASE\_ADDRS}}
+{\footnotesize\ttfamily \#define SAI\+\_\+\+BASE\+\_\+\+ADDRS~\{ \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_ga1b8cded57cd80abbebc001daeaeb56a3}{SAI0\+\_\+\+BASE}}, \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_ga24c1053b754946b512f9c31123e09d21}{SAI1\+\_\+\+BASE}} \}}
+
+
+
+Array initializer of SAI peripheral base addresses. 
+
+\mbox{\Hypertarget{group___s_a_i___peripheral___access___layer_ga053c7fa2b1f2852e53f616d4cbb881d1}\label{group___s_a_i___peripheral___access___layer_ga053c7fa2b1f2852e53f616d4cbb881d1}} 
+\index{SAI Peripheral Access Layer@{SAI Peripheral Access Layer}!SAI\_BASE\_PTRS@{SAI\_BASE\_PTRS}}
+\index{SAI\_BASE\_PTRS@{SAI\_BASE\_PTRS}!SAI Peripheral Access Layer@{SAI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SAI\_BASE\_PTRS}{SAI\_BASE\_PTRS}}
+{\footnotesize\ttfamily \#define SAI\+\_\+\+BASE\+\_\+\+PTRS~\{ \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_gafbd67abb882f6e02e0eef8c965a93860}{SAI0}}, \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_gaa878b214698fcf74a3268d07562abbb2}{SAI1}} \}}
+
+
+
+Array initializer of SAI peripheral base pointers. 
+
+\mbox{\Hypertarget{group___s_a_i___peripheral___access___layer_gaa9d15802c23b172e4fb1aff1db438195}\label{group___s_a_i___peripheral___access___layer_gaa9d15802c23b172e4fb1aff1db438195}} 
+\index{SAI Peripheral Access Layer@{SAI Peripheral Access Layer}!SAI\_INSTANCE\_COUNT@{SAI\_INSTANCE\_COUNT}}
+\index{SAI\_INSTANCE\_COUNT@{SAI\_INSTANCE\_COUNT}!SAI Peripheral Access Layer@{SAI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SAI\_INSTANCE\_COUNT}{SAI\_INSTANCE\_COUNT}}
+{\footnotesize\ttfamily \#define SAI\+\_\+\+INSTANCE\+\_\+\+COUNT~(2u)}
+
+
+
+Number of instances of the SAI module. 
+
+\mbox{\Hypertarget{group___s_a_i___peripheral___access___layer_ga65d56890c234df91392cdcafb2f7206e}\label{group___s_a_i___peripheral___access___layer_ga65d56890c234df91392cdcafb2f7206e}} 
+\index{SAI Peripheral Access Layer@{SAI Peripheral Access Layer}!SAI\_IRQS\_ARR\_COUNT@{SAI\_IRQS\_ARR\_COUNT}}
+\index{SAI\_IRQS\_ARR\_COUNT@{SAI\_IRQS\_ARR\_COUNT}!SAI Peripheral Access Layer@{SAI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SAI\_IRQS\_ARR\_COUNT}{SAI\_IRQS\_ARR\_COUNT}}
+{\footnotesize\ttfamily \#define SAI\+\_\+\+IRQS\+\_\+\+ARR\+\_\+\+COUNT~(2u)}
+
+
+
+Number of interrupt vector arrays for the SAI module. 
+
+\mbox{\Hypertarget{group___s_a_i___peripheral___access___layer_ga80c0651f963a273ca7ead4752a436d50}\label{group___s_a_i___peripheral___access___layer_ga80c0651f963a273ca7ead4752a436d50}} 
+\index{SAI Peripheral Access Layer@{SAI Peripheral Access Layer}!SAI\_RDR\_COUNT@{SAI\_RDR\_COUNT}}
+\index{SAI\_RDR\_COUNT@{SAI\_RDR\_COUNT}!SAI Peripheral Access Layer@{SAI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SAI\_RDR\_COUNT}{SAI\_RDR\_COUNT}}
+{\footnotesize\ttfamily \#define SAI\+\_\+\+RDR\+\_\+\+COUNT~4u}
+
+\mbox{\Hypertarget{group___s_a_i___peripheral___access___layer_ga7fc5fd1954fef3e26e0a859c35fe5302}\label{group___s_a_i___peripheral___access___layer_ga7fc5fd1954fef3e26e0a859c35fe5302}} 
+\index{SAI Peripheral Access Layer@{SAI Peripheral Access Layer}!SAI\_RFR\_COUNT@{SAI\_RFR\_COUNT}}
+\index{SAI\_RFR\_COUNT@{SAI\_RFR\_COUNT}!SAI Peripheral Access Layer@{SAI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SAI\_RFR\_COUNT}{SAI\_RFR\_COUNT}}
+{\footnotesize\ttfamily \#define SAI\+\_\+\+RFR\+\_\+\+COUNT~4u}
+
+\mbox{\Hypertarget{group___s_a_i___peripheral___access___layer_ga0439f9ae3594a9c42098b86876178c4c}\label{group___s_a_i___peripheral___access___layer_ga0439f9ae3594a9c42098b86876178c4c}} 
+\index{SAI Peripheral Access Layer@{SAI Peripheral Access Layer}!SAI\_RX\_IRQS@{SAI\_RX\_IRQS}}
+\index{SAI\_RX\_IRQS@{SAI\_RX\_IRQS}!SAI Peripheral Access Layer@{SAI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SAI\_RX\_IRQS}{SAI\_RX\_IRQS}}
+{\footnotesize\ttfamily \#define SAI\+\_\+\+RX\+\_\+\+IRQS~\{ \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8abb24c2233ba90a896236546f0ad00ad3}{SAI0\+\_\+\+Rx\+\_\+\+IRQn}}, \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8af933365a0945ef64c365e2368d28ccfc}{SAI1\+\_\+\+Rx\+\_\+\+IRQn}} \}}
+
+
+
+Interrupt vectors for the SAI peripheral type. 
+
+\mbox{\Hypertarget{group___s_a_i___peripheral___access___layer_ga28f99547627b1218cbdbb188bb41d8e9}\label{group___s_a_i___peripheral___access___layer_ga28f99547627b1218cbdbb188bb41d8e9}} 
+\index{SAI Peripheral Access Layer@{SAI Peripheral Access Layer}!SAI\_RX\_IRQS\_CH\_COUNT@{SAI\_RX\_IRQS\_CH\_COUNT}}
+\index{SAI\_RX\_IRQS\_CH\_COUNT@{SAI\_RX\_IRQS\_CH\_COUNT}!SAI Peripheral Access Layer@{SAI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SAI\_RX\_IRQS\_CH\_COUNT}{SAI\_RX\_IRQS\_CH\_COUNT}}
+{\footnotesize\ttfamily \#define SAI\+\_\+\+RX\+\_\+\+IRQS\+\_\+\+CH\+\_\+\+COUNT~(1u)}
+
+
+
+Number of interrupt channels for the RX type of SAI module. 
+
+\mbox{\Hypertarget{group___s_a_i___peripheral___access___layer_ga4061dd10b1ff207976ddbef550e98416}\label{group___s_a_i___peripheral___access___layer_ga4061dd10b1ff207976ddbef550e98416}} 
+\index{SAI Peripheral Access Layer@{SAI Peripheral Access Layer}!SAI\_TDR\_COUNT@{SAI\_TDR\_COUNT}}
+\index{SAI\_TDR\_COUNT@{SAI\_TDR\_COUNT}!SAI Peripheral Access Layer@{SAI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SAI\_TDR\_COUNT}{SAI\_TDR\_COUNT}}
+{\footnotesize\ttfamily \#define SAI\+\_\+\+TDR\+\_\+\+COUNT~4u}
+
+
+
+SAI -\/ Size of Registers Arrays. 
+
+\mbox{\Hypertarget{group___s_a_i___peripheral___access___layer_gaeba8ea617f6be01005ce8632e0ddaa9f}\label{group___s_a_i___peripheral___access___layer_gaeba8ea617f6be01005ce8632e0ddaa9f}} 
+\index{SAI Peripheral Access Layer@{SAI Peripheral Access Layer}!SAI\_TFR\_COUNT@{SAI\_TFR\_COUNT}}
+\index{SAI\_TFR\_COUNT@{SAI\_TFR\_COUNT}!SAI Peripheral Access Layer@{SAI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SAI\_TFR\_COUNT}{SAI\_TFR\_COUNT}}
+{\footnotesize\ttfamily \#define SAI\+\_\+\+TFR\+\_\+\+COUNT~4u}
+
+\mbox{\Hypertarget{group___s_a_i___peripheral___access___layer_ga6d95bfa28d7247005f7d2c86c52d5e98}\label{group___s_a_i___peripheral___access___layer_ga6d95bfa28d7247005f7d2c86c52d5e98}} 
+\index{SAI Peripheral Access Layer@{SAI Peripheral Access Layer}!SAI\_TX\_IRQS@{SAI\_TX\_IRQS}}
+\index{SAI\_TX\_IRQS@{SAI\_TX\_IRQS}!SAI Peripheral Access Layer@{SAI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SAI\_TX\_IRQS}{SAI\_TX\_IRQS}}
+{\footnotesize\ttfamily \#define SAI\+\_\+\+TX\+\_\+\+IRQS~\{ \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8a62871f50bc5cd9a4322a59ba66836003}{SAI0\+\_\+\+Tx\+\_\+\+IRQn}}, \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8aaed9f167e37606408e2d8e3a51fff71c}{SAI1\+\_\+\+Tx\+\_\+\+IRQn}} \}}
+
+\mbox{\Hypertarget{group___s_a_i___peripheral___access___layer_ga78324027a848926bac133340d3ef9d92}\label{group___s_a_i___peripheral___access___layer_ga78324027a848926bac133340d3ef9d92}} 
+\index{SAI Peripheral Access Layer@{SAI Peripheral Access Layer}!SAI\_TX\_IRQS\_CH\_COUNT@{SAI\_TX\_IRQS\_CH\_COUNT}}
+\index{SAI\_TX\_IRQS\_CH\_COUNT@{SAI\_TX\_IRQS\_CH\_COUNT}!SAI Peripheral Access Layer@{SAI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SAI\_TX\_IRQS\_CH\_COUNT}{SAI\_TX\_IRQS\_CH\_COUNT}}
+{\footnotesize\ttfamily \#define SAI\+\_\+\+TX\+\_\+\+IRQS\+\_\+\+CH\+\_\+\+COUNT~(1u)}
+
+
+
+Number of interrupt channels for the TX type of SAI module. 
+
+
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{group___s_a_i___peripheral___access___layer_ga3cc3d147d63bc51f5a6da6df4c6f4371}\label{group___s_a_i___peripheral___access___layer_ga3cc3d147d63bc51f5a6da6df4c6f4371}} 
+\index{SAI Peripheral Access Layer@{SAI Peripheral Access Layer}!SAI\_MemMapPtr@{SAI\_MemMapPtr}}
+\index{SAI\_MemMapPtr@{SAI\_MemMapPtr}!SAI Peripheral Access Layer@{SAI Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{SAI\_MemMapPtr}{SAI\_MemMapPtr}}
+{\footnotesize\ttfamily typedef  struct \mbox{\hyperlink{struct_s_a_i___type}{SAI\+\_\+\+Type}} $\ast$ \mbox{\hyperlink{group___s_a_i___peripheral___access___layer_ga3cc3d147d63bc51f5a6da6df4c6f4371}{SAI\+\_\+\+Mem\+Map\+Ptr}}}
+

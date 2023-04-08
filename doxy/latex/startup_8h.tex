@@ -1,0 +1,37 @@
+\hypertarget{startup_8h}{}\doxysection{include/startup.h File Reference}
+\label{startup_8h}\index{include/startup.h@{include/startup.h}}
+{\ttfamily \#include $<$stdint.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}device\+\_\+registers.\+h\char`\"{}}\newline
+Include dependency graph for startup.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=244pt]{startup_8h__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{startup_8h_a4ec87dd62b019ca76bcd88854843f56b}{init\+\_\+data\+\_\+bss}} (void)
+\begin{DoxyCompactList}\small\item\em define symbols that specific start and end addres of some basic sections. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{startup_8h_a4ec87dd62b019ca76bcd88854843f56b}\label{startup_8h_a4ec87dd62b019ca76bcd88854843f56b}} 
+\index{startup.h@{startup.h}!init\_data\_bss@{init\_data\_bss}}
+\index{init\_data\_bss@{init\_data\_bss}!startup.h@{startup.h}}
+\doxysubsubsection{\texorpdfstring{init\_data\_bss()}{init\_data\_bss()}}
+{\footnotesize\ttfamily void init\+\_\+data\+\_\+bss (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+define symbols that specific start and end addres of some basic sections. 
+
+Make necessary initializations for RAM.
+
+
+\begin{DoxyItemize}
+\item Copy initialized data from ROM to RAM.
+\item Clear the zero-\/initialized data section.
+\item Copy the vector table from ROM to RAM. This could be an option. 
+\end{DoxyItemize}

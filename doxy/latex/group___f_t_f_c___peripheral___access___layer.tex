@@ -1,0 +1,178 @@
+\hypertarget{group___f_t_f_c___peripheral___access___layer}{}\doxysection{FTFC Peripheral Access Layer}
+\label{group___f_t_f_c___peripheral___access___layer}\index{FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}}
+Collaboration diagram for FTFC Peripheral Access Layer\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{group___f_t_f_c___peripheral___access___layer}
+\end{center}
+\end{figure}
+\doxysubsection*{Modules}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{group___f_t_f_c___register___masks}{FTFC Register Masks}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_f_t_f_c___type}{FTFC\+\_\+\+Type}}
+\begin{DoxyCompactList}\small\item\em FTFC -\/ Register Layout Typedef. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{group___f_t_f_c___peripheral___access___layer_ga70cc4456d44c6fd92935876e202d9382}{FTFC\+\_\+\+FCCOB\+\_\+\+COUNT}}~12u
+\begin{DoxyCompactList}\small\item\em FTFC -\/ Size of Registers Arrays. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___f_t_f_c___peripheral___access___layer_gaef96aa04e620c822dffb78de849650cc}{FTFC\+\_\+\+FPROT\+\_\+\+COUNT}}~4u
+\item 
+\#define \mbox{\hyperlink{group___f_t_f_c___peripheral___access___layer_ga0c98af3339be464f60858cfb726ee37e}{FTFC\+\_\+\+INSTANCE\+\_\+\+COUNT}}~(1u)
+\begin{DoxyCompactList}\small\item\em Number of instances of the FTFC module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___f_t_f_c___peripheral___access___layer_ga573fcc63db056e23fc11be9bf28623e8}{FTFC\+\_\+\+BASE}}~(0x40020000u)
+\begin{DoxyCompactList}\small\item\em Peripheral FTFC base address. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___f_t_f_c___peripheral___access___layer_gae5940c6a203fe360a848d3cbefdcaa3f}{FTFC}}~((\mbox{\hyperlink{struct_f_t_f_c___type}{FTFC\+\_\+\+Type}} $\ast$)\mbox{\hyperlink{group___f_t_f_c___peripheral___access___layer_ga573fcc63db056e23fc11be9bf28623e8}{FTFC\+\_\+\+BASE}})
+\begin{DoxyCompactList}\small\item\em Peripheral FTFC base pointer. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___f_t_f_c___peripheral___access___layer_gaf0fc1f6c9ed7a5d0b262060039cc1f44}{FTFC\+\_\+\+BASE\+\_\+\+ADDRS}}~\{ \mbox{\hyperlink{group___f_t_f_c___peripheral___access___layer_ga573fcc63db056e23fc11be9bf28623e8}{FTFC\+\_\+\+BASE}} \}
+\begin{DoxyCompactList}\small\item\em Array initializer of FTFC peripheral base addresses. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___f_t_f_c___peripheral___access___layer_gaa20a93ec4c0b6fca9a30b731a1c0800d}{FTFC\+\_\+\+BASE\+\_\+\+PTRS}}~\{ \mbox{\hyperlink{group___f_t_f_c___peripheral___access___layer_gae5940c6a203fe360a848d3cbefdcaa3f}{FTFC}} \}
+\begin{DoxyCompactList}\small\item\em Array initializer of FTFC peripheral base pointers. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___f_t_f_c___peripheral___access___layer_ga96aa003f53f5781e4c4ffde4a2f5b07e}{FTFC\+\_\+\+IRQS\+\_\+\+ARR\+\_\+\+COUNT}}~(2u)
+\begin{DoxyCompactList}\small\item\em Number of interrupt vector arrays for the FTFC module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___f_t_f_c___peripheral___access___layer_ga0c858973836369430cbc9f99a8c16f21}{FTFC\+\_\+\+COMMAND\+\_\+\+COMPLETE\+\_\+\+IRQS\+\_\+\+CH\+\_\+\+COUNT}}~(1u)
+\begin{DoxyCompactList}\small\item\em Number of interrupt channels for the COMMAND\+\_\+\+COMPLETE type of FTFC module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___f_t_f_c___peripheral___access___layer_ga852df5bff9d2dd940735f8387afd0e51}{FTFC\+\_\+\+READ\+\_\+\+COLLISION\+\_\+\+IRQS\+\_\+\+CH\+\_\+\+COUNT}}~(1u)
+\begin{DoxyCompactList}\small\item\em Number of interrupt channels for the READ\+\_\+\+COLLISION type of FTFC module. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___f_t_f_c___peripheral___access___layer_ga5565d8093de1758d67d40c5134ec4413}{FTFC\+\_\+\+COMMAND\+\_\+\+COMPLETE\+\_\+\+IRQS}}~\{ \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8a52da8ad093ab1d71fd736f5ba8793ca8}{FTFC\+\_\+\+IRQn}} \}
+\begin{DoxyCompactList}\small\item\em Interrupt vectors for the FTFC peripheral type. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___f_t_f_c___peripheral___access___layer_ga5cf4a5f23118b354265378db06ff82fd}{FTFC\+\_\+\+READ\+\_\+\+COLLISION\+\_\+\+IRQS}}~\{ \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8aa3caf4837979a4a300de12aa1ec8fc74}{Read\+\_\+\+Collision\+\_\+\+IRQn}} \}
+\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \mbox{\hyperlink{struct_f_t_f_c___type}{FTFC\+\_\+\+Type}} $\ast$ \mbox{\hyperlink{group___f_t_f_c___peripheral___access___layer_gafd0778c584834287a7011bf7e242521b}{FTFC\+\_\+\+Mem\+Map\+Ptr}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{group___f_t_f_c___peripheral___access___layer_gae5940c6a203fe360a848d3cbefdcaa3f}\label{group___f_t_f_c___peripheral___access___layer_gae5940c6a203fe360a848d3cbefdcaa3f}} 
+\index{FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}!FTFC@{FTFC}}
+\index{FTFC@{FTFC}!FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{FTFC}{FTFC}}
+{\footnotesize\ttfamily \#define FTFC~((\mbox{\hyperlink{struct_f_t_f_c___type}{FTFC\+\_\+\+Type}} $\ast$)\mbox{\hyperlink{group___f_t_f_c___peripheral___access___layer_ga573fcc63db056e23fc11be9bf28623e8}{FTFC\+\_\+\+BASE}})}
+
+
+
+Peripheral FTFC base pointer. 
+
+\mbox{\Hypertarget{group___f_t_f_c___peripheral___access___layer_ga573fcc63db056e23fc11be9bf28623e8}\label{group___f_t_f_c___peripheral___access___layer_ga573fcc63db056e23fc11be9bf28623e8}} 
+\index{FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}!FTFC\_BASE@{FTFC\_BASE}}
+\index{FTFC\_BASE@{FTFC\_BASE}!FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{FTFC\_BASE}{FTFC\_BASE}}
+{\footnotesize\ttfamily \#define FTFC\+\_\+\+BASE~(0x40020000u)}
+
+
+
+Peripheral FTFC base address. 
+
+\mbox{\Hypertarget{group___f_t_f_c___peripheral___access___layer_gaf0fc1f6c9ed7a5d0b262060039cc1f44}\label{group___f_t_f_c___peripheral___access___layer_gaf0fc1f6c9ed7a5d0b262060039cc1f44}} 
+\index{FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}!FTFC\_BASE\_ADDRS@{FTFC\_BASE\_ADDRS}}
+\index{FTFC\_BASE\_ADDRS@{FTFC\_BASE\_ADDRS}!FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{FTFC\_BASE\_ADDRS}{FTFC\_BASE\_ADDRS}}
+{\footnotesize\ttfamily \#define FTFC\+\_\+\+BASE\+\_\+\+ADDRS~\{ \mbox{\hyperlink{group___f_t_f_c___peripheral___access___layer_ga573fcc63db056e23fc11be9bf28623e8}{FTFC\+\_\+\+BASE}} \}}
+
+
+
+Array initializer of FTFC peripheral base addresses. 
+
+\mbox{\Hypertarget{group___f_t_f_c___peripheral___access___layer_gaa20a93ec4c0b6fca9a30b731a1c0800d}\label{group___f_t_f_c___peripheral___access___layer_gaa20a93ec4c0b6fca9a30b731a1c0800d}} 
+\index{FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}!FTFC\_BASE\_PTRS@{FTFC\_BASE\_PTRS}}
+\index{FTFC\_BASE\_PTRS@{FTFC\_BASE\_PTRS}!FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{FTFC\_BASE\_PTRS}{FTFC\_BASE\_PTRS}}
+{\footnotesize\ttfamily \#define FTFC\+\_\+\+BASE\+\_\+\+PTRS~\{ \mbox{\hyperlink{group___f_t_f_c___peripheral___access___layer_gae5940c6a203fe360a848d3cbefdcaa3f}{FTFC}} \}}
+
+
+
+Array initializer of FTFC peripheral base pointers. 
+
+\mbox{\Hypertarget{group___f_t_f_c___peripheral___access___layer_ga5565d8093de1758d67d40c5134ec4413}\label{group___f_t_f_c___peripheral___access___layer_ga5565d8093de1758d67d40c5134ec4413}} 
+\index{FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}!FTFC\_COMMAND\_COMPLETE\_IRQS@{FTFC\_COMMAND\_COMPLETE\_IRQS}}
+\index{FTFC\_COMMAND\_COMPLETE\_IRQS@{FTFC\_COMMAND\_COMPLETE\_IRQS}!FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{FTFC\_COMMAND\_COMPLETE\_IRQS}{FTFC\_COMMAND\_COMPLETE\_IRQS}}
+{\footnotesize\ttfamily \#define FTFC\+\_\+\+COMMAND\+\_\+\+COMPLETE\+\_\+\+IRQS~\{ \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8a52da8ad093ab1d71fd736f5ba8793ca8}{FTFC\+\_\+\+IRQn}} \}}
+
+
+
+Interrupt vectors for the FTFC peripheral type. 
+
+\mbox{\Hypertarget{group___f_t_f_c___peripheral___access___layer_ga0c858973836369430cbc9f99a8c16f21}\label{group___f_t_f_c___peripheral___access___layer_ga0c858973836369430cbc9f99a8c16f21}} 
+\index{FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}!FTFC\_COMMAND\_COMPLETE\_IRQS\_CH\_COUNT@{FTFC\_COMMAND\_COMPLETE\_IRQS\_CH\_COUNT}}
+\index{FTFC\_COMMAND\_COMPLETE\_IRQS\_CH\_COUNT@{FTFC\_COMMAND\_COMPLETE\_IRQS\_CH\_COUNT}!FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{FTFC\_COMMAND\_COMPLETE\_IRQS\_CH\_COUNT}{FTFC\_COMMAND\_COMPLETE\_IRQS\_CH\_COUNT}}
+{\footnotesize\ttfamily \#define FTFC\+\_\+\+COMMAND\+\_\+\+COMPLETE\+\_\+\+IRQS\+\_\+\+CH\+\_\+\+COUNT~(1u)}
+
+
+
+Number of interrupt channels for the COMMAND\+\_\+\+COMPLETE type of FTFC module. 
+
+\mbox{\Hypertarget{group___f_t_f_c___peripheral___access___layer_ga70cc4456d44c6fd92935876e202d9382}\label{group___f_t_f_c___peripheral___access___layer_ga70cc4456d44c6fd92935876e202d9382}} 
+\index{FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}!FTFC\_FCCOB\_COUNT@{FTFC\_FCCOB\_COUNT}}
+\index{FTFC\_FCCOB\_COUNT@{FTFC\_FCCOB\_COUNT}!FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{FTFC\_FCCOB\_COUNT}{FTFC\_FCCOB\_COUNT}}
+{\footnotesize\ttfamily \#define FTFC\+\_\+\+FCCOB\+\_\+\+COUNT~12u}
+
+
+
+FTFC -\/ Size of Registers Arrays. 
+
+\mbox{\Hypertarget{group___f_t_f_c___peripheral___access___layer_gaef96aa04e620c822dffb78de849650cc}\label{group___f_t_f_c___peripheral___access___layer_gaef96aa04e620c822dffb78de849650cc}} 
+\index{FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}!FTFC\_FPROT\_COUNT@{FTFC\_FPROT\_COUNT}}
+\index{FTFC\_FPROT\_COUNT@{FTFC\_FPROT\_COUNT}!FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{FTFC\_FPROT\_COUNT}{FTFC\_FPROT\_COUNT}}
+{\footnotesize\ttfamily \#define FTFC\+\_\+\+FPROT\+\_\+\+COUNT~4u}
+
+\mbox{\Hypertarget{group___f_t_f_c___peripheral___access___layer_ga0c98af3339be464f60858cfb726ee37e}\label{group___f_t_f_c___peripheral___access___layer_ga0c98af3339be464f60858cfb726ee37e}} 
+\index{FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}!FTFC\_INSTANCE\_COUNT@{FTFC\_INSTANCE\_COUNT}}
+\index{FTFC\_INSTANCE\_COUNT@{FTFC\_INSTANCE\_COUNT}!FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{FTFC\_INSTANCE\_COUNT}{FTFC\_INSTANCE\_COUNT}}
+{\footnotesize\ttfamily \#define FTFC\+\_\+\+INSTANCE\+\_\+\+COUNT~(1u)}
+
+
+
+Number of instances of the FTFC module. 
+
+\mbox{\Hypertarget{group___f_t_f_c___peripheral___access___layer_ga96aa003f53f5781e4c4ffde4a2f5b07e}\label{group___f_t_f_c___peripheral___access___layer_ga96aa003f53f5781e4c4ffde4a2f5b07e}} 
+\index{FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}!FTFC\_IRQS\_ARR\_COUNT@{FTFC\_IRQS\_ARR\_COUNT}}
+\index{FTFC\_IRQS\_ARR\_COUNT@{FTFC\_IRQS\_ARR\_COUNT}!FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{FTFC\_IRQS\_ARR\_COUNT}{FTFC\_IRQS\_ARR\_COUNT}}
+{\footnotesize\ttfamily \#define FTFC\+\_\+\+IRQS\+\_\+\+ARR\+\_\+\+COUNT~(2u)}
+
+
+
+Number of interrupt vector arrays for the FTFC module. 
+
+\mbox{\Hypertarget{group___f_t_f_c___peripheral___access___layer_ga5cf4a5f23118b354265378db06ff82fd}\label{group___f_t_f_c___peripheral___access___layer_ga5cf4a5f23118b354265378db06ff82fd}} 
+\index{FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}!FTFC\_READ\_COLLISION\_IRQS@{FTFC\_READ\_COLLISION\_IRQS}}
+\index{FTFC\_READ\_COLLISION\_IRQS@{FTFC\_READ\_COLLISION\_IRQS}!FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{FTFC\_READ\_COLLISION\_IRQS}{FTFC\_READ\_COLLISION\_IRQS}}
+{\footnotesize\ttfamily \#define FTFC\+\_\+\+READ\+\_\+\+COLLISION\+\_\+\+IRQS~\{ \mbox{\hyperlink{group___interrupt__vector__numbers___s32_k148_gga7e1129cd8a196f4284d41db3e82ad5c8aa3caf4837979a4a300de12aa1ec8fc74}{Read\+\_\+\+Collision\+\_\+\+IRQn}} \}}
+
+\mbox{\Hypertarget{group___f_t_f_c___peripheral___access___layer_ga852df5bff9d2dd940735f8387afd0e51}\label{group___f_t_f_c___peripheral___access___layer_ga852df5bff9d2dd940735f8387afd0e51}} 
+\index{FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}!FTFC\_READ\_COLLISION\_IRQS\_CH\_COUNT@{FTFC\_READ\_COLLISION\_IRQS\_CH\_COUNT}}
+\index{FTFC\_READ\_COLLISION\_IRQS\_CH\_COUNT@{FTFC\_READ\_COLLISION\_IRQS\_CH\_COUNT}!FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{FTFC\_READ\_COLLISION\_IRQS\_CH\_COUNT}{FTFC\_READ\_COLLISION\_IRQS\_CH\_COUNT}}
+{\footnotesize\ttfamily \#define FTFC\+\_\+\+READ\+\_\+\+COLLISION\+\_\+\+IRQS\+\_\+\+CH\+\_\+\+COUNT~(1u)}
+
+
+
+Number of interrupt channels for the READ\+\_\+\+COLLISION type of FTFC module. 
+
+
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{group___f_t_f_c___peripheral___access___layer_gafd0778c584834287a7011bf7e242521b}\label{group___f_t_f_c___peripheral___access___layer_gafd0778c584834287a7011bf7e242521b}} 
+\index{FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}!FTFC\_MemMapPtr@{FTFC\_MemMapPtr}}
+\index{FTFC\_MemMapPtr@{FTFC\_MemMapPtr}!FTFC Peripheral Access Layer@{FTFC Peripheral Access Layer}}
+\doxysubsubsection{\texorpdfstring{FTFC\_MemMapPtr}{FTFC\_MemMapPtr}}
+{\footnotesize\ttfamily typedef  struct \mbox{\hyperlink{struct_f_t_f_c___type}{FTFC\+\_\+\+Type}} $\ast$ \mbox{\hyperlink{group___f_t_f_c___peripheral___access___layer_gafd0778c584834287a7011bf7e242521b}{FTFC\+\_\+\+Mem\+Map\+Ptr}}}
+
