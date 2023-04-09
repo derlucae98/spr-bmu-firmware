@@ -64,7 +64,7 @@ void init_stacks(void) {
 
     ltc6811_init(prv_ltc_mutex_take, prv_ltc_mutex_give, prv_ltc_spi, prv_ltc_assert, prv_ltc_deassert);
 
-    uint32_t UID[MAX_NUM_OF_STACKS];
+    uint32_t UID[MAX_NUM_OF_SLAVES];
     ltc6811_get_uid(UID);
     stacks_data_t *stacksData = get_stacks_data(portMAX_DELAY);
     if (stacksData != NULL) {
@@ -81,7 +81,7 @@ void stacks_worker_task(void *p) {
 
     stacks_data_t stacksDataLocal;
     memset(&stacksDataLocal, 0, sizeof(stacks_data_t));
-    static uint8_t pecVoltage[MAX_NUM_OF_STACKS][MAX_NUM_OF_CELLS];
+    static uint8_t pecVoltage[MAX_NUM_OF_SLAVES][MAX_NUM_OF_CELLS];
     TickType_t xLastWakeTime = xTaskGetTickCount();
     const TickType_t xPeriod = pdMS_TO_TICKS(75);
 
@@ -182,7 +182,7 @@ void balancing_task(void *p) {
 
         if (prvBalanceEnable) {
 
-            uint16_t cellVoltage[MAX_NUM_OF_STACKS][MAX_NUM_OF_CELLS];
+            uint16_t cellVoltage[MAX_NUM_OF_SLAVES][MAX_NUM_OF_CELLS];
             uint16_t maxCellVoltage = 0;
             uint16_t minCellVoltage = 0;
             bool valid = false;
