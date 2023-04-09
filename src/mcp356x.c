@@ -1,24 +1,32 @@
+/*!
+ * @file            mcp356x.c
+ * @brief           Library to interface with MCP356x(R) ADCs.
+ *                  It is fully hardware independent and uses callback functions
+ *                  to interface with the hardware. This library can be used with multiple
+ *                  ADCs which are addressed by objects of type mcp356x_obj_t.
+ */
+
 /*
-Copyright (c) 2022 Luca Engelmann (derlucae98)
+Copyright 2023 Luca Engelmann
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 
 #include "mcp356x.h"
 
@@ -116,18 +124,15 @@ mcp356x_obj_t mcp356x_init(mcp356x_spi_move_array_t mcp356x_spi_move_array,
     obj.config.OSR = OSR_256;
     obj.config.BOOST = BOOST_1;
     obj.config.GAIN = GAIN_1;
-    obj.config.AZ_MUX = 0;
-    obj.config.AZ_REF = 1;
+    obj.config.AZ_MUX = AZ_MUX_DISABLED;
+    obj.config.AZ_REF = AZ_REF_DISABLED;
     obj.config.CONV_MODE = CONV_MODE_ONE_SHOT_SCAN_SDN;
     obj.config.DATA_FORMAT = DATA_FORMAT_24;
     obj.config.CRC_FORMAT = CRC_FORMAT_16;
-    obj.config.EN_CRCCOM = 0;
-    obj.config.EN_OFFCAL = 0;
-    obj.config.EN_GAINCAL = 0;
+    obj.config.EN_CRCCOM = EN_CRCCOM_ENABLED;
     obj.config.IRQ_MODE = IRQ_MODE_IRQ_HIGH_Z;
-    obj.config.EN_FASTCMD = 1;
-    obj.config.EN_STP = 1;
-    obj.config.MCLK = 0;
+    obj.config.EN_FASTCMD = EN_FASTCMD_ENABLED;
+    obj.config.EN_STP = EN_STP_DISABLED;
     return obj;
 }
 
