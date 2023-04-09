@@ -65,7 +65,7 @@ Module which acquires the stack values. The values are provided via a Mutex prot
 \doxysubsubsection{\texorpdfstring{MAX\_NUM\_OF\_SLAVES}{MAX\_NUM\_OF\_SLAVES}}
 {\footnotesize\ttfamily \#define MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+SLAVES~12}
 
-Defines the number of slaves during normal operation. NUMBEROFSLAVES can be different from this value. This is useful during development when only one slave is available for testing on the bench. To ensure that the software will work with NUMBEROFSLAVES != 12, MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+STACKS defines the number of slaves during normal operation. If NUMBEROFSLAVES is less than this value, all unused values in the arrays are filled with 0. Note that a greater value for NUMBEROFSLAVES than MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+SLAVES will lead to crashes 
+Defines the number of slaves during normal operation. NUMBEROFSLAVES can be different from this value. This is useful during development when only one slave is available for testing on the bench. To ensure that the software will work with NUMBEROFSLAVES != 12, MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+SLAVES defines the number of slaves during normal operation. If NUMBEROFSLAVES is less than this value, all unused values in the arrays are filled with 0. Note that a greater value for NUMBEROFSLAVES than MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+SLAVES will lead to crashes 
 
 \doxysubsection{Function Documentation}
 \mbox{\Hypertarget{stacks_8h_aabf463ce77d1c20dc5dbb39e8bf3e6ed}\label{stacks_8h_aabf463ce77d1c20dc5dbb39e8bf3e6ed}} 
@@ -100,7 +100,17 @@ Copy the global stacks\+\_\+data variable to a local variable. This function wor
 \DoxyCodeLine{\mbox{\hyperlink{stacks_8h_a59ef0488c28f3170bf6d360abf7ab85e}{copy\_stacks\_data}}(\&stacksDataLocal, portMAX\_DELAY);}
 
 \end{DoxyCode}
- \mbox{\Hypertarget{stacks_8h_ac99fac1270344e147f33864e1da25153}\label{stacks_8h_ac99fac1270344e147f33864e1da25153}} 
+ 
+\begin{DoxyParams}{Parameters}
+{\em dest} & Pointer to the destination variable \\
+\hline
+{\em blocktime} & Specify a timeout in which the Mutex must become available. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Returns true on success and false on failure. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{stacks_8h_ac99fac1270344e147f33864e1da25153}\label{stacks_8h_ac99fac1270344e147f33864e1da25153}} 
 \index{stacks.h@{stacks.h}!get\_balancing\_status@{get\_balancing\_status}}
 \index{get\_balancing\_status@{get\_balancing\_status}!stacks.h@{stacks.h}}
 \doxysubsubsection{\texorpdfstring{get\_balancing\_status()}{get\_balancing\_status()}}
@@ -110,6 +120,11 @@ Copy the global stacks\+\_\+data variable to a local variable. This function wor
 
 Get the currently set balancing gates. The balancing algorithm is executed in this module. This function reports the currently set balancing gates for a visual feedback in the control software. 
 
+
+\begin{DoxyParams}{Parameters}
+{\em gates} & Provide an array of size \mbox{[}NUMBEROFSLAVES\mbox{]}\mbox{[}MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS\mbox{]} in which the data will be stored. \\
+\hline
+\end{DoxyParams}
 \mbox{\Hypertarget{stacks_8h_a2199a8aada9ff14aced446806302701d}\label{stacks_8h_a2199a8aada9ff14aced446806302701d}} 
 \index{stacks.h@{stacks.h}!get\_stacks\_data@{get\_stacks\_data}}
 \index{get\_stacks\_data@{get\_stacks\_data}!stacks.h@{stacks.h}}

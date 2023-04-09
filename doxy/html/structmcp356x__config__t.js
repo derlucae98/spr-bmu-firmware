@@ -17,7 +17,6 @@ var structmcp356x__config__t =
     [ "EN_STP", "structmcp356x__config__t.html#a5df3048cd2fc980f4399252701dd1838", null ],
     [ "GAIN", "structmcp356x__config__t.html#a97ebc8630db48de37f04b63467584ff0", null ],
     [ "IRQ_MODE", "structmcp356x__config__t.html#a895ee5ce08dc11c4e0f265a07d408138", null ],
-    [ "MCLK", "structmcp356x__config__t.html#ad99d3b78326fce164d5ee54fee2be568", null ],
     [ "OSR", "structmcp356x__config__t.html#a8598f674d8b1d849352446ba7693b2a0", null ],
     [ "PRE", "structmcp356x__config__t.html#a3427472172558b64db45ab6f4bc14142", null ],
     [ "SCAN", "structmcp356x__config__t.html#aedf526b1b3ab9f460f5ed9bfd1d3c8e6", null ],

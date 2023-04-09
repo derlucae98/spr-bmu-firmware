@@ -11,7 +11,7 @@ var group___l_p_i_t___peripheral___access___layer =
       [ "RESERVED_0", "struct_l_p_i_t___type.html#a71277aaa40be4473ac2521981f273bd3", null ],
       [ "SETTEN", "struct_l_p_i_t___type.html#aa4407fba8ebd0a4d19a0acfcbfc69f63", null ],
       [ "TCTRL", "struct_l_p_i_t___type.html#ad205d7250cea8af8b177be3e861193d8", null ],
-      [ "TMR", "struct_l_p_i_t___type.html#a2a29bea30dcc86bbe96b8943e8599bb9", null ],
+      [ "TMR", "struct_l_p_i_t___type.html#ab332625b9295a2dc112002f52594cf24", null ],
       [ "TVAL", "struct_l_p_i_t___type.html#acdfacdcfd5ff57d92b1769e3540a1862", null ],
       [ "VERID", "struct_l_p_i_t___type.html#ab20ff3f0387cbcc2652477ed5d2702df", null ]
     ] ],

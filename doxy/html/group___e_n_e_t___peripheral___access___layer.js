@@ -9,7 +9,7 @@ var group___e_n_e_t___peripheral___access___layer =
       [ "ATPER", "struct_e_n_e_t___type.html#a7348bf3172b8e3e9a3d00296943a0215", null ],
       [ "ATSTMP", "struct_e_n_e_t___type.html#ab7597794380c561565a1ccc7b976c090", null ],
       [ "ATVR", "struct_e_n_e_t___type.html#abe873ea7694464d23e493f7b819c47db", null ],
-      [ "CHANNEL", "struct_e_n_e_t___type.html#a3f6683cff1f9df9da0b0f728e00e2ad8", null ],
+      [ "CHANNEL", "struct_e_n_e_t___type.html#a39269579a024f68800c33741ee952e62", null ],
       [ "ECR", "struct_e_n_e_t___type.html#a1c146954c72b1cc2c05a85dd55ae5c9b", null ],
       [ "EIMR", "struct_e_n_e_t___type.html#a04e3f6ea5af8954c66abd2a6a8b267c8", null ],
       [ "EIR", "struct_e_n_e_t___type.html#a05ae409ff16cdfb67db7da884bc754fe", null ],

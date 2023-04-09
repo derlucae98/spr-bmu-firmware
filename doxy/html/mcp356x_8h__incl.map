@@ -1,5 +1,5 @@
 <map id="include/mcp356x.h" name="include/mcp356x.h">
-<area shape="rect" id="node1" title=" " alt="" coords="110,5,241,32"/>
+<area shape="rect" id="node1" title="Library to interface with MCP356x(R) ADCs. It is fully hardware independent and uses callback functio..." alt="" coords="110,5,241,32"/>
 <area shape="rect" id="node2" title=" " alt="" coords="5,80,71,107"/>
 <area shape="rect" id="node3" title=" " alt="" coords="95,80,165,107"/>
 <area shape="rect" id="node4" title=" " alt="" coords="189,80,255,107"/>

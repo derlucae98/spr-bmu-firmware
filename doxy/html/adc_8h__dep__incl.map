@@ -1,0 +1,5 @@
+<map id="include/adc.h" name="include/adc.h">
+<area shape="rect" id="node1" title="This module handles the interface to the MCP3564 ADC. The values are provided via a Mutex protected g..." alt="" coords="7,5,106,32"/>
+<area shape="rect" id="node2" href="$bmu_8h.html" title=" " alt="" coords="5,155,108,181"/>
+<area shape="rect" id="node3" href="$contactor_8h.html" title=" " alt="" coords="43,80,174,107"/>
+</map>

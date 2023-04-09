@@ -175,7 +175,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Defines the number of slaves during normal operation. NUMBEROFSLAVES can be different from this value. This is useful during development when only one slave is available for testing on the bench. To ensure that the software will work with NUMBEROFSLAVES != 12, MAX_NUM_OF_STACKS defines the number of slaves during normal operation. If NUMBEROFSLAVES is less than this value, all unused values in the arrays are filled with 0. Note that a greater value for NUMBEROFSLAVES than MAX_NUM_OF_SLAVES will lead to crashes </p>
+<p>Defines the number of slaves during normal operation. NUMBEROFSLAVES can be different from this value. This is useful during development when only one slave is available for testing on the bench. To ensure that the software will work with NUMBEROFSLAVES != 12, MAX_NUM_OF_SLAVES defines the number of slaves during normal operation. If NUMBEROFSLAVES is less than this value, all unused values in the arrays are filled with 0. Note that a greater value for NUMBEROFSLAVES than MAX_NUM_OF_SLAVES will lead to crashes </p>
 
 </div>
 </div>
@@ -238,7 +238,15 @@ Functions</h2></td></tr>
 <div class="line"><a class="code" href="stacks_8h.html#a59ef0488c28f3170bf6d360abf7ab85e">copy_stacks_data</a>(&amp;stacksDataLocal, portMAX_DELAY);</div>
 <div class="ttc" id="astacks_8h_html_a59ef0488c28f3170bf6d360abf7ab85e"><div class="ttname"><a href="stacks_8h.html#a59ef0488c28f3170bf6d360abf7ab85e">copy_stacks_data</a></div><div class="ttdeci">bool copy_stacks_data(stacks_data_t *dest, TickType_t blocktime)</div><div class="ttdoc">Copy the global stacks_data variable to a local variable. This function works similar to get_stacks_d...</div></div>
 <div class="ttc" id="astructstacks__data__t_html"><div class="ttname"><a href="structstacks__data__t.html">stacks_data_t</a></div><div class="ttdef"><b>Definition:</b> stacks.h:60</div></div>
-</div><!-- fragment --> 
+</div><!-- fragment --> <dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">dest</td><td>Pointer to the destination variable </td></tr>
+    <tr><td class="paramname">blocktime</td><td>Specify a timeout in which the Mutex must become available. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Returns true on success and false on failure. </dd></dl>
+
 </div>
 </div>
 <a id="ac99fac1270344e147f33864e1da25153"></a>
@@ -258,6 +266,12 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Get the currently set balancing gates. The balancing algorithm is executed in this module. This function reports the currently set balancing gates for a visual feedback in the control software. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">gates</td><td>Provide an array of size [NUMBEROFSLAVES][MAX_NUM_OF_CELLS] in which the data will be stored. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

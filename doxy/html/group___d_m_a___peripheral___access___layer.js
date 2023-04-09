@@ -3,13 +3,13 @@ var group___d_m_a___peripheral___access___layer =
     [ "DMA Register Masks", "group___d_m_a___register___masks.html", "group___d_m_a___register___masks" ],
     [ "DMA_Type", "struct_d_m_a___type.html", [
       [ "ATTR", "struct_d_m_a___type.html#ae655267e67e5ed42554564818a5422a1", null ],
-      [ "BITER", "struct_d_m_a___type.html#a976c72d08ec0154ee74048177d59feb1", null ],
+      [ "BITER", "struct_d_m_a___type.html#a7fbd4bf7224df220a2e4bcb3090cdbcf", null ],
       [ "CDNE", "struct_d_m_a___type.html#a8257711f5ac3a22ed38ac14eda8831c5", null ],
       [ "CEEI", "struct_d_m_a___type.html#af8cbb6695cfc2845b17aa66c639d9bdc", null ],
       [ "CERQ", "struct_d_m_a___type.html#ac08ea0244abc5bc617eb46876d356511", null ],
       [ "CERR", "struct_d_m_a___type.html#a3266bc4362b6e24d9ae98b3488fb720f", null ],
       [ "CINT", "struct_d_m_a___type.html#ae32bc5cf579720c458820a648a99f90e", null ],
-      [ "CITER", "struct_d_m_a___type.html#acdb4ae7666f31ef94840379f1b8ef0f8", null ],
+      [ "CITER", "struct_d_m_a___type.html#a49a642c51c79f461080c7f06cb5a815d", null ],
       [ "CR", "struct_d_m_a___type.html#ab40c89c59391aaa9d9a8ec011dd0907a", null ],
       [ "CSR", "struct_d_m_a___type.html#ab5d0eeb11a728846c639375a18225d1f", null ],
       [ "DADDR", "struct_d_m_a___type.html#a706b944a77eb19423f60d87e3f7facbf", null ],
@@ -28,7 +28,7 @@ var group___d_m_a___peripheral___access___layer =
       [ "MLNO", "struct_d_m_a___type.html#a73ad70c080409031470b25d501831512", null ],
       [ "MLOFFNO", "struct_d_m_a___type.html#a3141154ca92e4a9130f816028382283d", null ],
       [ "MLOFFYES", "struct_d_m_a___type.html#a808f030ea7fb627b0c4d3e196a322b84", null ],
-      [ "NBYTES", "struct_d_m_a___type.html#a2163185fdf9bb877174e2b68db4ad4b4", null ],
+      [ "NBYTES", "struct_d_m_a___type.html#a81267b7c9dc28250c608f864fd6fc9a8", null ],
       [ "RESERVED_0", "struct_d_m_a___type.html#a71277aaa40be4473ac2521981f273bd3", null ],
       [ "RESERVED_1", "struct_d_m_a___type.html#a422ac2beba1cc5c797380d1c5832b885", null ],
       [ "RESERVED_2", "struct_d_m_a___type.html#acc19a07675d1806592b3ed4a92f91e1c", null ],
@@ -43,7 +43,7 @@ var group___d_m_a___peripheral___access___layer =
       [ "SLAST", "struct_d_m_a___type.html#a259cfcca8e9764142934b37873e0b2ea", null ],
       [ "SOFF", "struct_d_m_a___type.html#ab83ecd61515a229daa91f7ee98f377d7", null ],
       [ "SSRT", "struct_d_m_a___type.html#a20abbb37927be43e6e153072de17c02f", null ],
-      [ "TCD", "struct_d_m_a___type.html#a92aede990d97daf6c87744895a5834c8", null ]
+      [ "TCD", "struct_d_m_a___type.html#a725fea577fdaec63eac1b786f828e506", null ]
     ] ],
     [ "DMA", "group___d_m_a___peripheral___access___layer.html#ga137c9e7c0bc9e12f455df0a6e41c0287", null ],
     [ "DMA_BASE", "group___d_m_a___peripheral___access___layer.html#gab04dd812f37907dc8bd6ed82e346b563", null ],

@@ -18,7 +18,7 @@ var _l_t_c6811_8h =
     [ "ltc6811_get_temperatures_in_degC", "_l_t_c6811_8h.html#ab68b2f7615ba1bcb3c7df0cce7f9bd2c", null ],
     [ "ltc6811_get_uid", "_l_t_c6811_8h.html#a722f58309dc66e8a79b1f347dd1c5216", null ],
     [ "ltc6811_get_voltage", "_l_t_c6811_8h.html#ae0be5d32aabfc30b8413f938304ff5b5", null ],
-    [ "ltc6811_init", "_l_t_c6811_8h.html#a614d2b0cedb80b743f3de8dbf9a269e4", null ],
+    [ "ltc6811_init", "_l_t_c6811_8h.html#ac9a8a5194fa88444f76b23f0dd7ea7b8", null ],
     [ "ltc6811_open_wire_check", "_l_t_c6811_8h.html#a594f5d5cba4d8dce21492a2889bc0a96", null ],
     [ "ltc6811_set_balancing_gates", "_l_t_c6811_8h.html#a33556491ac2c9ab3549f33622e5f7508", null ],
     [ "ltc6811_wake_daisy_chain", "_l_t_c6811_8h.html#a23cac4daf38421f8aa37c9426d451858", null ]

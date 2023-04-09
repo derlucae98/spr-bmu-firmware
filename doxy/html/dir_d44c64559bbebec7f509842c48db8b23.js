@@ -1,5 +1,6 @@
 var dir_d44c64559bbebec7f509842c48db8b23 =
 [
+    [ "adc.h", "adc_8h.html", "adc_8h" ],
     [ "bmu.h", "bmu_8h.html", "bmu_8h" ],
     [ "config.h", "config_8h.html", "config_8h" ],
     [ "contactor.h", "contactor_8h.html", "contactor_8h" ],
@@ -11,7 +12,6 @@ var dir_d44c64559bbebec7f509842c48db8b23 =
     [ "s32_core_cm4.h", "s32__core__cm4_8h.html", "s32__core__cm4_8h" ],
     [ "S32K148.h", "_s32_k148_8h.html", "_s32_k148_8h" ],
     [ "S32K148_features.h", "_s32_k148__features_8h.html", "_s32_k148__features_8h" ],
-    [ "sensors.h", "sensors_8h.html", "sensors_8h" ],
     [ "stacks.h", "stacks_8h.html", "stacks_8h" ],
     [ "startup.h", "startup_8h.html", "startup_8h" ],
     [ "system_S32K148.h", "system___s32_k148_8h.html", "system___s32_k148_8h" ]

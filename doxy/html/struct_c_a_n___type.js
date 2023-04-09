@@ -39,7 +39,7 @@ var struct_c_a_n___type =
     [ "RXIMR", "struct_c_a_n___type.html#a4931de67ca76faa8f6e5cbaa06a87247", null ],
     [ "RXMGMASK", "struct_c_a_n___type.html#a5c2048bfa07070031acbee2dd7e64391", null ],
     [ "TIMER", "struct_c_a_n___type.html#ae7b8b29e4cdd642fd36ac94c68c33357", null ],
-    [ "WMB", "struct_c_a_n___type.html#a55f45483c62e2f48e79393005866e0c3", null ],
+    [ "WMB", "struct_c_a_n___type.html#ade2bbb315207bfa88dd92da7afdd30df", null ],
     [ "WMBn_CS", "struct_c_a_n___type.html#a4d41adcfbb8f98b31bfbe7d9f144d4fa", null ],
     [ "WMBn_D03", "struct_c_a_n___type.html#a2e48415297e9f681fa5669e8b41c98b4", null ],
     [ "WMBn_D47", "struct_c_a_n___type.html#a588c1925b6163e91c2405036f3af54c5", null ],

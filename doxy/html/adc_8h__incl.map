@@ -1,0 +1,14 @@
+<map id="include/adc.h" name="include/adc.h">
+<area shape="rect" id="node1" title="This module handles the interface to the MCP3564 ADC. The values are provided via a Mutex protected g..." alt="" coords="315,5,413,32"/>
+<area shape="rect" id="node2" title=" " alt="" coords="5,80,101,107"/>
+<area shape="rect" id="node3" title=" " alt="" coords="125,80,184,107"/>
+<area shape="rect" id="node4" href="$mcp356x_8h.html" title="Library to interface with MCP356x(R) ADCs. It is fully hardware independent and uses callback functio..." alt="" coords="209,80,295,107"/>
+<area shape="rect" id="node8" title=" " alt="" coords="309,155,384,181"/>
+<area shape="rect" id="node9" title=" " alt="" coords="371,80,421,107"/>
+<area shape="rect" id="node10" title=" " alt="" coords="446,80,503,107"/>
+<area shape="rect" id="node11" href="$config_8h.html" title=" " alt="" coords="527,80,595,107"/>
+<area shape="rect" id="node12" title=" " alt="" coords="619,80,674,107"/>
+<area shape="rect" id="node5" title=" " alt="" coords="35,155,101,181"/>
+<area shape="rect" id="node6" title=" " alt="" coords="125,155,195,181"/>
+<area shape="rect" id="node7" title=" " alt="" coords="219,155,285,181"/>
+</map>

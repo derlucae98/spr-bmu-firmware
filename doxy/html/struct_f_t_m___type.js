@@ -6,7 +6,7 @@ var struct_f_t_m___type =
     [ "CnV", "struct_f_t_m___type.html#abbc17ee9708ecdd4ddc9cb9e528bdbac", null ],
     [ "COMBINE", "struct_f_t_m___type.html#a26b6fa0ba5b755cebdc2e3457f8a5172", null ],
     [ "CONF", "struct_f_t_m___type.html#a42f5a13cd52a3f76b0b20e3e7cb441b4", null ],
-    [ "CONTROLS", "struct_f_t_m___type.html#aa5e6f0efde634fe94c62a914515de94d", null ],
+    [ "CONTROLS", "struct_f_t_m___type.html#a6135f2839c2e46bf3b5fe778bac7a41d", null ],
     [ "CV_MIRROR", "struct_f_t_m___type.html#a572294e851ccac3ff29067eee88f588c", null ],
     [ "DEADTIME", "struct_f_t_m___type.html#a4a65a29756f74ae8195109f77532ac6a", null ],
     [ "EXTTRIG", "struct_f_t_m___type.html#a9abcc76868e079ede7576489d123ac7c", null ],
