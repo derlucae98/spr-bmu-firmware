@@ -171,6 +171,6 @@ void vApplicationMallocFailedHook(void) {
 }
 
 void vApplicationIdleHook(void) {
-    toggle_pin(DBG_3_PORT, DBG_3_PIN);
+    toggle_pin(DBG_9_PORT, DBG_9_PIN);
 }
 

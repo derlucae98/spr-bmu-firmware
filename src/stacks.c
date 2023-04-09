@@ -65,13 +65,14 @@ void stacks_worker_task(void *p) {
     memset(&stacksDataLocal, 0, sizeof(stacks_data_t));
     static uint8_t pecVoltage[MAX_NUM_OF_STACKS][MAX_NUM_OF_CELLS];
     TickType_t xLastWakeTime = xTaskGetTickCount();
-    const TickType_t xPeriod = pdMS_TO_TICKS(100);
+    const TickType_t xPeriod = pdMS_TO_TICKS(75);
 
     uint8_t cycle = 0;
 
     while (1) {
 
         ltc6811_wake_daisy_chain();
+        ltc6811_set_balancing_gates(_balancingGates);
         ltc6811_get_voltage(stacksDataLocal.cellVoltage, pecVoltage);
 
         for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
@@ -79,8 +80,6 @@ void stacks_worker_task(void *p) {
                 stacksDataLocal.cellVoltage[slave][cell] /= 10; //chop off the 100 uV digit
             }
         }
-
-        ltc6811_set_balancing_gates(_balancingGates);
 
         switch (cycle) {
         case 0:
@@ -97,6 +96,7 @@ void stacks_worker_task(void *p) {
         // PEC error
         // Open cell wire
         // value out of range
+
 
         for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
             // Validity check for temperature sensors
