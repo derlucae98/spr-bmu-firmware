@@ -323,23 +323,3 @@ mcp356x_error_t mcp356x_read_value(mcp356x_obj_t *obj, int32_t *val, uint8_t *sg
 
     return MCP356X_ERROR_OK;
 }
-
-mcp356x_error_t mcp356x_read_voltage(mcp356x_obj_t *obj, float refVoltage, float *result) {
-    int32_t val;
-    uint8_t sgn;
-    uint8_t chID;
-    mcp356x_error_t res;
-    res = mcp356x_read_value(obj, &val, &sgn, &chID);
-
-    if (res != MCP356X_ERROR_OK) {
-        return res;
-    }
-
-    if (result == NULL) {
-        return MCP356X_ERROR_FAILED;
-    }
-
-    *result = 2.0f * val * refVoltage * 5.96046483E-8 * (1 / gain_lookup(obj));
-
-    return MCP356X_ERROR_OK;
-}

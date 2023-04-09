@@ -221,7 +221,7 @@ mcp356x_error_t mcp356x_get_value(mcp356x_obj_t *obj, mcp356x_channel_t ch_pos, 
 mcp356x_error_t mcp356x_get_voltage(mcp356x_obj_t *obj, mcp356x_channel_t ch_pos, mcp356x_channel_t ch_neg, float refVoltage, float *result);
 mcp356x_error_t mcp356x_acquire(mcp356x_obj_t *obj, mcp356x_channel_t ch_pos, mcp356x_channel_t ch_neg);
 mcp356x_error_t mcp356x_read_value(mcp356x_obj_t *obj, int32_t *val, uint8_t *sgn, uint8_t *chID);
-mcp356x_error_t mcp356x_read_voltage(mcp356x_obj_t *obj, float refVoltage, float *result);
+
 
 
 #endif /* MCP356X_H_ */
