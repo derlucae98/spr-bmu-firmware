@@ -1,12 +1,17 @@
 \hypertarget{_l_t_c6811_8h}{}\doxysection{include/\+LTC6811.h File Reference}
 \label{_l_t_c6811_8h}\index{include/LTC6811.h@{include/LTC6811.h}}
-{\ttfamily \#include $<$string.\+h$>$}\newline
-{\ttfamily \#include $<$math.\+h$>$}\newline
-{\ttfamily \#include $<$stdbool.\+h$>$}\newline
+
+
+Library for the LTC6811 battery stack monitor This Library is designed for a specific hardware.  
+
+
 {\ttfamily \#include \char`\"{}Free\+RTOS.\+h\char`\"{}}\newline
 {\ttfamily \#include \char`\"{}task.\+h\char`\"{}}\newline
 {\ttfamily \#include \char`\"{}queue.\+h\char`\"{}}\newline
 {\ttfamily \#include \char`\"{}semphr.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+{\ttfamily \#include $<$math.\+h$>$}\newline
+{\ttfamily \#include $<$stdbool.\+h$>$}\newline
 Include dependency graph for LTC6811.\+h\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
@@ -26,7 +31,7 @@ This graph shows which files directly or indirectly include this file\+:\nopageb
 \item 
 \#define \mbox{\hyperlink{_l_t_c6811_8h_a92be83a62ab975ee948fa03c09f9831e}{NTC\+\_\+\+CELL}}~3435
 \item 
-\#define \mbox{\hyperlink{_l_t_c6811_8h_ae8917e4694b50aff9d8b1cf3de93d5c0}{NUMBEROFSLAVES}}~1
+\#define \mbox{\hyperlink{_l_t_c6811_8h_ae8917e4694b50aff9d8b1cf3de93d5c0}{NUMBEROFSLAVES}}~12
 \item 
 \#define \mbox{\hyperlink{_l_t_c6811_8h_ac3447b6da089862e9efd9e742443bd5f}{MAX\+\_\+\+NUM\+\_\+\+OF\+\_\+\+CELLS}}~12
 \item 
@@ -73,6 +78,11 @@ void \mbox{\hyperlink{_l_t_c6811_8h_a33556491ac2c9ab3549f33622e5f7508}{ltc6811\+
 \begin{DoxyCompactList}\small\item\em Enable the balancing for specific cells. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
+\doxysubsection{Detailed Description}
+Library for the LTC6811 battery stack monitor This Library is designed for a specific hardware. 
+
+
+
 \doxysubsection{Macro Definition Documentation}
 \mbox{\Hypertarget{_l_t_c6811_8h_ac3447b6da089862e9efd9e742443bd5f}\label{_l_t_c6811_8h_ac3447b6da089862e9efd9e742443bd5f}} 
 \index{LTC6811.h@{LTC6811.h}!MAX\_NUM\_OF\_CELLS@{MAX\_NUM\_OF\_CELLS}}
@@ -96,7 +106,7 @@ Defines the B-\/value for the NTCs used for the cell temperature monitoring \mbo
 \index{LTC6811.h@{LTC6811.h}!NUMBEROFSLAVES@{NUMBEROFSLAVES}}
 \index{NUMBEROFSLAVES@{NUMBEROFSLAVES}!LTC6811.h@{LTC6811.h}}
 \doxysubsubsection{\texorpdfstring{NUMBEROFSLAVES}{NUMBEROFSLAVES}}
-{\footnotesize\ttfamily \#define NUMBEROFSLAVES~1}
+{\footnotesize\ttfamily \#define NUMBEROFSLAVES~12}
 
 Defines the number of devices in a the daisy-\/chain 
 

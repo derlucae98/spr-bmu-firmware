@@ -1,8 +1,8 @@
 var searchData=
 [
-  ['check_5ftemperature_5fvalidity_12654',['check_temperature_validity',['../stacks_8h.html#a317c7cb521a74700c1a805bd5e443941',1,'stacks.h']]],
-  ['check_5fvoltage_5fvalidity_12655',['check_voltage_validity',['../stacks_8h.html#a8d16f174be4bb6a635fc75f17298a8b7',1,'stacks.h']]],
-  ['control_5fbalancing_12656',['control_balancing',['../stacks_8h.html#aabf463ce77d1c20dc5dbb39e8bf3e6ed',1,'stacks.h']]],
-  ['copy_5fadc_5fdata_12657',['copy_adc_data',['../sensors_8h.html#ab611f39eb1483b16fc35f3bf51928495',1,'sensors.h']]],
-  ['copy_5fstacks_5fdata_12658',['copy_stacks_data',['../stacks_8h.html#a59ef0488c28f3170bf6d360abf7ab85e',1,'stacks.h']]]
+  ['get_5fadc_5fdata_12673',['get_adc_data',['../sensors_8h.html#af714a16bf5ed7ebb3ca7ee3699043e85',1,'sensors.h']]],
+  ['get_5fbalancing_5fstatus_12674',['get_balancing_status',['../stacks_8h.html#ac99fac1270344e147f33864e1da25153',1,'stacks.h']]],
+  ['get_5fcontactor_5ferror_12675',['get_contactor_error',['../contactor_8h.html#acd100ff3a9eba6ef39cc29630928a2c1',1,'contactor.h']]],
+  ['get_5fcontactor_5fstate_12676',['get_contactor_state',['../contactor_8h.html#a3847a4bf637bdc4df1f4cca7aeab1962',1,'contactor.h']]],
+  ['get_5fstacks_5fdata_12677',['get_stacks_data',['../stacks_8h.html#a2199a8aada9ff14aced446806302701d',1,'stacks.h']]]
 ];

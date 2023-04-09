@@ -3,5 +3,5 @@
 <area shape="rect" id="node2" href="$bmu_8h.html" title=" " alt="" coords="91,229,194,256"/>
 <area shape="rect" id="node3" href="$contactor_8h.html" title=" " alt="" coords="26,155,157,181"/>
 <area shape="rect" id="node4" href="$sensors_8h.html" title=" " alt="" coords="128,80,252,107"/>
-<area shape="rect" id="node5" href="$stacks_8h.html" title=" " alt="" coords="232,155,349,181"/>
+<area shape="rect" id="node5" href="$stacks_8h.html" title="Module which acquires the stack values. The values are provided via a Mutex protected global variable..." alt="" coords="232,155,349,181"/>
 </map>

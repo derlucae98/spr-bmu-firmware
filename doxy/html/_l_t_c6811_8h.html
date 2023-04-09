@@ -91,26 +91,29 @@ $(document).ready(function(){initNavTree('_l_t_c6811_8h.html',''); initResizable
 <div class="title">LTC6811.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;string.h&gt;</code><br />
-<code>#include &lt;math.h&gt;</code><br />
-<code>#include &lt;stdbool.h&gt;</code><br />
-<code>#include &quot;FreeRTOS.h&quot;</code><br />
+
+<p>Library for the LTC6811 battery stack monitor This Library is designed for a specific hardware.  
+<a href="#details">More...</a></p>
+<div class="textblock"><code>#include &quot;FreeRTOS.h&quot;</code><br />
 <code>#include &quot;task.h&quot;</code><br />
 <code>#include &quot;queue.h&quot;</code><br />
 <code>#include &quot;semphr.h&quot;</code><br />
+<code>#include &lt;string.h&gt;</code><br />
+<code>#include &lt;math.h&gt;</code><br />
+<code>#include &lt;stdbool.h&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for LTC6811.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="_l_t_c6811_8h__incl.png" border="0" usemap="#ainclude_2_l_t_c6811_8h" alt=""/></div>
 <map name="ainclude_2_l_t_c6811_8h" id="ainclude_2_l_t_c6811_8h">
-<area shape="rect" title=" " alt="" coords="263,5,394,32"/>
-<area shape="rect" title=" " alt="" coords="5,80,71,107"/>
-<area shape="rect" title=" " alt="" coords="95,80,157,107"/>
-<area shape="rect" title=" " alt="" coords="182,80,257,107"/>
-<area shape="rect" title=" " alt="" coords="281,80,377,107"/>
-<area shape="rect" title=" " alt="" coords="401,80,459,107"/>
-<area shape="rect" title=" " alt="" coords="484,80,552,107"/>
-<area shape="rect" title=" " alt="" coords="577,80,651,107"/>
+<area shape="rect" title="Library for the LTC6811 battery stack monitor This Library is designed for a specific hardware." alt="" coords="273,5,404,32"/>
+<area shape="rect" title=" " alt="" coords="5,80,101,107"/>
+<area shape="rect" title=" " alt="" coords="125,80,184,107"/>
+<area shape="rect" title=" " alt="" coords="209,80,277,107"/>
+<area shape="rect" title=" " alt="" coords="301,80,376,107"/>
+<area shape="rect" title=" " alt="" coords="401,80,466,107"/>
+<area shape="rect" title=" " alt="" coords="490,80,553,107"/>
+<area shape="rect" title=" " alt="" coords="577,80,652,107"/>
 </map>
 </div>
 </div><div class="textblock"><div class="dynheader">
@@ -118,8 +121,8 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="_l_t_c6811_8h__dep__incl.png" border="0" usemap="#ainclude_2_l_t_c6811_8hdep" alt=""/></div>
 <map name="ainclude_2_l_t_c6811_8hdep" id="ainclude_2_l_t_c6811_8hdep">
-<area shape="rect" title=" " alt="" coords="5,5,136,32"/>
-<area shape="rect" href="stacks_8h.html" title=" " alt="" coords="12,80,129,107"/>
+<area shape="rect" title="Library for the LTC6811 battery stack monitor This Library is designed for a specific hardware." alt="" coords="5,5,136,32"/>
+<area shape="rect" href="stacks_8h.html" title="Module which acquires the stack values. The values are provided via a Mutex protected global variable..." alt="" coords="12,80,129,107"/>
 <area shape="rect" href="bmu_8h.html" title=" " alt="" coords="19,155,122,181"/>
 </map>
 </div>
@@ -130,7 +133,7 @@ This graph shows which files directly or indirectly include this file:</div>
 Macros</h2></td></tr>
 <tr class="memitem:a92be83a62ab975ee948fa03c09f9831e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_l_t_c6811_8h.html#a92be83a62ab975ee948fa03c09f9831e">NTC_CELL</a>&#160;&#160;&#160;3435</td></tr>
 <tr class="separator:a92be83a62ab975ee948fa03c09f9831e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae8917e4694b50aff9d8b1cf3de93d5c0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_l_t_c6811_8h.html#ae8917e4694b50aff9d8b1cf3de93d5c0">NUMBEROFSLAVES</a>&#160;&#160;&#160;1</td></tr>
+<tr class="memitem:ae8917e4694b50aff9d8b1cf3de93d5c0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_l_t_c6811_8h.html#ae8917e4694b50aff9d8b1cf3de93d5c0">NUMBEROFSLAVES</a>&#160;&#160;&#160;12</td></tr>
 <tr class="separator:ae8917e4694b50aff9d8b1cf3de93d5c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac3447b6da089862e9efd9e742443bd5f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_l_t_c6811_8h.html#ac3447b6da089862e9efd9e742443bd5f">MAX_NUM_OF_CELLS</a>&#160;&#160;&#160;12</td></tr>
 <tr class="separator:ac3447b6da089862e9efd9e742443bd5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -188,7 +191,9 @@ Functions</h2></td></tr>
 <tr class="memdesc:a33556491ac2c9ab3549f33622e5f7508"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable the balancing for specific cells.  <a href="_l_t_c6811_8h.html#a33556491ac2c9ab3549f33622e5f7508">More...</a><br /></td></tr>
 <tr class="separator:a33556491ac2c9ab3549f33622e5f7508"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Macro Definition Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Library for the LTC6811 battery stack monitor This Library is designed for a specific hardware. </p>
+</div><h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="ac3447b6da089862e9efd9e742443bd5f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac3447b6da089862e9efd9e742443bd5f">&#9670;&nbsp;</a></span>MAX_NUM_OF_CELLS</h2>
 
@@ -241,7 +246,7 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define NUMBEROFSLAVES&#160;&#160;&#160;1</td>
+          <td class="memname">#define NUMBEROFSLAVES&#160;&#160;&#160;12</td>
         </tr>
       </table>
 </div><div class="memdoc">

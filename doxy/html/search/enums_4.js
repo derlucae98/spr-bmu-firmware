@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['ltcerror_5ft_13364',['LTCError_t',['../_l_t_c6811_8h.html#af7a3bb131b6365609cffef31f878536a',1,'LTC6811.h']]]
+  ['ltcerror_5ft_13374',['LTCError_t',['../_l_t_c6811_8h.html#af7a3bb131b6365609cffef31f878536a',1,'LTC6811.h']]]
 ];

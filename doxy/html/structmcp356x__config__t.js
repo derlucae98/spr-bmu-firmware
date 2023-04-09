@@ -9,6 +9,7 @@ var structmcp356x__config__t =
     [ "CRC_FORMAT", "structmcp356x__config__t.html#aff9fbb5b8c55501e635b1eef1a5ef843", null ],
     [ "CS_SEL", "structmcp356x__config__t.html#ac48b1b6ad2eaad484cd14d29d392dce1", null ],
     [ "DATA_FORMAT", "structmcp356x__config__t.html#a9147d12215c5e80dfaef3afc4a36768b", null ],
+    [ "DLY", "structmcp356x__config__t.html#a030954cac791cbf8c3ae5636610e1ca0", null ],
     [ "EN_CRCCOM", "structmcp356x__config__t.html#a5feb0d888e08eaf6609a31728dca023f", null ],
     [ "EN_FASTCMD", "structmcp356x__config__t.html#a2cdde97f39ee482fdbc743c1a26938d9", null ],
     [ "EN_GAINCAL", "structmcp356x__config__t.html#a855a0ba5ac07e034b86925787df3760f", null ],
@@ -19,5 +20,7 @@ var structmcp356x__config__t =
     [ "MCLK", "structmcp356x__config__t.html#ad99d3b78326fce164d5ee54fee2be568", null ],
     [ "OSR", "structmcp356x__config__t.html#a8598f674d8b1d849352446ba7693b2a0", null ],
     [ "PRE", "structmcp356x__config__t.html#a3427472172558b64db45ab6f4bc14142", null ],
+    [ "SCAN", "structmcp356x__config__t.html#aedf526b1b3ab9f460f5ed9bfd1d3c8e6", null ],
+    [ "TIMER", "structmcp356x__config__t.html#a723cba632c9e070a8dc945eca69e40ec", null ],
     [ "VREF_SEL", "structmcp356x__config__t.html#ad121e57f2bd2a6e140ca5a2659370e81", null ]
 ];

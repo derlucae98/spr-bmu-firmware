@@ -519,10 +519,8 @@ var searchData=
   ['atstmp_523',['ATSTMP',['../struct_e_n_e_t___type.html#ab7597794380c561565a1ccc7b976c090',1,'ENET_Type']]],
   ['attr_524',['ATTR',['../struct_d_m_a___type.html#ae655267e67e5ed42554564818a5422a1',1,'DMA_Type']]],
   ['atvr_525',['ATVR',['../struct_e_n_e_t___type.html#abe873ea7694464d23e493f7b819c47db',1,'ENET_Type']]],
-  ['avg_5fcell_5ftemperature_526',['avg_cell_temperature',['../stacks_8h.html#a4b10c203e8b8c4434de32423ce2fd823',1,'stacks.h']]],
-  ['avg_5fcell_5fvoltage_527',['avg_cell_voltage',['../stacks_8h.html#a03675c6bf9a30357a82b36b10806f042',1,'stacks.h']]],
-  ['avgcellvolt_528',['avgCellVolt',['../structstacks__data__t.html#a3fc2d1805cd8da9a470fecc225a058b8',1,'stacks_data_t']]],
-  ['avgtemperature_529',['avgTemperature',['../structstacks__data__t.html#a52c8db980f2f0dd802b57a90fb1cd60d',1,'stacks_data_t']]],
-  ['az_5fmux_530',['AZ_MUX',['../structmcp356x__config__t.html#a9105f97119cdc0b866fb247b3627529b',1,'mcp356x_config_t']]],
-  ['az_5fref_531',['AZ_REF',['../structmcp356x__config__t.html#a98e8da1aaf185935cca95ba039b798e0',1,'mcp356x_config_t']]]
+  ['avgcellvolt_526',['avgCellVolt',['../structstacks__data__t.html#a3fc2d1805cd8da9a470fecc225a058b8',1,'stacks_data_t']]],
+  ['avgtemperature_527',['avgTemperature',['../structstacks__data__t.html#a52c8db980f2f0dd802b57a90fb1cd60d',1,'stacks_data_t']]],
+  ['az_5fmux_528',['AZ_MUX',['../structmcp356x__config__t.html#a9105f97119cdc0b866fb247b3627529b',1,'mcp356x_config_t']]],
+  ['az_5fref_529',['AZ_REF',['../structmcp356x__config__t.html#a98e8da1aaf185935cca95ba039b798e0',1,'mcp356x_config_t']]]
 ];

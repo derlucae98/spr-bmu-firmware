@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['release_5fadc_5fdata_12688',['release_adc_data',['../sensors_8h.html#ae8c8aec00021b978400289a731847938',1,'sensors.h']]],
-  ['release_5fstacks_5fdata_12689',['release_stacks_data',['../stacks_8h.html#a3b36054e34985d7389ef71ac430fcd23',1,'stacks.h']]],
-  ['request_5ftractive_5fsystem_12690',['request_tractive_system',['../contactor_8h.html#a188b3e2e0c6b73e8a3da54c8da60b4be',1,'contactor.h']]]
+  ['systemcoreclockupdate_12701',['SystemCoreClockUpdate',['../group__soc__support___s32_k148.html#gae0c36a9591fe6e9c45ecb21a794f0f0f',1,'system_S32K148.h']]],
+  ['systeminit_12702',['SystemInit',['../group__soc__support___s32_k148.html#ga93f514700ccf00d08dbdcff7f1224eb2',1,'system_S32K148.h']]],
+  ['systemsoftwarereset_12703',['SystemSoftwareReset',['../group__soc__support___s32_k148.html#ga0ea4f3310c6582df3c5cd66ea0da8a1f',1,'system_S32K148.h']]]
 ];
