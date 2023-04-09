@@ -97,8 +97,6 @@ static uint8_t prvConfig;
 static ltc_spi_move_array_t prv_ltc_spi_move_array;
 static ltc_assert_cs_t      prv_ltc_assert_cs;
 static ltc_deassert_cs_t    prv_ltc_deassert_cs;
-static ltc_mutex_take_t     prv_ltc_mutex_take;
-static ltc_mutex_give_t     prv_ltc_mutex_give;
 
 static void send_command(commandLTC_t command);
 static void broadcast(commandLTC_t command);
@@ -134,21 +132,15 @@ enum {
 
 //############################################################################################
 
-void ltc6811_init(ltc_mutex_take_t ltc_mutex_take, ltc_mutex_give_t ltc_mutex_give, ltc_spi_move_array_t ltc_spi_move_array, ltc_assert_cs_t ltc_assert_cs, ltc_deassert_cs_t ltc_deassert_cs) {
+void ltc6811_init(ltc_spi_move_array_t ltc_spi_move_array, ltc_assert_cs_t ltc_assert_cs, ltc_deassert_cs_t ltc_deassert_cs) {
     prvConfig = CFGR0_GPIO5 | CFGR0_GPIO4 | CFGR0_GPIO3 | CFGR0_GPIO2 | CFGR0_GPIO1 | CFGR0_REFON | CFGR0_ADCOPT;
 
-    prv_ltc_mutex_take      = ltc_mutex_take;
-    prv_ltc_mutex_give      = ltc_mutex_give;
     prv_ltc_spi_move_array  = ltc_spi_move_array;
     prv_ltc_assert_cs       = ltc_assert_cs;
     prv_ltc_deassert_cs     = ltc_deassert_cs;
 
-    if (prv_ltc_mutex_take(portMAX_DELAY)) {
-        ltc6811_wake_daisy_chain();
-        set_config(prvConfig, NULL);
-        prv_ltc_mutex_give();
-    }
-
+    ltc6811_wake_daisy_chain();
+    set_config(prvConfig, NULL);
 }
 
 static void send_command(commandLTC_t command) {

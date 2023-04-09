@@ -102,16 +102,12 @@ typedef enum {
 /*! @brief Initializes the LTC6811 library.
  *  Provide hardware-dependant callback functions.
  *  @note All other functions require the callbacks set by this function!
- *  @param ltc_mutex_take Callback for the Mutex take function. @see ltc_mutex_take_t for parameters.
- *  @param ltc_murex_give Callback for the Mutex give function. @see ltc_mutex_give_t for parameters.
  *  @param ltc_spi_move_array Callback for the SPI transceive function. @see ltc_spi_move_array_t for parameters.
  *  @param ltc_assert_cs Callback for the chip-select assert function. @see ltc_assert_cs_t for parameters.
  *  @param ltc_deassert_cs Callback for the chip-select de-assert function. @see ltc_deassert_cs_t for parameters.
  *
  */
-void ltc6811_init(ltc_mutex_take_t     ltc_mutex_take,
-                  ltc_mutex_give_t     ltc_mutex_give,
-                  ltc_spi_move_array_t ltc_spi_move_array,
+void ltc6811_init(ltc_spi_move_array_t ltc_spi_move_array,
                   ltc_assert_cs_t      ltc_assert_cs,
                   ltc_deassert_cs_t    ltc_deassert_cs);
 

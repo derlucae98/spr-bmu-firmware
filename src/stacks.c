@@ -36,14 +36,6 @@ static void prv_ltc_deassert(void) {
     set_pin(CS_SLAVES_PORT, CS_SLAVES_PIN);
 }
 
-static bool prv_ltc_mutex_take(TickType_t blocktime) {
-    (void) blocktime;
-    return true; //The LTC6811 is the only device on its SPI bus. Mutex is therefore not needed.
-}
-
-static void prv_ltc_mutex_give(void) {
-    return; //The LTC6811 is the only device on its SPI bus. Mutex is therefore not needed.
-}
 
 static uint16_t prv_max_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks);
 static uint16_t prv_min_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks);
@@ -63,7 +55,7 @@ void init_stacks(void) {
     configASSERT(prvBalancingGatesMutex);
     memset(prvBalancingGates, 0, sizeof(prvBalancingGates));
 
-    ltc6811_init(prv_ltc_mutex_take, prv_ltc_mutex_give, prv_ltc_spi, prv_ltc_assert, prv_ltc_deassert);
+    ltc6811_init(prv_ltc_spi, prv_ltc_assert, prv_ltc_deassert);
 
     uint32_t UID[MAX_NUM_OF_SLAVES];
     ltc6811_get_uid(UID);
