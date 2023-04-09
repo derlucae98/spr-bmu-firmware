@@ -20,8 +20,6 @@ static BaseType_t stacks_mutex_take(TickType_t blocktime);
 static void stacks_worker_task(void *p);
 static void balancing_task(void *p);
 
-uint32_t stacksUID[MAX_NUM_OF_STACKS];
-
 static void prv_ltc_spi(uint8_t *a, size_t len) {
     spi_move_array(LTC6811_SPI, a, len);
 }
@@ -52,10 +50,17 @@ void init_stacks(void) {
     memset(_balancingGates, 0, sizeof(_balancingGates));
 
     ltc6811_init(prv_ltc_mutex_take, prv_ltc_mutex_give, prv_ltc_spi, prv_ltc_assert, prv_ltc_deassert);
-    ltc6811_get_uid(stacksUID);
+
+    uint32_t UID[MAX_NUM_OF_STACKS];
+    ltc6811_get_uid(UID);
+    stacks_data_t *stacksData = get_stacks_data(portMAX_DELAY);
+    if (stacksData != NULL) {
+        memcpy(stacksData->UID, UID, sizeof(UID));
+        release_stacks_data();
+    }
 
     xTaskCreate(stacks_worker_task, "LTC", LTC_WORKER_TASK_STACK, NULL, LTC_WORKER_TASK_PRIO, NULL);
-//    xTaskCreate(balancing_task, "balance", BALANCING_TASK_STACK, NULL, BALANCING_TASK_PRIO, NULL);
+    xTaskCreate(balancing_task, "balance", BALANCING_TASK_STACK, NULL, BALANCING_TASK_PRIO, NULL);
 }
 
 void stacks_worker_task(void *p) {
@@ -312,9 +317,6 @@ bool check_temperature_validity(uint8_t temperatureStatus[][MAX_NUM_OF_TEMPSENS]
     bool critical = false;
     for (uint8_t stack = 0; stack < stacks; stack++) {
         for (uint8_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
-            if (tempsens == 6 || tempsens == 13) {
-                continue; //Don't include PCB temperatures in statistics
-            }
             if (temperatureStatus[stack][tempsens] != NOERROR) {
                 critical |= true;
             }
@@ -327,9 +329,6 @@ uint16_t max_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8
     uint16_t temp = 0;
     for (uint8_t stack = 0; stack < stacks; stack++) {
         for (uint8_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
-            if (tempsens == 6 || tempsens == 13) {
-                continue; //Don't include PCB temperatures in statistics
-            }
             if (temperature[stack][tempsens] > temp) {
                 temp = temperature[stack][tempsens];
             }
@@ -342,9 +341,6 @@ uint16_t min_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8
     uint16_t temp = -1;
     for (uint8_t stack = 0; stack < stacks; stack++) {
         for (uint8_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
-            if (tempsens == 6 || tempsens == 13) {
-                continue; //Don't include PCB temperatures in statistics
-            }
             if (temperature[stack][tempsens] < temp) {
                 temp = temperature[stack][tempsens];
             }
@@ -357,9 +353,6 @@ uint16_t avg_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8
     double temp = 0.0;
     for (uint8_t stack = 0; stack < stacks; stack++) {
         for (uint8_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
-            if (tempsens == 6 || tempsens == 13) {
-                continue; //Don't include PCB temperatures in statistics
-            }
             temp += (double)temperature[stack][tempsens];
         }
     }

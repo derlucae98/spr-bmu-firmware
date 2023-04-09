@@ -56,7 +56,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*! @def MAX_NUM_OF_TEMPSENS
  *  Defines the number of temperature sensors per stack.
  */
-#define MAX_NUM_OF_TEMPSENS 14
+#define MAX_NUM_OF_TEMPSENS 6
 
 
 /*! @typedef ltc_spi_move_array_t
