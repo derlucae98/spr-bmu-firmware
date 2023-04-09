@@ -92,6 +92,7 @@ void control_balancing(bool enabled);
  *  The balancing algorithm is executed in this module.
  *  This function reports the currently set balancing gates for a
  *  visual feedback in the control software.
+ *  @param gates Provide an array of size [NUMBEROFSLAVES][MAX_NUM_OF_CELLS] in which the data will be stored.
  */
 void get_balancing_status(uint8_t gates[NUMBEROFSLAVES][MAX_NUM_OF_CELLS]);
 
@@ -119,6 +120,9 @@ stacks_data_t* get_stacks_data(TickType_t blocktime);
  *      stacks_data_t stacksDataLocal;
  *      copy_stacks_data(&stacksDataLocal, portMAX_DELAY);
  *  @endcode
+ *  @param dest Pointer to the destination variable
+ *  @param blocktime Specify a timeout in which the Mutex must become available.
+ *  @return Returns true on success and false on failure.
  */
 bool copy_stacks_data(stacks_data_t *dest, TickType_t blocktime);
 

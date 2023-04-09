@@ -37,11 +37,12 @@ static void prv_ltc_deassert(void) {
 }
 
 static bool prv_ltc_mutex_take(TickType_t blocktime) {
-    return spi_mutex_take(LTC6811_SPI, blocktime);
+    (void) blocktime;
+    return true; //The LTC6811 is the only device on its SPI bus. Mutex is therefore not needed.
 }
 
 static void prv_ltc_mutex_give(void) {
-    spi_mutex_give(LTC6811_SPI);
+    return; //The LTC6811 is the only device on its SPI bus. Mutex is therefore not needed.
 }
 
 static uint16_t prv_max_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks);
