@@ -5,8 +5,8 @@
  *      Author: Luca Engelmann
  */
 
-#ifndef SENSORS_H_
-#define SENSORS_H_
+#ifndef ADC_H_
+#define ADC_H_
 
 #include <stdbool.h>
 #include "S32K14x.h"
@@ -42,4 +42,4 @@ bool init_adc(void);
 
 
 
-#endif /* SENSORS_H_ */
+#endif /* ADC_H_ */

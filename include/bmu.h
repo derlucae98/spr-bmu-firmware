@@ -8,6 +8,7 @@
 #ifndef BMU_H_
 #define BMU_H_
 
+#include "adc.h"
 #include "S32K14x.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -16,7 +17,6 @@
 #include "contactor.h"
 #include "config.h"
 #include "can.h"
-#include "sensors.h"
 #include "stacks.h"
 
 

@@ -1,3 +1,4 @@
+
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -8,9 +9,9 @@
 #include "uart.h"
 #include "can.h"
 #include "spi.h"
-#include "sensors.h"
 #include "stacks.h"
 #include "bmu.h"
+#include "adc.h"
 #include "contactor.h"
 
 

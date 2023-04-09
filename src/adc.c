@@ -5,7 +5,7 @@
  *      Author: Luca Engelmann
  */
 
-#include "sensors.h"
+#include "adc.h"
 
 static mcp356x_obj_t _adc;
 static volatile adc_calibration_t _cal;

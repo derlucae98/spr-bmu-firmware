@@ -8,14 +8,13 @@
 #ifndef CONTACTOR_H_
 #define CONTACTOR_H_
 
+#include "adc.h"
 #include "S32K14x.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "gpio.h"
 #include "config.h"
 #include <stdbool.h>
-#include "sensors.h"
-//#include "safety.h"
 #include "wdt.h"
 #include "math.h"
 

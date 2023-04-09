@@ -43,7 +43,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * This is useful during development when only one slave
  * is available for testing on the bench.
  * To ensure that the software will work with NUMBEROFSLAVES != 12,
- * MAX_NUM_OF_STACKS defines the number of slaves during normal operation.
+ * MAX_NUM_OF_SLAVES defines the number of slaves during normal operation.
  * If NUMBEROFSLAVES is less than this value, all unused values in the arrays
  * are filled with 0.
  * Note that a greater value for NUMBEROFSLAVES than MAX_NUM_OF_SLAVES will lead
