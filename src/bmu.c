@@ -78,7 +78,7 @@ static void can_send_task(void *p) {
 
         stacks_data_t* stacksData = get_stacks_data(portMAX_DELAY);
         if (stacksData != NULL) {
-            memcpy(canData.UID, stacksUID, sizeof(stacksUID));
+            memcpy(canData.UID, stacksData->UID, sizeof(stacksData->UID));
             memcpy(canData.cellVoltage, stacksData->cellVoltage, sizeof(canData.cellVoltage));
             memcpy(canData.cellVoltageStatus, stacksData->cellVoltageStatus, sizeof(canData.cellVoltageStatus));
             memcpy(canData.temperature, stacksData->temperature, sizeof(canData.temperature));

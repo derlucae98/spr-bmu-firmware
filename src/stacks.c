@@ -7,15 +7,19 @@
 
 #include "stacks.h"
 
-static SemaphoreHandle_t _stacksDataMutex = NULL;
-static stacks_data_t _stacksData;
-static uint8_t _balancingGates[NUMBEROFSLAVES][MAX_NUM_OF_CELLS];
-static bool _balanceEnable = false;
+static SemaphoreHandle_t prvStacksDataMutex = NULL;
+static SemaphoreHandle_t prvBalancingGatesMutex = NULL;
 
-static SemaphoreHandle_t _balancingGatesMutex = NULL;
-static BaseType_t balancingGatesMutex_take(TickType_t blocktime);
-static void balancingGatesMutex_give(void);
-static BaseType_t stacks_mutex_take(TickType_t blocktime);
+static stacks_data_t prvStacksData;
+
+static uint8_t prvBalancingGates[NUMBEROFSLAVES][MAX_NUM_OF_CELLS];
+static bool prvBalanceEnable = false;
+
+
+static BaseType_t prv_balancingGatesMutex_take(TickType_t blocktime);
+static void prv_balancingGatesMutex_give(void);
+
+static BaseType_t prv_stacks_mutex_take(TickType_t blocktime);
 
 static void stacks_worker_task(void *p);
 static void balancing_task(void *p);
@@ -40,14 +44,23 @@ static void prv_ltc_mutex_give(void) {
     spi_mutex_give(LTC6811_SPI);
 }
 
-void init_stacks(void) {
-    _stacksDataMutex = xSemaphoreCreateMutex();
-    configASSERT(_stacksDataMutex);
-    memset(&_stacksData, 0, sizeof(stacks_data_t));
+static uint16_t prv_max_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks);
+static uint16_t prv_min_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks);
+static uint16_t prv_avg_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks);
+static bool prv_check_voltage_validity(uint8_t voltageStatus[][MAX_NUM_OF_CELLS+1], uint8_t stacks);
+static bool prv_check_temperature_validity(uint8_t temperatureStatus[][MAX_NUM_OF_TEMPSENS], uint8_t stacks);
+static uint16_t prv_max_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8_t stacks);
+static uint16_t prv_min_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8_t stacks);
+static uint16_t prv_avg_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8_t stacks);
 
-    _balancingGatesMutex = xSemaphoreCreateMutex();
-    configASSERT(_balancingGatesMutex);
-    memset(_balancingGates, 0, sizeof(_balancingGates));
+void init_stacks(void) {
+    prvStacksDataMutex = xSemaphoreCreateMutex();
+    configASSERT(prvStacksDataMutex);
+    memset(&prvStacksData, 0, sizeof(stacks_data_t));
+
+    prvBalancingGatesMutex = xSemaphoreCreateMutex();
+    configASSERT(prvBalancingGatesMutex);
+    memset(prvBalancingGates, 0, sizeof(prvBalancingGates));
 
     ltc6811_init(prv_ltc_mutex_take, prv_ltc_mutex_give, prv_ltc_spi, prv_ltc_assert, prv_ltc_deassert);
 
@@ -77,7 +90,7 @@ void stacks_worker_task(void *p) {
     while (1) {
 
         ltc6811_wake_daisy_chain();
-        ltc6811_set_balancing_gates(_balancingGates);
+        ltc6811_set_balancing_gates(prvBalancingGates);
         ltc6811_get_voltage(stacksDataLocal.cellVoltage, pecVoltage);
 
         for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
@@ -137,16 +150,16 @@ void stacks_worker_task(void *p) {
             }
         }
 
-        bool cellVoltValid = check_voltage_validity(stacksDataLocal.cellVoltageStatus, NUMBEROFSLAVES);
-        stacksDataLocal.minCellVolt = min_cell_voltage(stacksDataLocal.cellVoltage, NUMBEROFSLAVES);
-        stacksDataLocal.maxCellVolt = max_cell_voltage(stacksDataLocal.cellVoltage, NUMBEROFSLAVES);
-        stacksDataLocal.avgCellVolt = avg_cell_voltage(stacksDataLocal.cellVoltage, NUMBEROFSLAVES);
+        bool cellVoltValid = prv_check_voltage_validity(stacksDataLocal.cellVoltageStatus, NUMBEROFSLAVES);
+        stacksDataLocal.minCellVolt = prv_min_cell_voltage(stacksDataLocal.cellVoltage, NUMBEROFSLAVES);
+        stacksDataLocal.maxCellVolt = prv_max_cell_voltage(stacksDataLocal.cellVoltage, NUMBEROFSLAVES);
+        stacksDataLocal.avgCellVolt = prv_avg_cell_voltage(stacksDataLocal.cellVoltage, NUMBEROFSLAVES);
         stacksDataLocal.voltageValid = cellVoltValid;
 
-        bool cellTemperatureValid = check_temperature_validity(stacksDataLocal.temperatureStatus, NUMBEROFSLAVES);
-        stacksDataLocal.minTemperature = min_cell_temperature(stacksDataLocal.temperature, NUMBEROFSLAVES);
-        stacksDataLocal.maxTemperature = max_cell_temperature(stacksDataLocal.temperature, NUMBEROFSLAVES);
-        stacksDataLocal.avgTemperature = avg_cell_temperature(stacksDataLocal.temperature, NUMBEROFSLAVES);
+        bool cellTemperatureValid = prv_check_temperature_validity(stacksDataLocal.temperatureStatus, NUMBEROFSLAVES);
+        stacksDataLocal.minTemperature = prv_min_cell_temperature(stacksDataLocal.temperature, NUMBEROFSLAVES);
+        stacksDataLocal.maxTemperature = prv_max_cell_temperature(stacksDataLocal.temperature, NUMBEROFSLAVES);
+        stacksDataLocal.avgTemperature = prv_avg_cell_temperature(stacksDataLocal.temperature, NUMBEROFSLAVES);
         stacksDataLocal.temperatureValid = cellTemperatureValid;
 
         stacks_data_t *stacksData = get_stacks_data(portMAX_DELAY);
@@ -167,7 +180,7 @@ void balancing_task(void *p) {
     memset(balancingGates, 0, sizeof(balancingGates));
     while(1) {
 
-        if (_balanceEnable) {
+        if (prvBalanceEnable) {
 
             uint16_t cellVoltage[MAX_NUM_OF_STACKS][MAX_NUM_OF_CELLS];
             uint16_t maxCellVoltage = 0;
@@ -207,28 +220,28 @@ void balancing_task(void *p) {
             memset(balancingGates, 0, sizeof(balancingGates));
         }
 
-        if (balancingGatesMutex_take(portMAX_DELAY)) {
-            memcpy(_balancingGates, balancingGates, sizeof(balancingGates));
-            balancingGatesMutex_give();
+        if (prv_balancingGatesMutex_take(portMAX_DELAY)) {
+            memcpy(prvBalancingGates, balancingGates, sizeof(balancingGates));
+            prv_balancingGatesMutex_give();
         }
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
 }
 
-BaseType_t stacks_mutex_take(TickType_t blocktime) {
-    if (!_stacksDataMutex) {
+BaseType_t prv_stacks_mutex_take(TickType_t blocktime) {
+    if (!prvStacksDataMutex) {
         return pdFALSE;
     }
-    return xSemaphoreTake(_stacksDataMutex, blocktime);
+    return xSemaphoreTake(prvStacksDataMutex, blocktime);
 }
 
 void release_stacks_data(void) {
-    xSemaphoreGive(_stacksDataMutex);
+    xSemaphoreGive(prvStacksDataMutex);
 }
 
 stacks_data_t* get_stacks_data(TickType_t blocktime) {
-    if (stacks_mutex_take(blocktime)) {
-        return &_stacksData;
+    if (prv_stacks_mutex_take(blocktime)) {
+        return &prvStacksData;
     } else {
         return NULL;
     }
@@ -245,29 +258,29 @@ bool copy_stacks_data(stacks_data_t *dest, TickType_t blocktime) {
     }
 }
 
-static BaseType_t balancingGatesMutex_take(TickType_t blocktime) {
-    if (!_balancingGatesMutex) {
+static BaseType_t prv_balancingGatesMutex_take(TickType_t blocktime) {
+    if (!prvBalancingGatesMutex) {
         return pdFALSE;
     }
-    return xSemaphoreTake(_balancingGatesMutex, blocktime);
+    return xSemaphoreTake(prvBalancingGatesMutex, blocktime);
 }
 
-static void balancingGatesMutex_give(void) {
-    xSemaphoreGive(_balancingGatesMutex);
+static void prv_balancingGatesMutex_give(void) {
+    xSemaphoreGive(prvBalancingGatesMutex);
 }
 
 void control_balancing(bool enabled) {
-    _balanceEnable = enabled;
+    prvBalanceEnable = enabled;
 }
 
 void get_balancing_status(uint8_t gates[NUMBEROFSLAVES][MAX_NUM_OF_CELLS]) {
-    if (balancingGatesMutex_take(pdMS_TO_TICKS(portMAX_DELAY))) {
-        memcpy(gates, _balancingGates, sizeof(_balancingGates));
-        balancingGatesMutex_give();
+    if (prv_balancingGatesMutex_take(pdMS_TO_TICKS(portMAX_DELAY))) {
+        memcpy(gates, prvBalancingGates, sizeof(prvBalancingGates));
+        prv_balancingGatesMutex_give();
     }
 }
 
-uint16_t max_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks) {
+static uint16_t prv_max_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks) {
     uint16_t volt = 0;
     for (uint8_t stack = 0; stack < stacks; stack++) {
         for (uint8_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
@@ -279,7 +292,7 @@ uint16_t max_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks) 
     return volt;
 }
 
-uint16_t min_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks) {
+static uint16_t prv_min_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks) {
     uint16_t volt = -1;
     for (uint8_t stack = 0; stack < stacks; stack++) {
         for (uint8_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
@@ -291,7 +304,7 @@ uint16_t min_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks) 
     return volt;
 }
 
-uint16_t avg_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks) {
+static uint16_t prv_avg_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks) {
     double volt = 0.0;
     for (uint8_t stack = 0; stack < stacks; stack++) {
         for (uint8_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
@@ -301,7 +314,7 @@ uint16_t avg_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks) 
     return (uint16_t)(volt / (MAX_NUM_OF_CELLS * stacks));
 }
 
-bool check_voltage_validity(uint8_t voltageStatus[][MAX_NUM_OF_CELLS+1], uint8_t stacks) {
+static bool prv_check_voltage_validity(uint8_t voltageStatus[][MAX_NUM_OF_CELLS+1], uint8_t stacks) {
     bool critical = false;
     for (uint8_t stack = 0; stack < stacks; stack++) {
         for (uint8_t cell = 0; cell < MAX_NUM_OF_CELLS+1; cell++) {
@@ -313,7 +326,7 @@ bool check_voltage_validity(uint8_t voltageStatus[][MAX_NUM_OF_CELLS+1], uint8_t
     return !critical;
 }
 
-bool check_temperature_validity(uint8_t temperatureStatus[][MAX_NUM_OF_TEMPSENS], uint8_t stacks) {
+static bool prv_check_temperature_validity(uint8_t temperatureStatus[][MAX_NUM_OF_TEMPSENS], uint8_t stacks) {
     bool critical = false;
     for (uint8_t stack = 0; stack < stacks; stack++) {
         for (uint8_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
@@ -325,7 +338,7 @@ bool check_temperature_validity(uint8_t temperatureStatus[][MAX_NUM_OF_TEMPSENS]
     return !critical;
 }
 
-uint16_t max_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8_t stacks) {
+static uint16_t prv_max_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8_t stacks) {
     uint16_t temp = 0;
     for (uint8_t stack = 0; stack < stacks; stack++) {
         for (uint8_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
@@ -337,7 +350,7 @@ uint16_t max_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8
     return temp;
 }
 
-uint16_t min_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8_t stacks) {
+static uint16_t prv_min_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8_t stacks) {
     uint16_t temp = -1;
     for (uint8_t stack = 0; stack < stacks; stack++) {
         for (uint8_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
@@ -349,7 +362,7 @@ uint16_t min_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8
     return temp;
 }
 
-uint16_t avg_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8_t stacks) {
+static uint16_t prv_avg_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8_t stacks) {
     double temp = 0.0;
     for (uint8_t stack = 0; stack < stacks; stack++) {
         for (uint8_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {

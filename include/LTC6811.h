@@ -56,7 +56,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*! @def MAX_NUM_OF_TEMPSENS
  *  Defines the number of temperature sensors per stack.
  */
-#define MAX_NUM_OF_TEMPSENS 6
+#define MAX_NUM_OF_TEMPSENS 14 //TODO Set this value to 6 as soon as the CAN protocol and control software is updated!
 
 
 /*! @typedef ltc_spi_move_array_t
