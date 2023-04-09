@@ -89,18 +89,6 @@ static bool check_crc(mcp356x_obj_t *obj, const uint8_t *a) {
     return true;
 }
 
-static float gain_lookup(mcp356x_obj_t *obj) {
-    //Returns the value of the gain. See mcp356x_get_voltage()
-    uint8_t gain = (1u << obj->config.GAIN);
-    gain >>= 1;
-
-    if (gain == 0) {
-        return 0.33f;
-    }
-
-    return (float)gain;
-}
-
 static bool check_status(uint8_t status) {
     status &= 0xF8;
     if (status == 0x10) {
@@ -207,18 +195,6 @@ mcp356x_error_t mcp356x_get_value(mcp356x_obj_t *obj, mcp356x_channel_t ch_pos, 
     return MCP356X_ERROR_OK;
 }
 
-mcp356x_error_t mcp356x_get_voltage(mcp356x_obj_t *obj, mcp356x_channel_t ch_pos, mcp356x_channel_t ch_neg, float refVoltage, float *result) {
-    mcp356x_error_t err;
-    err = mcp356x_acquire(obj, ch_pos, ch_neg);
-    if (err != MCP356X_ERROR_OK) {
-        return err;
-    }
-    err = mcp356x_read_voltage(obj, refVoltage, result);
-    if (err != MCP356X_ERROR_OK) {
-        return err;
-    }
-    return MCP356X_ERROR_OK;
-}
 
 mcp356x_error_t mcp356x_acquire(mcp356x_obj_t *obj, mcp356x_channel_t ch_pos, mcp356x_channel_t ch_neg) {
     if (!obj) {
