@@ -220,7 +220,7 @@ static void write_calibration(void) {
                 vTaskDelay(pdMS_TO_TICKS(10));
             } else {
                 PRINTF("Writing calibration data to EEPROM timed out!\n");
-                eeprom_mutex_give();
+                configASSERT(0);
             }
         }
         eeprom_mutex_give();

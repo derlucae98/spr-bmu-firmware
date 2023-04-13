@@ -102,6 +102,9 @@ void value_applied(float value);
  * This function is called from the ADC module, which acquires the ADC values.
  * The three values for each input are stored locally and are mandatory for the calibration algorithm.
  * @note Update each value within 20ms.
+ * @param adcValUlink Raw ADC value of DC-Link voltage measurement
+ * @param adcValUbatt Raw ADC value of battery voltage measurement
+ * @param adcValCurrent Raw ADC value of current measurement
  */
 void cal_update_adc_value(int32_t adcValUlink, int32_t adcValUbatt, int32_t adcValCurrent);
 
