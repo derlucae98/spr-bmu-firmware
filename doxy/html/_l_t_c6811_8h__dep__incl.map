@@ -1,5 +1,0 @@
-<map id="include/LTC6811.h" name="include/LTC6811.h">
-<area shape="rect" id="node1" title="Library for the LTC6811 battery stack monitor This Library is designed for a specific hardware." alt="" coords="5,5,136,32"/>
-<area shape="rect" id="node2" href="$stacks_8h.html" title="Module which acquires the stack values. The values are provided via a Mutex protected global variable..." alt="" coords="12,80,129,107"/>
-<area shape="rect" id="node3" href="$bmu_8h.html" title=" " alt="" coords="19,155,122,181"/>
-</map>

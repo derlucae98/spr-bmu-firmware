@@ -1,4 +1,0 @@
-<map id="include/stacks.h" name="include/stacks.h">
-<area shape="rect" id="node1" title="Module which acquires the stack values. The values are provided via a Mutex protected global variable..." alt="" coords="5,5,123,32"/>
-<area shape="rect" id="node2" href="$bmu_8h.html" title=" " alt="" coords="13,80,115,107"/>
-</map>

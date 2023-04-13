@@ -1,6 +1,0 @@
-<map id="include/mcp356x.h" name="include/mcp356x.h">
-<area shape="rect" id="node1" title="Library to interface with MCP356x(R) ADCs. It is fully hardware independent and uses callback functio..." alt="" coords="5,5,136,32"/>
-<area shape="rect" id="node2" href="$adc_8h.html" title="This module handles the interface to the MCP3564 ADC. The values are provided via a Mutex protected g..." alt="" coords="21,80,120,107"/>
-<area shape="rect" id="node3" href="$bmu_8h.html" title=" " alt="" coords="19,229,122,256"/>
-<area shape="rect" id="node4" href="$contactor_8h.html" title=" " alt="" coords="57,155,188,181"/>
-</map>

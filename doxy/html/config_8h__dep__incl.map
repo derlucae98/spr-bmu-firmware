@@ -1,7 +1,0 @@
-<map id="include/config.h" name="include/config.h">
-<area shape="rect" id="node1" title=" " alt="" coords="110,5,223,32"/>
-<area shape="rect" id="node2" href="$adc_8h.html" title="This module handles the interface to the MCP3564 ADC. The values are provided via a Mutex protected g..." alt="" coords="5,80,104,107"/>
-<area shape="rect" id="node3" href="$bmu_8h.html" title=" " alt="" coords="89,229,191,256"/>
-<area shape="rect" id="node4" href="$contactor_8h.html" title=" " alt="" coords="24,155,155,181"/>
-<area shape="rect" id="node5" href="$stacks_8h.html" title="Module which acquires the stack values. The values are provided via a Mutex protected global variable..." alt="" coords="229,155,347,181"/>
-</map>
