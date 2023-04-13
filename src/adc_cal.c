@@ -19,7 +19,7 @@ static int32_t prvAdcVal1 = 0;
 static float prvVal2 = 0.0f;
 static int32_t prvAdcVal2 = 0;
 static int32_t prvAdcVal;
-static float prvRef;
+static float prvRef = 0.0f;
 static float prvSlope = 0.0f;
 static float prvSlopeIdeal = 0.0f;
 static float prvOffset = 0.0f;
@@ -27,7 +27,7 @@ static float prvGainCal = 0.0f;
 
 static adc_calibration_t prvAdcCal;
 
-static adc_cal_type_t prvAdcCalType;
+static adc_cal_input_t prvAdcCalInput;
 
 void init_calibration(void) {
     xTaskCreate(prvCalTask, "cal", CAL_TASK_STACK, NULL, CAL_TASK_PRIO, &prvCalTaskHandle);
@@ -35,12 +35,12 @@ void init_calibration(void) {
     prv_load_calibration();
 }
 
-void start_calibration(adc_cal_type_t type) {
+void start_calibration(adc_cal_input_t input) {
     vTaskResume(prvCalTaskHandle);
     prvState = CAL_STATE_WAIT_FOR_VALUE_1;
     prvVoltageApplied = false;
     prvAckCal = false;
-    prvAdcCalType = type;
+    prvAdcCalInput = input;
 }
 
 void value_applied(float value) {
@@ -53,14 +53,14 @@ void value_applied(float value) {
 }
 
 void cal_update_adc_value(int32_t adcValUlink, int32_t adcValUbatt, int32_t adcValCurrent) {
-    switch (prvAdcCalType) {
-    case CAL_TYPE_UBATT_VOLT:
+    switch (prvAdcCalInput) {
+    case CAL_INPUT_UBATT_VOLT:
         prvAdcVal = adcValUbatt;
         break;
-    case CAL_TYPE_ULINK_VOLT:
+    case CAL_INPUT_ULINK_VOLT:
         prvAdcVal = adcValUlink;
         break;
-    case CAL_TYPE_CURRENT:
+    case CAL_INPUT_CURRENT:
         prvAdcVal = adcValCurrent;
         break;
     }
@@ -92,8 +92,10 @@ static void prvCalTask(void *p) {
         switch (prvState) {
         case CAL_STATE_STANDBY:
             vTaskSuspend(prvCalTaskHandle);
+            prvAckCal = false;
             break;
         case CAL_STATE_WAIT_FOR_VALUE_1:
+            prvAckCal = false;
             if (prvVoltageApplied) {
                 vTaskDelay(pdMS_TO_TICKS(20)); //Wait for new ADC value
                 prvAdcVal1 = prvAdcVal;
@@ -102,6 +104,7 @@ static void prvCalTask(void *p) {
             }
             break;
         case CAL_STATE_WAIT_FOR_VALUE_2:
+            prvAckCal = false;
             if (prvVoltageApplied) {
                 vTaskDelay(pdMS_TO_TICKS(20)); //Wait for new ADC value
                 prvAdcVal2 = prvAdcVal;
@@ -110,10 +113,10 @@ static void prvCalTask(void *p) {
             }
             break;
         case CAL_STATE_UPDATE_CALIBRATION:
+            prvAckCal = false;
             prv_update_calibration();
             prvState = CAL_STATE_FINISH;
             break;
-
         case CAL_STATE_FINISH:
             if (prvAckCal) {
                 prvState = CAL_STATE_STANDBY;
@@ -131,13 +134,20 @@ static void prv_update_calibration(void) {
 
     float adcValue1Ideal = 0.0f;
     float adcValue2Ideal = 0.0f;
-    switch (prvAdcCalType) {
-    case CAL_TYPE_UBATT_VOLT:
-    case CAL_TYPE_ULINK_VOLT:
+
+    if (prvRef = 0.0f) {
+        prvRef = prvAdcCal.reference;
+    } else {
+        prvAdcCal.reference = prvRef;
+    }
+
+    switch (prvAdcCalInput) {
+    case CAL_INPUT_UBATT_VOLT:
+    case CAL_INPUT_ULINK_VOLT:
         adcValue1Ideal = (-1) * prvVal1 * 8388608.0f / (ADC_VOLTAGE_CONVERSION_RATIO * prvRef);
         adcValue2Ideal = (-1) * prvVal2 * 8388608.0f / (ADC_VOLTAGE_CONVERSION_RATIO * prvRef);
         break;
-    case CAL_TYPE_CURRENT:
+    case CAL_INPUT_CURRENT:
         adcValue1Ideal = (-1) * prvVal1 * 8388608.0f / (ADC_CURRENT_CONVERSION_RATIO * prvRef);
         adcValue2Ideal = (-1) * prvVal2 * 8388608.0f / (ADC_CURRENT_CONVERSION_RATIO * prvRef);
         break;
@@ -145,16 +155,16 @@ static void prv_update_calibration(void) {
     prvSlopeIdeal = (adcValue2Ideal - adcValue1Ideal) / (prvVal2 - prvVal1);
     prvGainCal = prvSlopeIdeal / prvSlope;
 
-    switch (prvAdcCalType) {
-        case CAL_TYPE_UBATT_VOLT:
+    switch (prvAdcCalInput) {
+        case CAL_INPUT_UBATT_VOLT:
             prvAdcCal.ubatt_gain = prvGainCal;
             prvAdcCal.ubatt_offset = prvOffset;
             break;
-        case CAL_TYPE_ULINK_VOLT:
+        case CAL_INPUT_ULINK_VOLT:
             prvAdcCal.ulink_gain = prvGainCal;
             prvAdcCal.ulink_offset = prvOffset;
             break;
-        case CAL_TYPE_CURRENT:
+        case CAL_INPUT_CURRENT:
             prvAdcCal.current_gain = prvGainCal;
             prvAdcCal.current_offset = prvOffset;
             break;
