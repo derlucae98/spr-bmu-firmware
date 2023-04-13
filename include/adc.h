@@ -43,11 +43,11 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 typedef struct {
     float reference;
     float current_gain;
-    uint16_t current_offset;
+    float current_offset;
     float ubatt_gain;
-    uint16_t ubatt_offset;
+    float ubatt_offset;
     float ulink_gain;
-    uint16_t ulink_offset;
+    float ulink_offset;
 } adc_calibration_t;
 
 

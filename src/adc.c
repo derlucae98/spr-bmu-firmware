@@ -78,11 +78,10 @@ bool init_adc(void) {
     prvAdc.config.EN_STP = 0;
     prvAdc.config.OSR = OSR_512;
     prvAdc.config.AZ_MUX = 1;
-    prvAdc.config.EN_CRCCOM = 0;
+    prvAdc.config.EN_CRCCOM = 1;
     prvAdc.config.SCAN = SCAN_DIFF_CH0_CH1 | SCAN_DIFF_CH2_CH3 | SCAN_DIFF_CH4_CH5 | SCAN_SE_CH4;
     prvAdc.config.DLY = SCAN_DLY_512;
     prvAdc.config.TIMER = 512;
-
 
     err = mcp356x_reset(&prvAdc);
 
@@ -148,7 +147,6 @@ static void prv_adc_task(void *p) {
     bool adcError = false;
 
     uint8_t chID;
-    uint8_t sgn;
 
     while (1) {
 
@@ -158,7 +156,7 @@ static void prv_adc_task(void *p) {
         ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
 
 
-        if (mcp356x_read_value(&prvAdc, &adcVal, &sgn, &chID) == MCP356X_ERROR_OK) {
+        if (mcp356x_read_value(&prvAdc, &adcVal, NULL, &chID) == MCP356X_ERROR_OK) {
             adcError = false;
         } else {
             adcError = true;
