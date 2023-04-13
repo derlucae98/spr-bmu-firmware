@@ -37,18 +37,11 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "gpio.h"
 #include "config.h"
 #include "uart.h"
+#include "adc_cal.h"
 #include <stdbool.h>
 
 
-typedef struct {
-    float reference;
-    float current_gain;
-    float current_offset;
-    float ubatt_gain;
-    float ubatt_offset;
-    float ulink_gain;
-    float ulink_offset;
-} adc_calibration_t;
+
 
 
 typedef struct {

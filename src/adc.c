@@ -30,7 +30,6 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "adc.h"
 
 static mcp356x_obj_t prvAdc;
-static volatile adc_calibration_t prvCal;
 
 static SemaphoreHandle_t prvAdcDataMutex = NULL;
 static adc_data_t prvAdcData;
@@ -140,6 +139,10 @@ static void prv_adc_task(void *p) {
     (void) p;
     int32_t adcVal = 0;
 
+    int32_t adcValUbatt = 0;
+    int32_t adcValUlink = 0;
+    int32_t adcValCurrent = 0;
+
     float ubatVolt = 0.0f;
     float ulinkVolt = 0.0f;
     float current = 0.0f;
@@ -166,16 +169,19 @@ static void prv_adc_task(void *p) {
         switch ((mcp356x_scan_t)scanCh) {
 
         case SCAN_DIFF_CH0_CH1: //DC-Link / TSAC Output voltage
+            adcValUlink = adcVal;
             ulinkVolt = ADC_VOLTAGE_CONVERSION_RATIO * (adcVal * -2.5f) / 8388608.0f;
             ulinkVolt = (ulinkVolt + (1.11091f / 0.989208f)) * 0.989208f;
             //PRINTF("U_Link: %.1f\n", ulinkVolt);
             break;
         case SCAN_DIFF_CH2_CH3: //Battery Voltage
+            adcValUbatt = adcVal;
             ubatVolt = ADC_VOLTAGE_CONVERSION_RATIO * (adcVal * -2.5f) / 8388608.0f;
             ubatVolt = (ubatVolt - (1.3606f / 0.99671f)) * 0.99671f;
             //PRINTF("U_Batt: %.1f\n", ubatVolt);
             break;
         case SCAN_DIFF_CH4_CH5: //Current
+            adcValCurrent = adcVal;
             //Todo
             break;
         case SCAN_SE_CH4: //Current open wire check
@@ -185,6 +191,9 @@ static void prv_adc_task(void *p) {
             adcError = true;
             break;
         }
+
+        cal_update_adc_value(adcValUlink, adcValUbatt, adcValCurrent);
+
 
         adc_data_t *adcData = get_adc_data(pdMS_TO_TICKS(4));
         if (adcData != NULL) {
