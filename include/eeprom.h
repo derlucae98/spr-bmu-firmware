@@ -12,12 +12,12 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-#include "S32K146.h"
+#include "S32K14x.h"
 #include "gpio.h"
 #include "config.h"
 #include "spi.h"
 
-#define EEPROM_SPI LPSPI0
+#define EEPROM_SPI LPSPI2
 #define EEPROM_PAGESIZE 256
 
 

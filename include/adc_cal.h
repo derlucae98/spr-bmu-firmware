@@ -4,7 +4,12 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "config.h"
+#include "eeprom.h"
+#include "uart.h"
 #include <stdbool.h>
+#include <string.h>
+
+#define CAL_DATA_EEPROM_PAGE 0x0
 
 typedef enum {
     CAL_STATE_STANDBY,

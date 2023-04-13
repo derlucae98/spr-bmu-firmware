@@ -65,6 +65,8 @@ bool init_adc(void) {
 
     mcp356x_error_t err;
 
+    init_calibration();
+
     prvAdc = mcp356x_init(adc_spi, adc_assert, adc_deassert);
 
     prvAdc.config.VREF_SEL = VREF_SEL_EXT;
