@@ -17,6 +17,7 @@
 
 #include <alloca.h>
 #include <string.h>
+#include <stdlib.h>
 
 
 static void set_gpio_config(void) {
@@ -112,6 +113,16 @@ static void uart_rec(char* s) {
         } else if (strcmp(tokens[1], "off") == 0) {
             request_tractive_system(false);
         }
+    } else if(strcmp(tokens[0], "cal") == 0) {
+        if (strcmp(tokens[1], "ubatt") == 0) {
+            start_calibration(CAL_INPUT_UBATT_VOLT);
+        } else if (strcmp(tokens[1], "ulink") == 0) {
+            start_calibration(CAL_INPUT_ULINK_VOLT);
+        } else if (strcmp(tokens[1], "current") == 0) {
+            start_calibration(CAL_INPUT_CURRENT);
+        }
+    } else if (strcmp(tokens[0], "ack") == 0) {
+        value_applied(atof(tokens[1]));
     }
 }
 

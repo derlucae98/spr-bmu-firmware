@@ -91,10 +91,12 @@ static void prvCalTask(void *p) {
 
         switch (prvState) {
         case CAL_STATE_STANDBY:
+            PRINTF("CAL Standby\n");
             vTaskSuspend(prvCalTaskHandle);
             prvAckCal = false;
             break;
         case CAL_STATE_WAIT_FOR_VALUE_1:
+            PRINTF("CAL Wait for val 1\n");
             prvAckCal = false;
             if (prvVoltageApplied) {
                 vTaskDelay(pdMS_TO_TICKS(20)); //Wait for new ADC value
@@ -104,6 +106,7 @@ static void prvCalTask(void *p) {
             }
             break;
         case CAL_STATE_WAIT_FOR_VALUE_2:
+            PRINTF("CAL Wait for val 2\n");
             prvAckCal = false;
             if (prvVoltageApplied) {
                 vTaskDelay(pdMS_TO_TICKS(20)); //Wait for new ADC value
@@ -113,11 +116,13 @@ static void prvCalTask(void *p) {
             }
             break;
         case CAL_STATE_UPDATE_CALIBRATION:
+            PRINTF("CAL Update calibration\n");
             prvAckCal = false;
             prv_update_calibration();
             prvState = CAL_STATE_FINISH;
             break;
         case CAL_STATE_FINISH:
+            PRINTF("CAL finish\n");
             if (prvAckCal) {
                 prvState = CAL_STATE_STANDBY;
             }
