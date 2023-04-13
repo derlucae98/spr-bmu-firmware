@@ -135,7 +135,7 @@ static void prv_update_calibration(void) {
     float adcValue1Ideal = 0.0f;
     float adcValue2Ideal = 0.0f;
 
-    if (prvRef = 0.0f) {
+    if (prvRef == 0.0f) { //Comparing against 0.0f is safe here. If the value will not be updated with set_adc_reference_voltage(), then prvRef will have the value 0.0f
         prvRef = prvAdcCal.reference;
     } else {
         prvAdcCal.reference = prvRef;
