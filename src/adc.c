@@ -33,6 +33,7 @@ static mcp356x_obj_t prvAdc;
 
 static SemaphoreHandle_t prvAdcDataMutex = NULL;
 static adc_data_t prvAdcData;
+static adc_calibration_t prvCal;
 
 static void prv_adc_task(void *p);
 static void prv_adc_irq_callback(BaseType_t *higherPrioTaskWoken);
@@ -66,6 +67,7 @@ bool init_adc(void) {
     mcp356x_error_t err;
 
     init_calibration();
+    prvCal = get_adc_calibration();
 
     prvAdc = mcp356x_init(adc_spi, adc_assert, adc_deassert);
 
@@ -124,14 +126,6 @@ void release_adc_data(void) {
     xSemaphoreGive(prvAdcDataMutex);
 }
 
-
-
-
-
-
-
-
-
 static void prv_adc_irq_callback(BaseType_t *higherPrioTaskWoken) {
     dbg1(1);
     vTaskNotifyGiveFromISR(prvAdcTaskHandle, higherPrioTaskWoken);
@@ -145,7 +139,7 @@ static void prv_adc_task(void *p) {
     int32_t adcValUlink = 0;
     int32_t adcValCurrent = 0;
 
-    float ubatVolt = 0.0f;
+    float ubattVolt = 0.0f;
     float ulinkVolt = 0.0f;
     float current = 0.0f;
 
@@ -167,20 +161,15 @@ static void prv_adc_task(void *p) {
             adcError = true;
         }
 
+
         mcp356x_scan_t scanCh = 1 << chID;
         switch ((mcp356x_scan_t)scanCh) {
 
         case SCAN_DIFF_CH0_CH1: //DC-Link / TSAC Output voltage
             adcValUlink = adcVal;
-            ulinkVolt = ADC_VOLTAGE_CONVERSION_RATIO * (adcVal * -2.5f) / 8388608.0f;
-            ulinkVolt = (ulinkVolt + (1.11091f / 0.989208f)) * 0.989208f;
-            //PRINTF("U_Link: %.1f\n", ulinkVolt);
             break;
         case SCAN_DIFF_CH2_CH3: //Battery Voltage
             adcValUbatt = adcVal;
-            ubatVolt = ADC_VOLTAGE_CONVERSION_RATIO * (adcVal * -2.5f) / 8388608.0f;
-            ubatVolt = (ubatVolt - (1.3606f / 0.99671f)) * 0.99671f;
-            //PRINTF("U_Batt: %.1f\n", ubatVolt);
             break;
         case SCAN_DIFF_CH4_CH5: //Current
             adcValCurrent = adcVal;
@@ -194,12 +183,27 @@ static void prv_adc_task(void *p) {
             break;
         }
 
+        //Update ADC values for the calibration module
         cal_update_adc_value(adcValUlink, adcValUbatt, adcValCurrent);
 
+        //Apply calibration values
+        adcValUlink   = prvCal.ulink_gain   * (adcValUlink   + prvCal.ulink_offset);
+        adcValUbatt   = prvCal.ubatt_gain   * (adcValUbatt   + prvCal.ubatt_offset);
+        adcValCurrent = prvCal.current_gain * (adcValCurrent + prvCal.current_offset);
+
+        ulinkVolt = ADC_VOLTAGE_CONVERSION_RATIO * (adcValUlink   * (-1) * prvCal.reference) / 8388608.0f; //*(-1) to compensate the inverting ADC driver
+        ubattVolt = ADC_VOLTAGE_CONVERSION_RATIO * (adcValUbatt   * (-1) * prvCal.reference) / 8388608.0f; //*(-1) to compensate the inverting ADC driver
+        current   = ADC_CURRENT_CONVERSION_RATIO * (adcValCurrent * prvCal.reference) / 8388608.0f;
+
+        static uint16_t counter = 300;
+        if (counter-- == 0) { //Don't spam the console
+            counter = 300;
+            PRINTF("U_Link: %.3f\n", ulinkVolt);
+        }
 
         adc_data_t *adcData = get_adc_data(pdMS_TO_TICKS(4));
         if (adcData != NULL) {
-            adcData->batteryVoltage = ubatVolt;
+            adcData->batteryVoltage = ubattVolt;
             adcData->dcLinkVoltage = ulinkVolt;
             adcData->current = current;
             adcData->valid = !adcError;

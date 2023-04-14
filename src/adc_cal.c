@@ -136,6 +136,8 @@ static void prvCalTask(void *p) {
 static void prv_update_calibration(void) {
     prvSlope = (prvAdcVal2 - prvAdcVal1) / (prvVal2 - prvVal1);
     prvOffset = prvSlope * (0 - prvVal1) + prvAdcVal1;
+    PRINTF("Slope is: %f\n", prvSlope);
+    PRINTF("Offset is: %f\n", prvOffset);
 
     float adcValue1Ideal = 0.0f;
     float adcValue2Ideal = 0.0f;
@@ -145,6 +147,8 @@ static void prv_update_calibration(void) {
     } else {
         prvAdcCal.reference = prvRef;
     }
+
+    PRINTF("Ref: %f V", prvAdcCal.reference);
 
     switch (prvAdcCalInput) {
     case CAL_INPUT_UBATT_VOLT:
@@ -157,8 +161,12 @@ static void prv_update_calibration(void) {
         adcValue2Ideal = (-1) * prvVal2 * 8388608.0f / (ADC_CURRENT_CONVERSION_RATIO * prvRef);
         break;
     }
+
     prvSlopeIdeal = (adcValue2Ideal - adcValue1Ideal) / (prvVal2 - prvVal1);
     prvGainCal = prvSlopeIdeal / prvSlope;
+
+    PRINTF("Slope ideal: %f\n", prvSlopeIdeal);
+    PRINTF("Gain Cal: %f\n", prvGainCal);
 
     switch (prvAdcCalInput) {
         case CAL_INPUT_UBATT_VOLT:
@@ -233,6 +241,7 @@ static void write_calibration(void) {
 }
 
 static void prv_default_calibration(void) {
+    PRINTF("ADC: Initializing with default calibration.\n");
     prvAdcCal.reference = 2.5f;
     prvAdcCal.current_gain = 1.0f;
     prvAdcCal.current_offset = 0.0f;

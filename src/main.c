@@ -120,10 +120,21 @@ static void uart_rec(char* s) {
             start_calibration(CAL_INPUT_ULINK_VOLT);
         } else if (strcmp(tokens[1], "current") == 0) {
             start_calibration(CAL_INPUT_CURRENT);
+        } else if (strcmp(tokens[1], "done") == 0) {
+            acknowledge_calibration();
         }
     } else if (strcmp(tokens[0], "ack") == 0) {
         value_applied(atof(tokens[1]));
     }
+
+    /* Calibration process:
+     * Send: cal <input>\r\n    <input> = ubatt,ulink,current
+     * Apply 10V to the input (Current calibration currently not possible. No Hardware...)
+     * Send: ack <xx.xxx>\r\n   <xx.xxx> = Exact voltage that has been applied
+     * Apply 600V to the input (In the first test 300V is used)
+     * Send: ack <xxx.xx>\r\n   <xxx.xx> = Exact voltage that has been applied
+     * Send: cal done\r\n       Finish the calibration process
+     */
 }
 
 
@@ -151,15 +162,10 @@ int main(void)
     uart_register_receive_hook(uart_rec);
     set_pin(AMS_FAULT_PORT, AMS_FAULT_PIN);
 
-
-
     spi_init(LPSPI1, LPSPI_PRESC_1, LPSPI_MODE_0);
     spi_init(LPSPI0, LPSPI_PRESC_4, LPSPI_MODE_3);
     spi_init(LPSPI2, LPSPI_PRESC_4, LPSPI_MODE_0);
 //    spi_enable_dma(LPSPI1);
-
-
-
 
     xTaskCreate(init_task, "", 1000, NULL, configMAX_PRIORITIES-1, NULL);
 
