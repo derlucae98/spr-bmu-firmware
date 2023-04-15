@@ -158,6 +158,7 @@ static void prv_adc_task(void *p) {
     float current = 0.0f;
 
     bool adcError = false;
+    bool currentValid = false;
 
     uint8_t chID;
 
@@ -217,7 +218,8 @@ static void prv_adc_task(void *p) {
         newAdcData.batteryVoltage = ubattVolt;
         newAdcData.dcLinkVoltage = ulinkVolt;
         newAdcData.current = current;
-        newAdcData.valid = !adcError;
+        newAdcData.voltageValid = !adcError;
+        newAdcData.currentValid = currentValid; //Todo: Validity for the current measurement has to be determined with the open wire check
 
         //The hook will provide the new data to a function, synchronous to the acquisition
         //Asynchronous access is possible using the access functions
