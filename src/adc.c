@@ -39,6 +39,7 @@ static void prv_adc_task(void *p);
 static void prv_adc_irq_callback(BaseType_t *higherPrioTaskWoken);
 static void prv_get_adc_calibration(void);
 static TaskHandle_t prvAdcTaskHandle = NULL;
+static adc_new_data_hook_t prv_adc_new_data_hook = NULL;
 
 static void prv_adc_print_data(void *p);
 
@@ -63,7 +64,9 @@ static void prv_get_adc_calibration(void) {
 }
 
 
-bool init_adc(void) {
+bool init_adc(adc_new_data_hook_t adc_new_data_hook) {
+    prv_adc_new_data_hook = adc_new_data_hook;
+
     prvAdcDataMutex = xSemaphoreCreateMutex();
     configASSERT(prvAdcDataMutex);
     memset(&prvAdcData, 0, sizeof(adc_data_t));
@@ -210,12 +213,21 @@ static void prv_adc_task(void *p) {
         ubattVolt = ADC_VOLTAGE_CONVERSION_RATIO * (adcValUbattCorr   * (-1) * prvCal.reference) / 8388608.0f; //*(-1) to compensate the inverting ADC driver
         current   = ADC_CURRENT_CONVERSION_RATIO * (adcValCurrentCorr * prvCal.reference) / 8388608.0f;
 
-        adc_data_t *adcData = get_adc_data(pdMS_TO_TICKS(4));
+        adc_data_t newAdcData;
+        newAdcData->batteryVoltage = ubattVolt;
+        newAdcData->dcLinkVoltage = ulinkVolt;
+        newAdcData->current = current;
+        newAdcData->valid = !adcError;
+
+        //The hook will provide the new data to a function, synchronous to the acquisition
+        //Asynchronous access is possible using the access functions
+        if (prv_adc_new_data_hook != NULL) {
+            (prv_adc_new_data_hook)(newAdcData);
+        }
+
+        adc_data_t *adcData = get_adc_data(pdMS_TO_TICKS(2));
         if (adcData != NULL) {
-            adcData->batteryVoltage = ubattVolt;
-            adcData->dcLinkVoltage = ulinkVolt;
-            adcData->current = current;
-            adcData->valid = !adcError;
+            memcpy(adcData, &newAdcData, sizeof(adc_data_t));
             release_adc_data();
         } else {
             PRINTF("adc: Can't get mutex!\n");
