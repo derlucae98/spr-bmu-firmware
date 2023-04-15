@@ -11,7 +11,7 @@ static bool prvAckCal = false;
 
 static void prv_update_calibration(void);
 static void prv_load_calibration(void);
-static void write_calibration(void);
+static void prv_write_calibration(void);
 static void prv_default_calibration(void);
 
 static float prvVal1 = 0.0f;
@@ -176,7 +176,8 @@ static void prv_update_calibration(void) {
             break;
     }
 
-    write_calibration();
+    prv_write_calibration();
+    prv_load_calibration();
 }
 
 static void prv_load_calibration(void) {
@@ -210,7 +211,7 @@ static void prv_load_calibration(void) {
     memcpy(&prvAdcCal, &pageBuffer[0], sizeof(adc_calibration_t));
 }
 
-static void write_calibration(void) {
+static void prv_write_calibration(void) {
     uint8_t pageBuffer[EEPROM_PAGESIZE];
     memset(pageBuffer, 0xFF, sizeof(pageBuffer));
     memcpy(&pageBuffer[0], &prvAdcCal, sizeof(adc_calibration_t));
@@ -242,7 +243,7 @@ static void prv_default_calibration(void) {
     prvAdcCal.ubatt_offset = 0.0f;
     prvAdcCal.ulink_gain = 1.0f;
     prvAdcCal.ulink_offset = 0.0f;
-    write_calibration();
+    prv_write_calibration();
 }
 
 

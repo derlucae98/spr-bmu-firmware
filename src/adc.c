@@ -37,6 +37,7 @@ static adc_calibration_t prvCal;
 
 static void prv_adc_task(void *p);
 static void prv_adc_irq_callback(BaseType_t *higherPrioTaskWoken);
+static void prv_get_adc_calibration(void);
 static TaskHandle_t prvAdcTaskHandle = NULL;
 
 static void prv_adc_print_data(void *p);
@@ -57,6 +58,10 @@ static inline void adc_deassert(void) {
     set_pin(CS_ADC_PORT, CS_ADC_PIN);
 }
 
+static void prv_get_adc_calibration(void) {
+    prvCal = get_adc_calibration();
+}
+
 
 bool init_adc(void) {
     prvAdcDataMutex = xSemaphoreCreateMutex();
@@ -66,7 +71,7 @@ bool init_adc(void) {
     mcp356x_error_t err;
 
     init_calibration();
-    prvCal = get_adc_calibration();
+    prv_get_adc_calibration();
 
     prvAdc = mcp356x_init(adc_spi, adc_assert, adc_deassert);
 
@@ -189,6 +194,12 @@ static void prv_adc_task(void *p) {
 
         //Update ADC values for the calibration module
         cal_update_adc_value(adcValUlink, adcValUbatt, adcValCurrent);
+
+        if (get_cal_state() == CAL_STATE_FINISH) {
+            //New calibration has been written
+            //Reload local calibration values
+            prv_get_adc_calibration();
+        }
 
         //Apply calibration values
         adcValUlinkCorr   = prvCal.ulink_gain   * (adcValUlink   - prvCal.ulink_offset);
