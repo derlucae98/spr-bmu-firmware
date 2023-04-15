@@ -19,37 +19,25 @@
 #include "adc.h"
 #include <stdbool.h>
 
-
 typedef enum {
-    EVENT_NONE,
-    EVENT_TS_ACTIVATE,
-    EVENT_TS_DEACTIVATE,
-    EVENT_PRE_CHARGE_SUCCESSFUL,
-    EVENT_ERROR,
-    EVENT_ERROR_CLEARED
-} event_t;
-
-typedef enum {
-    STATE_STANDBY,
-    STATE_PRE_CHARGE,
-    STATE_OPERATE,
-    STATE_ERROR
-} state_t;
+    CONTACTOR_STATE_STANDBY,
+    CONTACTOR_STATE_PRE_CHARGE,
+    CONTACTOR_STATE_OPERATE,
+    CONTACTOR_STATE_ERROR
+} contactor_SM_state_t;
 
 typedef enum {
     ERROR_NO_ERROR                    = 0x0,
-    ERROR_SYSTEM_NOT_HEALTHY          = 0x1,
-    ERROR_IMD_FAULT                   = 0x2,
-    ERROR_AMS_FAULT                   = 0x4,
-    ERROR_IMPLAUSIBLE_CONTACTOR       = 0x8,
-    ERROR_IMPLAUSIBLE_DC_LINK_VOLTAGE = 0x10,
-    ERROR_IMPLAUSIBLE_BATTERY_VOLTAGE = 0x20,
-    ERROR_PRE_CHARGE_TIMEOUT          = 0x40,
-    ERROR_SDC_OPEN                    = 0x80,
-    ERROR_AMS_POWERSTAGE_DISABLED     = 0x100,
-    ERROR_IMD_POWERSTAGE_DISABLED     = 0x200
-} error_t;
-
+    ERROR_IMD_FAULT                   = 0x1,
+    ERROR_AMS_FAULT                   = 0x2,
+    ERROR_IMPLAUSIBLE_CONTACTOR       = 0x4,
+    ERROR_IMPLAUSIBLE_DC_LINK_VOLTAGE = 0x8,
+    ERROR_IMPLAUSIBLE_BATTERY_VOLTAGE = 0x10,
+    ERROR_PRE_CHARGE_TIMEOUT          = 0x20,
+    ERROR_SDC_OPEN                    = 0x40,
+    ERROR_AMS_POWERSTAGE_DISABLED     = 0x80,
+    ERROR_IMD_POWERSTAGE_DISABLED     = 0x100
+} contactor_error_t;
 
 typedef struct {
     uint8_t negAIR_intent;
@@ -63,8 +51,10 @@ typedef struct {
     uint8_t pre_isPlausible;
 } contactor_state_t;
 
-state_t get_contactor_state(void);
-error_t get_contactor_error(void);
+contactor_SM_state_t get_contactor_SM_state(void);
+contactor_state_t get_contactor_state(void);
+contactor_error_t get_contactor_error(void);
+
 void init_contactor(void);
 void request_tractive_system(bool active);
 
