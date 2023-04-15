@@ -107,7 +107,7 @@ bool init_adc(adc_new_data_hook_t adc_new_data_hook) {
     }
 
     xTaskCreate(prv_adc_task, "adc", ADC_TASK_STACK, NULL, ADC_TASK_PRIO, &prvAdcTaskHandle);
-    xTaskCreate(prv_adc_print_data, "", 500, NULL, 2, NULL);
+//    xTaskCreate(prv_adc_print_data, "", 500, NULL, 2, NULL);
     attach_interrupt(IRQ_ADC_PORT, IRQ_ADC_PIN, IRQ_EDGE_FALLING, prv_adc_irq_callback);
     return true;
 }
