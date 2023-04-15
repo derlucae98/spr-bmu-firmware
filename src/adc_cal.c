@@ -36,8 +36,8 @@ void init_calibration(void) {
 }
 
 void start_calibration(adc_cal_input_t input) {
-    vTaskResume(prvCalTaskHandle);
     prvState = CAL_STATE_WAIT_FOR_VALUE_1;
+    vTaskResume(prvCalTaskHandle);
     prvVoltageApplied = false;
     prvAckCal = false;
     prvAdcCalInput = input;
@@ -136,8 +136,6 @@ static void prvCalTask(void *p) {
 static void prv_update_calibration(void) {
     prvSlope = (prvAdcVal2 - prvAdcVal1) / (prvVal2 - prvVal1);
     prvOffset = prvSlope * (0 - prvVal1) + prvAdcVal1;
-    PRINTF("Slope is: %f\n", prvSlope);
-    PRINTF("Offset is: %f\n", prvOffset);
 
     float adcValue1Ideal = 0.0f;
     float adcValue2Ideal = 0.0f;
@@ -147,8 +145,6 @@ static void prv_update_calibration(void) {
     } else {
         prvAdcCal.reference = prvRef;
     }
-
-    PRINTF("Ref: %f V", prvAdcCal.reference);
 
     switch (prvAdcCalInput) {
     case CAL_INPUT_UBATT_VOLT:
@@ -164,9 +160,6 @@ static void prv_update_calibration(void) {
 
     prvSlopeIdeal = (adcValue2Ideal - adcValue1Ideal) / (prvVal2 - prvVal1);
     prvGainCal = prvSlopeIdeal / prvSlope;
-
-    PRINTF("Slope ideal: %f\n", prvSlopeIdeal);
-    PRINTF("Gain Cal: %f\n", prvGainCal);
 
     switch (prvAdcCalInput) {
         case CAL_INPUT_UBATT_VOLT:
@@ -202,7 +195,7 @@ static void prv_load_calibration(void) {
 
         if (!eeprom_check_crc(pageBuffer, sizeof(pageBuffer) - sizeof(uint16_t), crcShould)) {
             PRINTF("CRC error while loading calibration data!\n");
-            configASSERT(0);
+            prv_default_calibration();
         }
 
         eeprom_mutex_give();

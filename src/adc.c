@@ -39,6 +39,7 @@ static void prv_adc_task(void *p);
 static void prv_adc_irq_callback(BaseType_t *higherPrioTaskWoken);
 static TaskHandle_t prvAdcTaskHandle = NULL;
 
+static void prv_adc_print_data(void *p);
 
 static BaseType_t prv_adc_mutex_take(TickType_t blocktime) {
     return xSemaphoreTake(prvAdcDataMutex, blocktime);
@@ -61,8 +62,6 @@ bool init_adc(void) {
     prvAdcDataMutex = xSemaphoreCreateMutex();
     configASSERT(prvAdcDataMutex);
     memset(&prvAdcData, 0, sizeof(adc_data_t));
-
-    attach_interrupt(IRQ_ADC_PORT, IRQ_ADC_PIN, IRQ_EDGE_FALLING, prv_adc_irq_callback);
 
     mcp356x_error_t err;
 
@@ -100,6 +99,8 @@ bool init_adc(void) {
     }
 
     xTaskCreate(prv_adc_task, "adc", ADC_TASK_STACK, NULL, ADC_TASK_PRIO, &prvAdcTaskHandle);
+    xTaskCreate(prv_adc_print_data, "", 500, NULL, 2, NULL);
+    attach_interrupt(IRQ_ADC_PORT, IRQ_ADC_PIN, IRQ_EDGE_FALLING, prv_adc_irq_callback);
     return true;
 }
 
@@ -127,8 +128,9 @@ void release_adc_data(void) {
 }
 
 static void prv_adc_irq_callback(BaseType_t *higherPrioTaskWoken) {
-    dbg1(1);
-    vTaskNotifyGiveFromISR(prvAdcTaskHandle, higherPrioTaskWoken);
+    if (prvAdcTaskHandle != NULL) {
+        vTaskNotifyGiveFromISR(prvAdcTaskHandle, higherPrioTaskWoken);
+    }
 }
 
 static void prv_adc_task(void *p) {
@@ -138,6 +140,10 @@ static void prv_adc_task(void *p) {
     int32_t adcValUbatt = 0;
     int32_t adcValUlink = 0;
     int32_t adcValCurrent = 0;
+
+    float adcValUbattCorr = 0.0f;
+    float adcValUlinkCorr = 0.0f;
+    float adcValCurrentCorr = 0.0f;
 
     float ubattVolt = 0.0f;
     float ulinkVolt = 0.0f;
@@ -154,13 +160,11 @@ static void prv_adc_task(void *p) {
         */
         ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
 
-
         if (mcp356x_read_value(&prvAdc, &adcVal, NULL, &chID) == MCP356X_ERROR_OK) {
             adcError = false;
         } else {
             adcError = true;
         }
-
 
         mcp356x_scan_t scanCh = 1 << chID;
         switch ((mcp356x_scan_t)scanCh) {
@@ -187,19 +191,13 @@ static void prv_adc_task(void *p) {
         cal_update_adc_value(adcValUlink, adcValUbatt, adcValCurrent);
 
         //Apply calibration values
-        adcValUlink   = prvCal.ulink_gain   * (adcValUlink   + prvCal.ulink_offset);
-        adcValUbatt   = prvCal.ubatt_gain   * (adcValUbatt   + prvCal.ubatt_offset);
-        adcValCurrent = prvCal.current_gain * (adcValCurrent + prvCal.current_offset);
+        adcValUlinkCorr   = prvCal.ulink_gain   * (adcValUlink   - prvCal.ulink_offset);
+        adcValUbattCorr   = prvCal.ubatt_gain   * (adcValUbatt   - prvCal.ubatt_offset);
+        adcValCurrentCorr = prvCal.current_gain * (adcValCurrent - prvCal.current_offset);
 
-        ulinkVolt = ADC_VOLTAGE_CONVERSION_RATIO * (adcValUlink   * (-1) * prvCal.reference) / 8388608.0f; //*(-1) to compensate the inverting ADC driver
-        ubattVolt = ADC_VOLTAGE_CONVERSION_RATIO * (adcValUbatt   * (-1) * prvCal.reference) / 8388608.0f; //*(-1) to compensate the inverting ADC driver
-        current   = ADC_CURRENT_CONVERSION_RATIO * (adcValCurrent * prvCal.reference) / 8388608.0f;
-
-        static uint16_t counter = 300;
-        if (counter-- == 0) { //Don't spam the console
-            counter = 300;
-            PRINTF("U_Link: %.3f\n", ulinkVolt);
-        }
+        ulinkVolt = ADC_VOLTAGE_CONVERSION_RATIO * (adcValUlinkCorr   * (-1) * prvCal.reference) / 8388608.0f; //*(-1) to compensate the inverting ADC driver
+        ubattVolt = ADC_VOLTAGE_CONVERSION_RATIO * (adcValUbattCorr   * (-1) * prvCal.reference) / 8388608.0f; //*(-1) to compensate the inverting ADC driver
+        current   = ADC_CURRENT_CONVERSION_RATIO * (adcValCurrentCorr * prvCal.reference) / 8388608.0f;
 
         adc_data_t *adcData = get_adc_data(pdMS_TO_TICKS(4));
         if (adcData != NULL) {
@@ -212,6 +210,19 @@ static void prv_adc_task(void *p) {
             PRINTF("adc: Can't get mutex!\n");
             configASSERT(0);
         }
-        dbg1(0);
+    }
+}
+
+static void prv_adc_print_data(void *p) {
+    (void) p;
+
+    TickType_t period = pdMS_TO_TICKS(200);
+    TickType_t lastWake = xTaskGetTickCount();
+    while (1) {
+        adc_data_t adcData;
+        copy_adc_data(&adcData, portMAX_DELAY);
+        PRINTF("U_Batt: %.1f\n", adcData.batteryVoltage);
+        PRINTF("U_Link: %.1f\n", adcData.dcLinkVoltage);
+        vTaskDelayUntil(&lastWake, period);
     }
 }
