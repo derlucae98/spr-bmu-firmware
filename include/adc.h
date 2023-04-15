@@ -40,14 +40,14 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "adc_cal.h"
 #include <stdbool.h>
 
-typedef void (*adc_new_data_hook_t)(adc_data_t newData);
-
 typedef struct {
     float current;
     float batteryVoltage;
     float dcLinkVoltage;
     bool valid;
 } adc_data_t;
+
+typedef void (*adc_new_data_hook_t)(adc_data_t newData);
 
 bool init_adc(adc_new_data_hook_t adc_new_data_hook);
 adc_data_t* get_adc_data(TickType_t blocktime);

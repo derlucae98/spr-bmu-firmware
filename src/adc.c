@@ -214,10 +214,10 @@ static void prv_adc_task(void *p) {
         current   = ADC_CURRENT_CONVERSION_RATIO * (adcValCurrentCorr * prvCal.reference) / 8388608.0f;
 
         adc_data_t newAdcData;
-        newAdcData->batteryVoltage = ubattVolt;
-        newAdcData->dcLinkVoltage = ulinkVolt;
-        newAdcData->current = current;
-        newAdcData->valid = !adcError;
+        newAdcData.batteryVoltage = ubattVolt;
+        newAdcData.dcLinkVoltage = ulinkVolt;
+        newAdcData.current = current;
+        newAdcData.valid = !adcError;
 
         //The hook will provide the new data to a function, synchronous to the acquisition
         //Asynchronous access is possible using the access functions

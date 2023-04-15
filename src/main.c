@@ -142,7 +142,7 @@ void init_task(void *p) {
     (void)p;
 
     while (1) {
-        init_adc();
+        init_adc(NULL);
         init_contactor();
         init_bmu();
         init_stacks();
