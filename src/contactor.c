@@ -1,6 +1,7 @@
 /*!
  * @file            contactor.c
- * @brief           This module controls the Accumulator Isolation Relays (AIRs)
+ * @brief           This module controls the Accumulator Isolation Relays (AIRs),
+ *                  evaluates the system state, and controls the status LEDs
  */
 
 /*
@@ -345,12 +346,10 @@ static void prv_contactor_control_task(void *p) {
             prvStateMachineError |= ERROR_IMPLAUSIBLE_CONTACTOR;
         }
 
-        for(size_t i = 0; i < sizeof(prvStateArray)/sizeof(prvStateArray[0]); i++) {
-           if(prvStateArray[i].current == prvStateMachine.current) {
-                if((prvStateArray[i].event == prvEvent)) {
-
+        for (size_t i = 0; i < sizeof(prvStateArray) / sizeof(prvStateArray[0]); i++) {
+           if (prvStateArray[i].current == prvStateMachine.current) {
+                if ((prvStateArray[i].event == prvEvent)) {
                     prvStateMachine.current =  prvStateArray[i].next;
-
                     prvStateFunction[prvStateMachine.current].function();
                 }
             }
