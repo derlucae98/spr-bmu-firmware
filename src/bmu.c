@@ -190,25 +190,25 @@ static void can_send_task(void *p) {
         msg.DLC = 8;
         msg.payload[0] = (counter << 4) | ((canData.temperature[counter][5] >> 6) & 0x0F);
         msg.payload[1] = (canData.temperature[counter][5] << 2) | (canData.temperatureStatus[counter][5] & 0x03);
-        msg.payload[2] = (canData.temperature[counter][6] >> 2);
-        msg.payload[3] = (canData.temperature[counter][6] << 6) | ((canData.temperatureStatus[counter][6] & 0x03) << 4) | ((canData.temperature[counter][7] >> 6) & 0x0F);
-        msg.payload[4] = (canData.temperature[counter][7] << 2) | (canData.temperatureStatus[counter][7] & 0x03);
-        msg.payload[5] = (canData.temperature[counter][8] >> 2);
-        msg.payload[6] = (canData.temperature[counter][8] << 6) | ((canData.temperatureStatus[counter][8] & 0x03) << 4) | ((canData.temperature[counter][9] >> 6) & 0x0F);
-        msg.payload[7] = (canData.temperature[counter][9] << 2) | (canData.temperatureStatus[counter][9] & 0x03);
+        msg.payload[2] = 0;
+        msg.payload[3] = 0;
+        msg.payload[4] = 0;
+        msg.payload[5] = 0;
+        msg.payload[6] = 0;
+        msg.payload[7] = 0;
         //Send message
         can_send(CAN0, &msg);
 
         //Send BMS temperature 3 message every 10 ms
         msg.ID = 0x006;
         msg.DLC = 8;
-        msg.payload[0] = (counter << 4) | ((canData.temperature[counter][10] >> 6) & 0x0F);
-        msg.payload[1] = (canData.temperature[counter][10] << 2) | (canData.temperatureStatus[counter][10] & 0x03);
-        msg.payload[2] = (canData.temperature[counter][11] >> 2);
-        msg.payload[3] = (canData.temperature[counter][11] << 6) | ((canData.temperatureStatus[counter][11] & 0x03) << 4) | ((canData.temperature[counter][12] >> 6) & 0x0F);
-        msg.payload[4] = (canData.temperature[counter][12] << 2) | (canData.temperatureStatus[counter][12] & 0x03);
-        msg.payload[5] = (canData.temperature[counter][13] >> 2);
-        msg.payload[6] = (canData.temperature[counter][13] << 6) | ((canData.temperatureStatus[counter][13] & 0x03) << 4);
+        msg.payload[0] = (counter << 4);
+        msg.payload[1] = 0;
+        msg.payload[2] = 0;
+        msg.payload[3] = 0;
+        msg.payload[4] = 0;
+        msg.payload[5] = 0;
+        msg.payload[6] = 0;
         msg.payload[7] = 0;
         //Send message
         can_send(CAN0, &msg);
