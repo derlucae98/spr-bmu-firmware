@@ -405,9 +405,9 @@ void ltc6811_get_temperatures_in_degC(uint16_t temperature[][MAX_NUM_OF_TEMPSENS
 
         for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
             temperatureStatus[slave][channel] = status[slave];
-            temperatureStatus[slave][channel + 7] = status[slave];
+            temperatureStatus[slave][channel + len] = status[slave];
             temperature[slave][channel] = calc_temperature_from_voltage(NTC_CELL, voltGPIO[slave][0]);
-            temperature[slave][channel + 7] = calc_temperature_from_voltage(NTC_CELL, voltGPIO[slave][1]);
+            temperature[slave][channel + len] = calc_temperature_from_voltage(NTC_CELL, voltGPIO[slave][1]);
         }
     }
 }
