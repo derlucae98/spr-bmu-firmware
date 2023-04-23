@@ -35,6 +35,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "config.h"
 #include "LTC6811.h"
 #include "spi.h"
+#include "uart.h"
 #include <stdbool.h>
 
 /*! @def MAX_NUM_OF_SLAVES
