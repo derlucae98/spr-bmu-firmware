@@ -311,6 +311,8 @@ static void prv_contactor_control_task(void *p) {
             prvStateMachineError = ERROR_NO_ERROR;
         }
 
+        /* AMS or IMD report a fault?
+         * -> Deactivate AIRs and report the current error states */
         if (!systemIsHealthy) {
             prvEvent = EVENT_ERROR;
 
@@ -358,9 +360,6 @@ static void prv_contactor_control_task(void *p) {
 }
 
 static void prv_system_state_task(void *p) {
-    /* This task polls all status inputs and determines the AMS status based on the measured cell parameters.
-         * It controls the shutdown circuit for the AMS and also controls the status LEDs.
-         */
     (void)p;
     TickType_t xLastWakeTime = xTaskGetTickCount();
     const TickType_t xPeriod = pdMS_TO_TICKS(100);
