@@ -362,5 +362,5 @@ static uint16_t prv_avg_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPS
             temp += (double)temperature[stack][tempsens];
         }
     }
-    return (uint16_t)(temp / ((MAX_NUM_OF_TEMPSENS - 2) * stacks));
+    return (uint16_t)(temp / ((MAX_NUM_OF_TEMPSENS) * stacks));
 }

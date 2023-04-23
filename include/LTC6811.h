@@ -46,7 +46,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*! @def NUMBEROFSLAVES
  *  Defines the number of devices in a the daisy-chain
  */
-#define NUMBEROFSLAVES 12
+#define NUMBEROFSLAVES 1
 
 /*! @def MAX_NUM_OF_CELLS
  *  Defines the number of cells per stack.
