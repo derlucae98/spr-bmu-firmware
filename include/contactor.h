@@ -17,6 +17,7 @@
 #include "math.h"
 #include "uart.h"
 #include "adc.h"
+#include "stacks.h"
 #include <stdbool.h>
 
 typedef enum {
@@ -33,10 +34,12 @@ typedef enum {
     ERROR_IMPLAUSIBLE_CONTACTOR       = 0x4,
     ERROR_IMPLAUSIBLE_DC_LINK_VOLTAGE = 0x8,
     ERROR_IMPLAUSIBLE_BATTERY_VOLTAGE = 0x10,
-    ERROR_PRE_CHARGE_TIMEOUT          = 0x20,
-    ERROR_SDC_OPEN                    = 0x40,
-    ERROR_AMS_POWERSTAGE_DISABLED     = 0x80,
-    ERROR_IMD_POWERSTAGE_DISABLED     = 0x100
+    ERROR_IMPLAUSIBLE_CURRENT         = 0x20,
+    ERROR_CURRENT_OUT_OF_RANGE        = 0x40,
+    ERROR_PRE_CHARGE_TIMEOUT          = 0x80,
+    ERROR_SDC_OPEN                    = 0x100,
+    ERROR_AMS_POWERSTAGE_DISABLED     = 0x200,
+    ERROR_IMD_POWERSTAGE_DISABLED     = 0x400
 } contactor_error_t;
 
 typedef struct {

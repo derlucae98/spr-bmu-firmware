@@ -28,11 +28,15 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "contactor.h"
 
 static void prv_contactor_control_task(void *p);
+static void prv_system_state_task(void *p);
 
 static void prv_standby(void);
 static void prv_pre_charge(void);
 static void prv_operate(void);
 static void prv_error(void);
+
+static void prv_open_shutdown_circuit(void);
+static void prv_close_shutdown_circuit(void);
 
 static bool prvTsActive = false;
 static uint8_t prvTsRequestTimeout = 0;
@@ -40,6 +44,15 @@ static uint8_t prvPrechargeTimeout = 0;
 static contactor_SM_state_t prvStateMachineState = CONTACTOR_STATE_STANDBY;
 static uint32_t prvStateMachineError = ERROR_NO_ERROR;
 static contactor_state_t prvContactorState;
+
+static bool prvAmsFault = false;
+static bool prvImdFault = false;
+static bool prvVoltageFault = false;
+static bool prvCurrentFault = false;
+static bool prvCurrentOutOfRange = false;
+static bool prvAmsPowerStageDisabled = false;
+static bool prvImdPowerStageDisabled = false;
+static bool prvSdcOpen = false;
 
 typedef enum {
     EVENT_NONE,
@@ -165,6 +178,7 @@ static void prv_error(void) {
 void init_contactor(void) {
     prvStateMachine.current = CONTACTOR_STATE_STANDBY;
     xTaskCreate(prv_contactor_control_task, "contactor", CONTACTOR_TASK_STACK, NULL, CONTACTOR_TASK_PRIO, NULL);
+    xTaskCreate(prv_system_state_task, "sysstate", SYSTEM_STATE_TASK_STACK, NULL, SYSTEM_STATE_TASK_PRIO, NULL);
 }
 
 static void prv_contactor_control_task(void *p) {
@@ -190,6 +204,12 @@ static void prv_contactor_control_task(void *p) {
         prvContactorState.posAIR_isPlausible = prvContactorState.posAIR_intent == prvContactorState.posAIR_actual;
         prvContactorState.pre_isPlausible    = prvContactorState.pre_intent    == prvContactorState.pre_actual;
 
+        //Poll external status pins
+        prvAmsPowerStageDisabled = get_pin(AMS_RES_STAT_PORT, AMS_RES_STAT_PIN);
+        prvImdPowerStageDisabled = get_pin(IMD_RES_STAT_PORT, IMD_RES_STAT_PIN);
+        prvImdFault              = !get_pin(IMD_STAT_PORT, IMD_STAT_PIN);
+        prvSdcOpen               = !get_pin(SC_STATUS_PORT, SC_STATUS_PIN);
+
         //AIR plausibility combined
         bool airPlausible = prvContactorState.negAIR_isPlausible && prvContactorState.posAIR_isPlausible && prvContactorState.pre_isPlausible;
 
@@ -202,15 +222,21 @@ static void prv_contactor_control_task(void *p) {
             configASSERT(0);
         }
 
-
-
         /*
-         * 1) System is healthy if AMS and IMD are not in error state,
+         * System is healthy if
+         * 1) AMS and IMD are not in error state,
          * 2) AMS and IMD power stages are enabled to close the shutdown circuit,
          * 3) Rest of the shut down circuit is OK
-         * 4) Relay state is plausible
          */
+        bool systemIsHealthy = true;
+        systemIsHealthy &= !prvAmsFault;
+        systemIsHealthy &= !prvImdFault;
+        systemIsHealthy &= !prvAmsPowerStageDisabled;
+        systemIsHealthy &= !prvImdPowerStageDisabled;
+        systemIsHealthy &= !prvSdcOpen;
+
         bool voltageEqual = false;
+
 
         prvStateMachineState = prvStateMachine.current;
 
@@ -285,6 +311,31 @@ static void prv_contactor_control_task(void *p) {
             prvStateMachineError = ERROR_NO_ERROR;
         }
 
+        if (!systemIsHealthy) {
+            prvEvent = EVENT_ERROR;
+
+            //Why is the system not healthy? Report the faults bit-wise
+            if (prvAmsFault) {
+                prvStateMachineError |= ERROR_AMS_FAULT;
+            }
+
+            if (prvImdFault) {
+                prvStateMachineError |= ERROR_IMD_FAULT;
+            }
+
+            if (prvAmsPowerStageDisabled) {
+                prvStateMachineError |= ERROR_AMS_POWERSTAGE_DISABLED;
+            }
+
+            if (prvImdPowerStageDisabled) {
+                prvStateMachineError |= ERROR_IMD_POWERSTAGE_DISABLED;
+            }
+
+            if (prvSdcOpen) {
+                prvStateMachineError |= ERROR_SDC_OPEN;
+            }
+        }
+
         /* AIR states are not plausible?
          * -> AIR might be stuck or state detection might be broken */
         if (!airPlausible) {
@@ -304,6 +355,77 @@ static void prv_contactor_control_task(void *p) {
         }
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
+}
+
+static void prv_system_state_task(void *p) {
+    /* This task polls all status inputs and determines the AMS status based on the measured cell parameters.
+         * It controls the shutdown circuit for the AMS and also controls the status LEDs.
+         */
+    (void)p;
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    const TickType_t xPeriod = pdMS_TO_TICKS(100);
+
+    while (1) {
+
+        stacks_data_t* stacksData = get_stacks_data(portMAX_DELAY);
+        if (stacksData != NULL) {
+            //Check for critical AMS values. This represents the AMS status.
+            prvAmsFault = !stacksData->voltageValid;
+            prvAmsFault |= !stacksData->temperatureValid;
+            release_stacks_data();
+        }
+
+        adc_data_t *adcData = get_adc_data(portMAX_DELAY);
+        if (adcData != NULL) {
+            prvCurrentFault        = !adcData->currentValid;
+            prvVoltageFault        = !adcData->voltageValid;
+            prvCurrentOutOfRange   = false; //TODO implement a reasonable check taking the time and value into account. A short spike is not a problem, more than 5s of overload is
+            release_adc_data();
+        }
+
+        if (prvAmsFault) {
+            //AMS opens the shutdown circuit in case of critical values
+            prv_open_shutdown_circuit();
+            set_pin(LED_AMS_FAULT_PORT, LED_AMS_FAULT_PIN);
+            clear_pin(LED_AMS_OK_PORT, LED_AMS_OK_PIN);
+        } else {
+            //If error clears, we close the shutdown circuit again
+            prv_close_shutdown_circuit();
+            clear_pin(LED_AMS_FAULT_PORT, LED_AMS_FAULT_PIN);
+            if (!prvAmsPowerStageDisabled) {
+                //LED is constantly on, if AMS error has been manually cleared
+                set_pin(LED_AMS_OK_PORT, LED_AMS_OK_PIN);
+            } else {
+                //A blinking green LED signalizes, that the AMS is ready but needs manual reset
+                toggle_pin(LED_AMS_OK_PORT, LED_AMS_OK_PIN);
+            }
+        }
+
+        if (prvImdFault) {
+            set_pin(LED_IMD_FAULT_PORT, LED_IMD_FAULT_PIN);
+            clear_pin(LED_IMD_OK_PORT, LED_IMD_OK_PIN);
+        } else {
+            clear_pin(LED_IMD_FAULT_PORT, LED_IMD_FAULT_PIN);
+
+            if (!prvImdPowerStageDisabled) {
+                //LED is constantly on, if IMD error has been manually cleared
+                set_pin(LED_IMD_OK_PORT, LED_IMD_OK_PIN);
+            } else {
+                //A blinking green LED signalizes, that the IMD is ready but needs manual reset
+                toggle_pin(LED_IMD_OK_PORT, LED_IMD_OK_PIN);
+            }
+        }
+
+        vTaskDelayUntil(&xLastWakeTime, xPeriod);
+    }
+}
+
+static void prv_open_shutdown_circuit(void) {
+    clear_pin(AMS_FAULT_PORT, AMS_FAULT_PIN);
+}
+
+static void prv_close_shutdown_circuit(void) {
+    set_pin(AMS_FAULT_PORT, AMS_FAULT_PIN);
 }
 
 void request_tractive_system(bool active) {

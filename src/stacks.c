@@ -109,7 +109,7 @@ void stacks_worker_task(void *p) {
 
         for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
             for (size_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
-                stacksDataLocal.cellVoltage[slave][cell] /= 10; //chop off the 100 uV digit
+                stacksDataLocal.cellVoltage[slave][cell] /= 10; //chop off the 100 uV digit TODO: Remove with new CAN protocol
             }
         }
 
@@ -156,7 +156,7 @@ void stacks_worker_task(void *p) {
                     continue;
                 }
                 // Value out of range: Prio 3
-                if ((stacksDataLocal.cellVoltage[slave][cell] > CELL_OVERVOLTAGE)||
+                if ((stacksDataLocal.cellVoltage[slave][cell] > CELL_OVERVOLTAGE) ||
                     (stacksDataLocal.cellVoltage[slave][cell] < CELL_UNDERVOLTAGE)) {
                         stacksDataLocal.cellVoltageStatus[slave][cell + 1] = VALUEOUTOFRANGE;
                 }
