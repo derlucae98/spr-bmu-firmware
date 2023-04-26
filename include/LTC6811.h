@@ -76,19 +76,6 @@ typedef void (*ltc_assert_cs_t)(void);
  */
 typedef void (*ltc_deassert_cs_t)(void);
 
-/*! @typedef ltc_mutex_take_t
- *  @brief Function pointer declaration for the Mutex take function.
- *  @param blocktime Timeout for the OS to wait for the Mutex to become available.
- *  This function blocks on the Mutex to securely use the SPI peripheral.
- */
-typedef bool (*ltc_mutex_take_t)(TickType_t blocktime);
-
-/*! @typedef ltc_mutex_give_t
- *  @brief Function pointer declaration for the Mutex give function.
- *  This function returns the Mutex after the work is done.
- */
-typedef void (*ltc_mutex_give_t)(void);
-
 /*!
  * @enum Enumeration type for possible errors.
  */
