@@ -1,12 +1,29 @@
-/*
- * eeprom.c
- *
- *  Created on: Feb 5, 2022
- *      Author: Luca Engelmann
+/*!
+ * @file            eeprom.c
+ * @brief           Library for interfacing with a AT25M02 or compatible EEPROM.
  */
 
+/*
+Copyright 2023 Luca Engelmann
 
-//Lib designed for AT25M02 2 MBit EEPROM
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 #include "eeprom.h"
 
 #define CMD_WRSR       0x01
@@ -24,114 +41,125 @@
 #define SR_WEL        (0x01 << 1)
 #define SR_BUSY        0x01
 
-static inline void assert_cs(void);
-static inline void deassert_cs(void);
-static void set_status_register(uint8_t val);
-static void set_write_enable_latch(void);
+static inline void prv_assert_cs(void);
+static inline void prv_deassert_cs(void);
+static void prv_set_status_register(uint8_t val);
+static void prv_set_write_enable_latch(void);
 
-static SemaphoreHandle_t _eepromMutex = NULL;
+static BaseType_t prv_eeprom_mutex_take(TickType_t blocktime);
+static void prv_eeprom_mutex_give(void);
 
-BaseType_t eeprom_mutex_take(TickType_t blocktime) {
-    if (_eepromMutex == NULL) {
-        _eepromMutex = xSemaphoreCreateMutex();
-        configASSERT(_eepromMutex)
+static SemaphoreHandle_t prvEepromMutex = NULL;
+
+BaseType_t prv_eeprom_mutex_take(TickType_t blocktime) {
+    if (prvEepromMutex == NULL) {
+        prvEepromMutex = xSemaphoreCreateMutex();
+        configASSERT(prvEepromMutex)
     }
-    return xSemaphoreTake(_eepromMutex, blocktime);
+    return xSemaphoreTake(prvEepromMutex, blocktime);
 }
 
-void eeprom_mutex_give(void) {
-    if (_eepromMutex) {
-        xSemaphoreGive(_eepromMutex);
-    }
-}
-
-void eeprom_write_page(uint8_t *data, size_t startAddress, size_t len) {
-    if (spi_mutex_take(EEPROM_SPI, pdMS_TO_TICKS(1000))) {
-        uint8_t cmd[4];
-        cmd[0] = CMD_WRITE;
-        cmd[1] = (startAddress >> 16) & 0xFF;
-        cmd[2] = (startAddress >> 8) & 0xFF;
-        cmd[3] = startAddress & 0xFF;
-        set_status_register(SR_BP_NONE | SR_WEL);
-        set_write_enable_latch();
-        assert_cs();
-        spi_send_array(EEPROM_SPI, cmd, 4);
-        spi_send_array(EEPROM_SPI, data, len);
-        deassert_cs();
-        spi_mutex_give(EEPROM_SPI);
-    } else {
-        configASSERT(0);
+void prv_eeprom_mutex_give(void) {
+    if (prvEepromMutex) {
+        xSemaphoreGive(prvEepromMutex);
     }
 }
 
-void eeprom_read_array(uint8_t *data, size_t startAddress, size_t len) {
-    if (spi_mutex_take(EEPROM_SPI, pdMS_TO_TICKS(1000))) {
-        uint8_t cmd[4];
-        cmd[0] = CMD_READ;
-        cmd[1] = (startAddress >> 16) & 0xFF;
-        cmd[2] = (startAddress >> 8) & 0xFF;
-        cmd[3] = startAddress & 0xFF;
-        assert_cs();
-        spi_send_array(EEPROM_SPI, cmd, 4);
-        spi_move_array(EEPROM_SPI, data, len);
-        deassert_cs();
-        spi_mutex_give(EEPROM_SPI);
-    } else {
-        configASSERT(0);
-    }
-}
-
-eeprom_status_t eeprom_get_status(void) {
-    if (spi_mutex_take(EEPROM_SPI, pdMS_TO_TICKS(1000))) {
-        uint8_t cmd[2];
-        cmd[0] = CMD_RDSR;
-        assert_cs();
-        spi_move_array(EEPROM_SPI, cmd, 2);
-        deassert_cs();
-        spi_mutex_give(EEPROM_SPI);
-        return cmd[1];
-    }
-    return eeprom_comm_error;
-}
-
-bool eeprom_has_write_finished(void) {
-    if (spi_mutex_take(EEPROM_SPI, pdMS_TO_TICKS(1000))) {
-        uint8_t cmd[2];
-        cmd[0] = CMD_LPWP;
-        assert_cs();
-        spi_move_array(EEPROM_SPI, cmd, 2);
-        deassert_cs();
-        spi_mutex_give(EEPROM_SPI);
-
-        if ((cmd[1] & SR_BUSY) == 0) {
+bool eeprom_write(uint8_t *data, size_t startAddress, size_t len, BaseType_t blocktime) {
+    if (prv_eeprom_mutex_take(blocktime)) {
+        if (spi_mutex_take(EEPROM_SPI, blocktime)) {
+            uint8_t cmd[4];
+            cmd[0] = CMD_WRITE;
+            cmd[1] = (startAddress >> 16) & 0xFF;
+            cmd[2] = (startAddress >> 8) & 0xFF;
+            cmd[3] = startAddress & 0xFF;
+            prv_set_status_register(SR_BP_NONE | SR_WEL);
+            prv_set_write_enable_latch();
+            prv_assert_cs();
+            spi_send_array(EEPROM_SPI, cmd, 4);
+            spi_send_array(EEPROM_SPI, data, len);
+            prv_deassert_cs();
+            spi_mutex_give(EEPROM_SPI);
+            prv_eeprom_mutex_give();
             return true;
+        } else {
+            prv_eeprom_mutex_give();
+            return false;
         }
+    } else {
+        return false;
     }
-    return false;
 }
 
-static inline void assert_cs(void) {
+bool eeprom_read(uint8_t *data, size_t startAddress, size_t len, BaseType_t blocktime) {
+    if (prv_eeprom_mutex_take(blocktime)) {
+        if (spi_mutex_take(EEPROM_SPI, blocktime)) {
+            uint8_t cmd[4];
+            cmd[0] = CMD_READ;
+            cmd[1] = (startAddress >> 16) & 0xFF;
+            cmd[2] = (startAddress >> 8) & 0xFF;
+            cmd[3] = startAddress & 0xFF;
+            prv_assert_cs();
+            spi_send_array(EEPROM_SPI, cmd, 4);
+            spi_move_array(EEPROM_SPI, data, len);
+            prv_deassert_cs();
+            spi_mutex_give(EEPROM_SPI);
+            prv_eeprom_mutex_give();
+            return true;
+        } else {
+            prv_eeprom_mutex_give();
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+bool eeprom_busy(BaseType_t blocktime) {
+    if (prv_eeprom_mutex_take(blocktime)) {
+        if (spi_mutex_take(EEPROM_SPI, blocktime)) {
+            uint8_t cmd[2];
+            cmd[0] = CMD_LPWP;
+            prv_assert_cs();
+            spi_move_array(EEPROM_SPI, cmd, 2);
+            prv_deassert_cs();
+            spi_mutex_give(EEPROM_SPI);
+            prv_eeprom_mutex_give();
+
+            if (cmd[1] & SR_BUSY) {
+                return true;
+            }
+        } else {
+            prv_eeprom_mutex_give();
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+static inline void prv_assert_cs(void) {
     clear_pin(CS_EEPROM_PORT, CS_EEPROM_PIN);
 }
 
-static inline void deassert_cs(void) {
+static inline void prv_deassert_cs(void) {
     set_pin(CS_EEPROM_PORT, CS_EEPROM_PIN);
 }
 
-static void set_status_register(uint8_t val) {
+static void prv_set_status_register(uint8_t val) {
     uint8_t cmd[2];
     cmd[0] = CMD_WRSR;
     cmd[1] = val;
-    assert_cs();
+    prv_assert_cs();
     spi_send_array(EEPROM_SPI, cmd, 2);
-    deassert_cs();
+    prv_deassert_cs();
 }
 
-static void set_write_enable_latch(void) {
+static void prv_set_write_enable_latch(void) {
     uint8_t val = CMD_WREN;
-    assert_cs();
+    prv_assert_cs();
     spi_send_array(EEPROM_SPI, &val, 1);
-    deassert_cs();
+    prv_deassert_cs();
 }
 
 //Source: https://www.alkgrove.com/articles/CRC_article.html

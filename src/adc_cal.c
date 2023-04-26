@@ -182,24 +182,27 @@ static void prv_update_calibration(void) {
 
 static void prv_load_calibration(void) {
     uint8_t pageBuffer[EEPROM_PAGESIZE];
+    memset(pageBuffer, 0, EEPROM_PAGESIZE);
     bool uncal = true;
 
-    if (eeprom_mutex_take(pdMS_TO_TICKS(500))) {
-        eeprom_read_array(pageBuffer, 0, EEPROM_PAGESIZE);
-        uint16_t crcShould = (pageBuffer[254] << 8) | pageBuffer[255];
+    bool ret;
+    ret = eeprom_read(pageBuffer, 0, EEPROM_PAGESIZE, pdMS_TO_TICKS(500));
+    if (ret == false) {
+        PRINTF("Unable to read from EEPROM!\n");
+        configASSERT(0);
+    }
+    uint16_t crcShould = (pageBuffer[254] << 8) | pageBuffer[255];
 
-        for (size_t i = 0; i < EEPROM_PAGESIZE; i++) {
-            if (pageBuffer[i] != 0xFF) {
-                uncal = false;
-            }
+
+    for (size_t i = 0; i < EEPROM_PAGESIZE; i++) {
+        if (pageBuffer[i] != 0xFF) {
+            uncal = false;
         }
+    }
 
-        if (!eeprom_check_crc(pageBuffer, sizeof(pageBuffer) - sizeof(uint16_t), crcShould)) {
-            PRINTF("CRC error while loading calibration data!\n");
-            prv_default_calibration();
-        }
-
-        eeprom_mutex_give();
+    if (!eeprom_check_crc(pageBuffer, sizeof(pageBuffer) - sizeof(uint16_t), crcShould)) {
+        PRINTF("CRC error while loading calibration data!\n");
+        prv_default_calibration();
     }
 
     if (uncal) {
@@ -219,18 +222,22 @@ static void prv_write_calibration(void) {
     pageBuffer[254] = crc >> 8;
     pageBuffer[255] = crc & 0xFF;
 
-    if (eeprom_mutex_take(pdMS_TO_TICKS(500))) {
-        eeprom_write_page(pageBuffer, CAL_DATA_EEPROM_PAGE, sizeof(pageBuffer));
-        uint8_t timeout = 200; //2 seconds
-        while(!eeprom_has_write_finished()) {
-            if (--timeout > 0) {
-                vTaskDelay(pdMS_TO_TICKS(10));
-            } else {
-                PRINTF("Writing calibration data to EEPROM timed out!\n");
-                configASSERT(0);
-            }
+    bool ret;
+    ret = eeprom_write(pageBuffer, CAL_DATA_EEPROM_PAGE, sizeof(pageBuffer), pdMS_TO_TICKS(500));
+
+    if (ret == false) {
+        PRINTF("Unable to write to EEPROM!\n");
+        configASSERT(0);
+    }
+
+    uint8_t timeout = 200; //2 seconds
+    while (eeprom_busy(pdMS_TO_TICKS(500))) {
+        if (--timeout > 0) {
+            vTaskDelay(pdMS_TO_TICKS(10));
+        } else {
+            PRINTF("Writing calibration data to EEPROM timed out!\n");
+            configASSERT(0);
         }
-        eeprom_mutex_give();
     }
 }
 
