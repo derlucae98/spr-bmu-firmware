@@ -4,7 +4,7 @@ void clock_init(void) {
 
     //Setup crystal oscillator
     SCG->SOSCDIV = SCG_SOSCDIV_SOSCDIV1(1) | SCG_SOSCDIV_SOSCDIV2(1); //SOSCDIV1 = 1, SOSCDIV2 = 1
-    SCG->SOSCCFG = SCG_SOSCCFG_RANGE(2) | SCG_SOSCCFG_EREFS(1); //High frequency range external crystal
+    SCG->SOSCCFG = SCG_SOSCCFG_RANGE(3) | SCG_SOSCCFG_EREFS(1); //High frequency range external crystal
     while(SCG->SOSCCSR & SCG_SOSCCSR_LK_MASK); //Ensure SOSCCSR is unlocked
     SCG->SOSCCSR = SCG_SOSCCSR_SOSCEN(1);    //Enable oscillator
     while(!(SCG->SOSCCSR & SCG_SOSCCSR_SOSCVLD_MASK));  //Wait for the clock to be valid
