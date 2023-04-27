@@ -37,6 +37,16 @@
 #define CONTROL_STATUS_V2F      (1 << 3)
 #define CONTROL_STATUS_V1F      (1 << 2)
 
+#define CONTROL_EEPROM          (0x30)
+#define CONTROL_EEPROM_R80k     (1 << 7)
+#define CONTROL_EEPROM_R20k     (1 << 6)
+#define CONTROL_EEPROM_R5k      (1 << 5)
+#define CONTROL_EEPROM_R1k      (1 << 4)
+#define CONTROL_EEPROM_FD0      (1 << 3)
+#define CONTROL_EEPROM_FD1      (1 << 2)
+#define CONTROL_EEPROM_ThE      (1 << 1)
+#define CONTROL_EEPROM_ThP      (1 << 0)
+
 #define CONTROL_RESET           (0x04)
 #define CONTROL_RESET_SysR      (1 << 4)
 
@@ -80,52 +90,56 @@
 #define DECTOMON(x) ((((x / 10) & 0x1) << 4) | ((x % 10) & 0xF))
 #define DECTOYEAR(x) ((((x / 10) & 0xF) << 4) | ((x % 10) & 0xF))
 
-static TaskHandle_t _rtcTickTaskHandle = NULL;
-static rtc_date_time_t _rtcDateTime;
-static rtc_tick_hook_t _tickHook = NULL;
-static SemaphoreHandle_t _dateTimeMutex = NULL;
 
-extern void PRINTF(const char *format, ...);
-static inline void assert_cs(void);
-static inline void deassert_cs(void);
-static void rtc_irq_handler(BaseType_t *higherPrioTaskWoken);
-static BaseType_t rtc_date_time_mutex_take(TickType_t blocktime);
+static rtc_date_time_t prvRtcDateTime;
+static rtc_tick_hook_t prvTickHook = NULL;
+static SemaphoreHandle_t prvDateTimeMutex = NULL;
 
-void rtc_register_tick_hook(rtc_tick_hook_t rtcTickHook) {
-    _tickHook = rtcTickHook;
-}
+static inline void prv_assert_cs(void);
+static inline void prv_deassert_cs(void);
+static void prv_rtc_clkout_handler(BaseType_t *higherPrioTaskWoken);
+static BaseType_t prv_rtc_date_time_mutex_take(TickType_t blocktime);
 
-void init_rtc(void) {
-    _dateTimeMutex = xSemaphoreCreateMutex();
-    configASSERT(_dateTimeMutex);
+static TimerHandle_t prvTimer;
+static void prv_timer_callback(TimerHandle_t xTimer);
+static uint32_t prvUptime = 0;
 
-    attach_interrupt(IRQ_RTC_PORT, IRQ_RTC_PIN, IRQ_EDGE_FALLING, rtc_irq_handler);
-    xTaskCreate(rtc_tick_task, "rtc tick", 300, NULL, 3, &_rtcTickTaskHandle);
 
+void init_rtc(rtc_tick_hook_t rtcTickHook) {
+    prvDateTimeMutex = xSemaphoreCreateMutex();
+    configASSERT(prvDateTimeMutex);
+
+    prvTickHook = rtcTickHook;
+
+    prvTimer = xTimerCreate("100ms", pdMS_TO_TICKS(100), pdTRUE, NULL, prv_timer_callback);
+
+    //Initialize RTC
     uint8_t init[5];
-    init[0] = COMMAND_WRITE(CONTROL_1);
-    init[1] = CONTROL_1_TD_8 | CONTROL_1_SROn | CONTROL_1_EERE | CONTROL_1_WE | CONTROL_1_TE | CONTROL_1_TAR;
-    init[2] = CONTROL_INT_SRIE | CONTROL_INT_TIE;
-    init[3] = 0;
-    init[4] = 0;
+    init[0] = COMMAND_WRITE(CONTROL_1); //Control page
+    init[1] = CONTROL_1_CLK_INT | CONTROL_1_TD_8 | CONTROL_1_SROn | CONTROL_1_EERE | CONTROL_1_WE; //Control_1
+    init[2] = CONTROL_INT_SRIE; //Control_INT
+    init[3] = 0; //Control_INT Flag
+    init[4] = 0; //Control_Status
 
-    uint8_t timer[3];
-    timer[0] = COMMAND_WRITE(TIMER_LOW);
-    timer[1] = 7; //Countdown timer interrupts every second
-    timer[2] = 0;
+    //Enable 1 Hz Clkout
+    uint8_t clkout[2];
+    clkout[0] = COMMAND_WRITE(CONTROL_EEPROM);
+    clkout[1] = CONTROL_EEPROM_FD1 | CONTROL_EEPROM_FD0;
 
     if (spi_mutex_take(RTC_SPI, pdMS_TO_TICKS(500))) {
-        assert_cs();
-        spi_move_array(RTC_SPI, timer, sizeof(timer));
-        deassert_cs();
+        prv_assert_cs();
+        spi_move_array(RTC_SPI, clkout, sizeof(clkout));
+        prv_deassert_cs();
 
-        assert_cs();
+        prv_assert_cs();
         spi_move_array(RTC_SPI, init, sizeof(init));
-        deassert_cs();
+        prv_deassert_cs();
         spi_mutex_give(RTC_SPI);
     }
 
     rtc_sync();
+
+    attach_interrupt(CLKOUT_RTC_PORT, CLKOUT_RTC_PIN, IRQ_EDGE_FALLING, prv_rtc_clkout_handler);
 }
 
 void rtc_print_time(void) {
@@ -133,25 +147,25 @@ void rtc_print_time(void) {
     memset(time, 0xFF, sizeof(time));
     time[0] = COMMAND_READ(CLOCK_SECONDS);
     if (spi_mutex_take(RTC_SPI, pdMS_TO_TICKS(100))) {
-        assert_cs();
+        prv_assert_cs();
         spi_move_array(RTC_SPI, time, sizeof(time));
-        deassert_cs();
+        prv_deassert_cs();
         spi_mutex_give(RTC_SPI);
         PRINTF("%02u.%02u.%04u %02u:%02u:%02u\n", DAYTODEC(time[4]), MONTODEC(time[6]), YEARTODEC(time[7]) + 2000, HOURTODEC(time[3]), MINTODEC(time[2]), SECTODEC(time[1]));
     }
 }
 
-BaseType_t rtc_date_time_mutex_take(TickType_t blocktime) {
-    return xSemaphoreTake(_dateTimeMutex, blocktime);
+BaseType_t prv_rtc_date_time_mutex_take(TickType_t blocktime) {
+    return xSemaphoreTake(prvDateTimeMutex, blocktime);
 }
 
 void release_rtc_date_time(void) {
-    xSemaphoreGive(_dateTimeMutex);
+    xSemaphoreGive(prvDateTimeMutex);
 }
 
 rtc_date_time_t* get_rtc_date_time(TickType_t blocktime) {
-    if (rtc_date_time_mutex_take(blocktime)) {
-        return &_rtcDateTime;
+    if (prv_rtc_date_time_mutex_take(blocktime)) {
+        return &prvRtcDateTime;
     } else {
         return NULL;
     }
@@ -180,49 +194,22 @@ void rtc_set_date_time(rtc_date_time_t *dateTime) {
     buffer[7] = DECTOYEAR((dateTime->year - 2000));
 
     if (spi_mutex_take(RTC_SPI, pdMS_TO_TICKS(100))) {
-        assert_cs();
+        prv_assert_cs();
         spi_move_array(RTC_SPI, buffer, sizeof(buffer));
-        deassert_cs();
+        prv_deassert_cs();
         spi_mutex_give(RTC_SPI);
     }
 }
 
 char* rtc_get_timestamp(TickType_t blocktime) {
-    static char timestamp[20];
+    static char timestamp[26];
     rtc_date_time_t *dateTime = get_rtc_date_time(blocktime);
     if (dateTime != NULL) {
         snprintf(timestamp, sizeof(timestamp), "%04u-%02u-%02u %02u:%02u:%02u", dateTime->year,
                 dateTime->month, dateTime->day, dateTime->hour, dateTime->minute, dateTime->second);
         release_rtc_date_time();
     }
-
     return timestamp;
-}
-
-void rtc_tick_task(void *p) {
-    (void)p;
-    uint32_t notification;
-    while (1) {
-        notification = ulTaskNotifyTake(pdFALSE, pdMS_TO_TICKS(2000));
-        if (notification > 0) {
-            rtc_sync();
-
-            uint8_t buffer[2];
-            buffer[0] = COMMAND_WRITE(CONTROL_INT_FLAG);
-            buffer[1] = 0;
-            //Clear all interrupt flags
-            if (spi_mutex_take(RTC_SPI, pdMS_TO_TICKS(100))) {
-                assert_cs();
-                spi_move_array(RTC_SPI, buffer, sizeof(buffer));
-                deassert_cs();
-                spi_mutex_give(RTC_SPI);
-            }
-
-            if (_tickHook != NULL) {
-                (_tickHook)(); //Invoke callback function
-            }
-        }
-    }
 }
 
 void rtc_sync(void) {
@@ -231,9 +218,9 @@ void rtc_sync(void) {
     time[0] = COMMAND_READ(CLOCK_SECONDS);
 
     if (spi_mutex_take(RTC_SPI, pdMS_TO_TICKS(100))) {
-        assert_cs();
+        prv_assert_cs();
         spi_move_array(RTC_SPI, time, sizeof(time));
-        deassert_cs();
+        prv_deassert_cs();
         spi_mutex_give(RTC_SPI);
         rtc_date_time_t *dateTime = get_rtc_date_time(pdMS_TO_TICKS(100));
         if (dateTime != NULL) {
@@ -248,16 +235,27 @@ void rtc_sync(void) {
     }
 }
 
-static void rtc_irq_handler(BaseType_t *higherPrioTaskWoken) {
-    if (_rtcTickTaskHandle != NULL) {
-        vTaskNotifyGiveFromISR(_rtcTickTaskHandle, higherPrioTaskWoken);
-    }
+static void prv_rtc_clkout_handler(BaseType_t *higherPrioTaskWoken) {
+    //Restart the software timer to sync it with the RTC
+    xTimerResetFromISR(prvTimer, higherPrioTaskWoken);
 }
 
-static inline void assert_cs(void) {
+static inline void prv_assert_cs(void) {
     set_pin(CS_RTC_PORT, CS_RTC_PIN);
 }
 
-static inline void deassert_cs(void) {
+static inline void prv_deassert_cs(void) {
     clear_pin(CS_RTC_PORT, CS_RTC_PIN);
 }
+
+static void prv_timer_callback(TimerHandle_t timer) {
+    (void) timer;
+    prvUptime++;
+    if (prvTickHook != NULL) {
+        (prvTickHook)(); //Invoke callback function
+    }
+    PRINTF("Uptime: %lu\n", prvUptime);
+}
+
+
+

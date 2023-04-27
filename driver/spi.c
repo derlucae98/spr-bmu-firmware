@@ -168,12 +168,10 @@ uint8_t spi_move(LPSPI_Type *spi, uint8_t b) {
 
 static void spi_irq_move_array(LPSPI_Type *spi, uint8_t *a, size_t len) {
     if (spi_mutex_take(spi, portMAX_DELAY)) {
-        dbg2(1);
         for (size_t i = 0; i < len; i++) {
             a[i] = spi_move(spi, a[i]);
         }
         spi_mutex_give(spi);
-        dbg2(0);
     }
 }
 

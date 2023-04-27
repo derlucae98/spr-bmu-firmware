@@ -13,6 +13,7 @@
 #include "bmu.h"
 #include "adc.h"
 #include "contactor.h"
+#include "rtc.h"
 
 
 #include <alloca.h>
@@ -146,6 +147,7 @@ void init_task(void *p) {
         init_contactor();
         init_bmu();
         init_stacks();
+        init_rtc(NULL);
 
         vTaskDelete(NULL);
     }
@@ -190,6 +192,6 @@ void vApplicationMallocFailedHook(void) {
 }
 
 void vApplicationIdleHook(void) {
-    toggle_pin(DBG_9_PORT, DBG_9_PIN);
+
 }
 
