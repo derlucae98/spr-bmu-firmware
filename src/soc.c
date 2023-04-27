@@ -170,7 +170,7 @@ static void soc_task(void *p) {
                     }
                 }
             } else {
-                PRINTF("Current invalid!\n");
+                //PRINTF("Current invalid!\n");
             }
 
             release_soc();

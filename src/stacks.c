@@ -67,6 +67,7 @@ void stacks_worker_task(void *p) {
         // PEC error
         // Open cell wire
         // value out of range
+        uint8_t errorCounter = 0;
 
         for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
             // Validity check for temperature sensors
@@ -91,14 +92,22 @@ void stacks_worker_task(void *p) {
                 }
                 // Open sensor wire: Prio 2
                 if (stacksDataLocal.cellVoltageStatus[slave][cell + 1] == OPENCELLWIRE) {
+                    errorCounter++;
                     continue;
                 }
                 // Value out of range: Prio 3
                 if ((stacksDataLocal.cellVoltage[slave][cell] > CELL_OVERVOLTAGE)||
                     (stacksDataLocal.cellVoltage[slave][cell] < CELL_UNDERVOLTAGE)) {
                         stacksDataLocal.cellVoltageStatus[slave][cell + 1] = VALUEOUTOFRANGE;
+                        errorCounter++;
                 }
 
+            }
+        }
+
+        if (errorCounter <= 5) {
+            for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
+                memset(&stacksDataLocal.temperatureStatus[slave][0], NOERROR, MAXTEMPSENS);
             }
         }
 

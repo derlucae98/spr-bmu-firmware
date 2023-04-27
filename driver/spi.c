@@ -238,6 +238,7 @@ void DMA3_IRQHandler(void) {
     vTaskNotifyGiveFromISR(dmaTaskToNotify[1], &higherPrioTaskWoken);
     dmaTaskToNotify[1] = NULL;
     DMA->CINT = DMA_CINT_CINT(3);
+    toggle_pin(LED_CARD_PORT, LED_CARD_PIN);
     portYIELD_FROM_ISR(higherPrioTaskWoken);
 }
 
