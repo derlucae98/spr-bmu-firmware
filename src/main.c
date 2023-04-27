@@ -148,6 +148,7 @@ void init_task(void *p) {
         init_bmu();
         init_stacks();
         init_rtc(NULL);
+        rtc_print_time();
 
         vTaskDelete(NULL);
     }

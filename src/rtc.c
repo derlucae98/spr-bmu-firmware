@@ -93,21 +93,19 @@
 
 static rtc_date_time_t prvRtcDateTime;
 static rtc_tick_hook_t prvTickHook = NULL;
-static SemaphoreHandle_t prvDateTimeMutex = NULL;
 
 static inline void prv_assert_cs(void);
 static inline void prv_deassert_cs(void);
 static void prv_rtc_clkout_handler(BaseType_t *higherPrioTaskWoken);
-static BaseType_t prv_rtc_date_time_mutex_take(TickType_t blocktime);
+static uint32_t prv_make_unix_time(void);
 
 static TimerHandle_t prvTimer;
 static void prv_timer_callback(TimerHandle_t xTimer);
 static uint32_t prvUptime = 0;
+static uint32_t prvEpoch = 0;
 
 
 void init_rtc(rtc_tick_hook_t rtcTickHook) {
-    prvDateTimeMutex = xSemaphoreCreateMutex();
-    configASSERT(prvDateTimeMutex);
 
     prvTickHook = rtcTickHook;
 
@@ -139,7 +137,24 @@ void init_rtc(rtc_tick_hook_t rtcTickHook) {
 
     rtc_sync();
 
+    prvEpoch = prv_make_unix_time();
+
     attach_interrupt(CLKOUT_RTC_PORT, CLKOUT_RTC_PIN, IRQ_EDGE_FALLING, prv_rtc_clkout_handler);
+}
+
+static uint32_t prv_make_unix_time(void) {
+    struct tm t;
+    time_t epoch;
+
+    t.tm_year = prvRtcDateTime.year-1900;
+    t.tm_mon = prvRtcDateTime.month - 1;
+    t.tm_mday = prvRtcDateTime.day;
+    t.tm_hour = prvRtcDateTime.hour;
+    t.tm_min = prvRtcDateTime.minute;
+    t.tm_sec = prvRtcDateTime.second;
+    t.tm_isdst = -1;
+    epoch = mktime(&t);
+    return (uint32_t) epoch;
 }
 
 void rtc_print_time(void) {
@@ -153,33 +168,15 @@ void rtc_print_time(void) {
         spi_mutex_give(RTC_SPI);
         PRINTF("%02u.%02u.%04u %02u:%02u:%02u\n", DAYTODEC(time[4]), MONTODEC(time[6]), YEARTODEC(time[7]) + 2000, HOURTODEC(time[3]), MINTODEC(time[2]), SECTODEC(time[1]));
     }
+    char* s = rtc_get_timestamp();
+    PRINTF("%S\n", s);
+
+    uint32_t epoch = prv_make_unix_time();
+    PRINTF("%lu\n", epoch);
 }
 
-BaseType_t prv_rtc_date_time_mutex_take(TickType_t blocktime) {
-    return xSemaphoreTake(prvDateTimeMutex, blocktime);
-}
-
-void release_rtc_date_time(void) {
-    xSemaphoreGive(prvDateTimeMutex);
-}
-
-rtc_date_time_t* get_rtc_date_time(TickType_t blocktime) {
-    if (prv_rtc_date_time_mutex_take(blocktime)) {
-        return &prvRtcDateTime;
-    } else {
-        return NULL;
-    }
-}
-
-bool copy_rtc_date_time(rtc_date_time_t *dest, TickType_t blocktime) {
-    rtc_date_time_t *src = get_rtc_date_time(blocktime);
-    if (src != NULL) {
-        memcpy(dest, src, sizeof(rtc_date_time_t));
-        release_rtc_date_time();
-        return true;
-    } else {
-        return false;
-    }
+rtc_date_time_t get_rtc_date_time(void) {
+    return prvRtcDateTime;
 }
 
 void rtc_set_date_time(rtc_date_time_t *dateTime) {
@@ -201,14 +198,10 @@ void rtc_set_date_time(rtc_date_time_t *dateTime) {
     }
 }
 
-char* rtc_get_timestamp(TickType_t blocktime) {
+char* rtc_get_timestamp(void) {
     static char timestamp[26];
-    rtc_date_time_t *dateTime = get_rtc_date_time(blocktime);
-    if (dateTime != NULL) {
-        snprintf(timestamp, sizeof(timestamp), "%04u-%02u-%02u %02u:%02u:%02u", dateTime->year,
-                dateTime->month, dateTime->day, dateTime->hour, dateTime->minute, dateTime->second);
-        release_rtc_date_time();
-    }
+    snprintf(timestamp, sizeof(timestamp), "%04u-%02u-%02u %02u:%02u:%02u", prvRtcDateTime.year,
+            prvRtcDateTime.month, prvRtcDateTime.day, prvRtcDateTime.hour, prvRtcDateTime.minute, prvRtcDateTime.second);
     return timestamp;
 }
 
@@ -222,22 +215,24 @@ void rtc_sync(void) {
         spi_move_array(RTC_SPI, time, sizeof(time));
         prv_deassert_cs();
         spi_mutex_give(RTC_SPI);
-        rtc_date_time_t *dateTime = get_rtc_date_time(pdMS_TO_TICKS(100));
-        if (dateTime != NULL) {
-            dateTime->second = SECTODEC(time[1]);
-            dateTime->minute = MINTODEC(time[2]);
-            dateTime->hour = HOURTODEC(time[3]);
-            dateTime->day = DAYTODEC(time[4]);
-            dateTime->month = MONTODEC(time[6]);
-            dateTime->year = YEARTODEC(time[7]) + 2000;
-            release_rtc_date_time();
-        }
+
+        prvRtcDateTime.second = SECTODEC(time[1]);
+        prvRtcDateTime.minute = MINTODEC(time[2]);
+        prvRtcDateTime.hour = HOURTODEC(time[3]);
+        prvRtcDateTime.day = DAYTODEC(time[4]);
+        prvRtcDateTime.month = MONTODEC(time[6]);
+        prvRtcDateTime.year = YEARTODEC(time[7]) + 2000;
     }
+}
+
+uint32_t uptime_in_100_ms(void) {
+    return prvUptime;
 }
 
 static void prv_rtc_clkout_handler(BaseType_t *higherPrioTaskWoken) {
     //Restart the software timer to sync it with the RTC
     xTimerResetFromISR(prvTimer, higherPrioTaskWoken);
+    prvEpoch++;
 }
 
 static inline void prv_assert_cs(void) {
@@ -254,7 +249,7 @@ static void prv_timer_callback(TimerHandle_t timer) {
     if (prvTickHook != NULL) {
         (prvTickHook)(); //Invoke callback function
     }
-    PRINTF("Uptime: %lu\n", prvUptime);
+    PRINTF("Uptime: %lu\n", prvEpoch);
 }
 
 
