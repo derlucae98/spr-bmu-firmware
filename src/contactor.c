@@ -414,6 +414,26 @@ static void prv_system_state_task(void *p) {
             }
         }
 
+        static bool oneSecondElapsed = false;
+        static uint8_t oneSecondCounter = 0;
+
+        if (oneSecondCounter < 10) {
+            oneSecondCounter++;
+            oneSecondElapsed = false;
+        } else {
+            oneSecondCounter = 0;
+            oneSecondElapsed = true;
+        }
+
+        //Warning LED: Slow blinking: No errors, fast blinking: Error
+        if (prvStateMachineError != ERROR_NO_ERROR) {
+            toggle_pin(LED_WARNING_PORT, LED_WARNING_PIN);
+        } else {
+            if (oneSecondElapsed) {
+                toggle_pin(LED_WARNING_PORT, LED_WARNING_PIN);
+            }
+        }
+
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
 }
