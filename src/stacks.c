@@ -16,6 +16,7 @@ static SemaphoreHandle_t _balancingGatesMutex = NULL;
 static BaseType_t balancingGatesMutex_take(TickType_t blocktime);
 static void balancingGatesMutex_give(void);
 static BaseType_t stacks_mutex_take(TickType_t blocktime);
+static uint8_t errorCounter = 0;
 
 uint32_t stacksUID[MAXSTACKS];
 
@@ -67,7 +68,7 @@ void stacks_worker_task(void *p) {
         // PEC error
         // Open cell wire
         // value out of range
-        uint8_t errorCounter = 0;
+        errorCounter = 0;
         uint16_t temperatureFaulty[NUMBEROFSLAVES][MAXTEMPSENS];
         memset(&temperatureFaulty[0][0], 0, NUMBEROFSLAVES * MAXTEMPSENS);
 
@@ -361,5 +362,5 @@ uint16_t avg_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stack
             temp += (double)temperature[stack][tempsens];
         }
     }
-    return (uint16_t)(temp / ((MAXTEMPSENS - 2) * stacks));
+    return (uint16_t)(temp / ((MAXTEMPSENS - 2 - errorCounter) * stacks));
 }
