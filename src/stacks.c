@@ -68,6 +68,8 @@ void stacks_worker_task(void *p) {
         // Open cell wire
         // value out of range
         uint8_t errorCounter = 0;
+        uint16_t temperatureFaulty[NUMBEROFSLAVES][MAXTEMPSENS];
+        memset(&temperatureFaulty[0][0], 0, NUMBEROFSLAVES * MAXTEMPSENS);
 
         for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
             // Validity check for temperature sensors
@@ -78,8 +80,12 @@ void stacks_worker_task(void *p) {
                 }
                 if (stacksDataLocal.temperature[slave][tempsens] > MAXCELLTEMP) {
                     stacksDataLocal.temperatureStatus[slave][tempsens] = VALUEOUTOFRANGE;
+                    errorCounter++;
+                    temperatureFaulty[slave][tempsens] = 1;
                 } else if (stacksDataLocal.temperature[slave][tempsens] < 10) {
                      stacksDataLocal.temperatureStatus[slave][tempsens] = OPENCELLWIRE;
+                     errorCounter++;
+                     temperatureFaulty[slave][tempsens] = 1;
                 }
             }
 
@@ -92,22 +98,25 @@ void stacks_worker_task(void *p) {
                 }
                 // Open sensor wire: Prio 2
                 if (stacksDataLocal.cellVoltageStatus[slave][cell + 1] == OPENCELLWIRE) {
-                    errorCounter++;
                     continue;
                 }
                 // Value out of range: Prio 3
                 if ((stacksDataLocal.cellVoltage[slave][cell] > CELL_OVERVOLTAGE)||
                     (stacksDataLocal.cellVoltage[slave][cell] < CELL_UNDERVOLTAGE)) {
                         stacksDataLocal.cellVoltageStatus[slave][cell + 1] = VALUEOUTOFRANGE;
-                        errorCounter++;
                 }
-
             }
         }
 
         if (errorCounter <= 5) {
+            //Battery has one faulty temperature sensor. Ignore up to five sensor faults. Faulty sensors are ignored in the statistics
             for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
                 memset(&stacksDataLocal.temperatureStatus[slave][0], NOERROR, MAXTEMPSENS);
+                for (size_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
+                    if (temperatureFaulty[slave][tempsens] == 1) {
+                        stacksDataLocal.temperature[slave][tempsens] = 0;
+                    }
+                }
             }
         }
 
@@ -310,6 +319,9 @@ uint16_t max_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stack
             if (tempsens == 6 || tempsens == 13) {
                 continue; //Don't include PCB temperatures in statistics
             }
+            if (temperature[stack][tempsens] == 0) {
+                continue;
+            }
             if (temperature[stack][tempsens] > temp) {
                 temp = temperature[stack][tempsens];
             }
@@ -325,6 +337,9 @@ uint16_t min_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stack
             if (tempsens == 6 || tempsens == 13) {
                 continue; //Don't include PCB temperatures in statistics
             }
+            if (temperature[stack][tempsens] == 0) {
+                continue;
+            }
             if (temperature[stack][tempsens] < temp) {
                 temp = temperature[stack][tempsens];
             }
@@ -339,6 +354,9 @@ uint16_t avg_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stack
         for (uint8_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
             if (tempsens == 6 || tempsens == 13) {
                 continue; //Don't include PCB temperatures in statistics
+            }
+            if (temperature[stack][tempsens] == 0) {
+                continue;
             }
             temp += (double)temperature[stack][tempsens];
         }
