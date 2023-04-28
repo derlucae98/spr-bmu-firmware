@@ -17,6 +17,7 @@ static BaseType_t balancingGatesMutex_take(TickType_t blocktime);
 static void balancingGatesMutex_give(void);
 static BaseType_t stacks_mutex_take(TickType_t blocktime);
 static uint8_t errorCounter = 0;
+static uint16_t temperatureFaulty[NUMBEROFSLAVES][MAXTEMPSENS];
 
 uint32_t stacksUID[MAXSTACKS];
 
@@ -69,8 +70,14 @@ void stacks_worker_task(void *p) {
         // Open cell wire
         // value out of range
         errorCounter = 0;
-        uint16_t temperatureFaulty[NUMBEROFSLAVES][MAXTEMPSENS];
-        memset(&temperatureFaulty[0][0], 0, NUMBEROFSLAVES * MAXTEMPSENS);
+
+
+        for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
+            for (size_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
+                temperatureFaulty[slave][tempsens] = 0;
+            }
+        }
+
 
         for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
             // Validity check for temperature sensors
@@ -112,8 +119,8 @@ void stacks_worker_task(void *p) {
         if (errorCounter <= 5) {
             //Battery has one faulty temperature sensor. Ignore up to five sensor faults. Faulty sensors are ignored in the statistics
             for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
-                memset(&stacksDataLocal.temperatureStatus[slave][0], NOERROR, MAXTEMPSENS);
                 for (size_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
+                    stacksDataLocal.temperatureStatus[slave][tempsens] = NOERROR;
                     if (temperatureFaulty[slave][tempsens] == 1) {
                         stacksDataLocal.temperature[slave][tempsens] = 0;
                     }
@@ -356,11 +363,8 @@ uint16_t avg_cell_temperature(uint16_t temperature[][MAXTEMPSENS], uint8_t stack
             if (tempsens == 6 || tempsens == 13) {
                 continue; //Don't include PCB temperatures in statistics
             }
-            if (temperature[stack][tempsens] == 0) {
-                continue;
-            }
             temp += (double)temperature[stack][tempsens];
         }
     }
-    return (uint16_t)(temp / ((MAXTEMPSENS - 2 - errorCounter) * stacks));
+    return (uint16_t)(temp / ((MAXTEMPSENS - 2) * stacks - errorCounter));
 }
