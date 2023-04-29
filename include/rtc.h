@@ -114,7 +114,7 @@ bool rtc_set_date_time(rtc_date_time_t *dateTime);
  * @brief Return the local date time as string.
  * @note The timestamp is NOT updated automatically.
  * Call rtc_sync() before if the current timestamp is needed.
- * @return Pointer to a string in the format YYYY-MM-DD hh:mm:ss
+ * @return Pointer to a string in the format YYYY-MM-DD_hh-mm-ss. The string is 26 bytes long.
  */
 char* rtc_get_timestamp(void);
 
