@@ -1,8 +1,33 @@
-#include "rtc.h"
-
-/* RTC: Microcrystal RV-3149-C3
- * https://www.microcrystal.com/fileadmin/Media/Products/RTC/App.Manual/RV-3149-C3_App-Manual.pdf
+/*!
+ * @file            rtc.c
+ * @brief           Library which interfaces with Microcrystal RV-3149-C3 RTC.
+ * This Library is not really hardware-independent and relies heavily on the driver modules for the S32K14x
+ * @note            Reference Manual: https://www.microcrystal.com/fileadmin/Media/Products/RTC/App.Manual/RV-3149-C3_App-Manual.pdf
  */
+
+/*
+Copyright 2023 Luca Engelmann
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+#include "rtc.h"
 
 #define CONTROL_1               (0x00)
 #define CONTROL_1_CLK_INT       (1 << 7)
@@ -93,17 +118,22 @@
 
 static rtc_date_time_t prvRtcDateTime;
 static rtc_tick_hook_t prvTickHook = NULL;
+static uint32_t prvUptime = 0;
+static uint32_t prvEpoch = 0;
 
-static inline void prv_assert_cs(void);
-static inline void prv_deassert_cs(void);
 static void prv_rtc_clkout_handler(BaseType_t *higherPrioTaskWoken);
 static uint32_t prv_make_unix_time(void);
 
 static TimerHandle_t prvTimer;
 static void prv_timer_callback(TimerHandle_t xTimer);
-static uint32_t prvUptime = 0;
-static uint32_t prvEpoch = 0;
 
+static inline void prv_assert_cs(void) {
+    set_pin(CS_RTC_PORT, CS_RTC_PIN);
+}
+
+static inline void prv_deassert_cs(void) {
+    clear_pin(CS_RTC_PORT, CS_RTC_PIN);
+}
 
 void init_rtc(rtc_tick_hook_t rtcTickHook) {
 
@@ -133,6 +163,9 @@ void init_rtc(rtc_tick_hook_t rtcTickHook) {
         spi_move_array(RTC_SPI, init, sizeof(init));
         prv_deassert_cs();
         spi_mutex_give(RTC_SPI);
+    } else {
+        PRINTF("RTC: Initialization failed! Could not get SPI mutex!\n");
+        configASSERT(0);
     }
 
     rtc_sync();
@@ -140,6 +173,72 @@ void init_rtc(rtc_tick_hook_t rtcTickHook) {
     prvEpoch = prv_make_unix_time();
 
     attach_interrupt(CLKOUT_RTC_PORT, CLKOUT_RTC_PIN, IRQ_EDGE_FALLING, prv_rtc_clkout_handler);
+}
+
+bool rtc_sync(void) {
+    uint8_t time[8];
+    memset(time, 0xFF, sizeof(time));
+    time[0] = COMMAND_READ(CLOCK_SECONDS);
+
+    if (spi_mutex_take(RTC_SPI, pdMS_TO_TICKS(100))) {
+        prv_assert_cs();
+        spi_move_array(RTC_SPI, time, sizeof(time));
+        prv_deassert_cs();
+        spi_mutex_give(RTC_SPI);
+
+        prvRtcDateTime.second = SECTODEC(time[1]);
+        prvRtcDateTime.minute = MINTODEC(time[2]);
+        prvRtcDateTime.hour   = HOURTODEC(time[3]);
+        prvRtcDateTime.day    = DAYTODEC(time[4]);
+        prvRtcDateTime.month  = MONTODEC(time[6]);
+        prvRtcDateTime.year   = YEARTODEC(time[7]) + 2000;
+    } else {
+        return false;
+    }
+
+    return true;
+}
+
+rtc_date_time_t rtc_get_date_time(void) {
+    return prvRtcDateTime;
+}
+
+uint32_t rtc_get_unix_time(void) {
+    return prvEpoch;
+}
+
+uint32_t uptime_in_100_ms(void) {
+    return prvUptime;
+}
+
+bool rtc_set_date_time(rtc_date_time_t *dateTime) {
+    uint8_t buffer[8];
+    buffer[0] = COMMAND_WRITE(CLOCK_SECONDS);
+    buffer[1] = DECTOSEC(dateTime->second);
+    buffer[2] = DECTOMIN(dateTime->minute);
+    buffer[3] = DECTOHOUR(dateTime->hour);
+    buffer[4] = DECTODAY(dateTime->day);
+    buffer[5] = 0; //Weekday
+    buffer[6] = DECTOMON(dateTime->month);
+    buffer[7] = DECTOYEAR((dateTime->year - 2000));
+
+    if (spi_mutex_take(RTC_SPI, pdMS_TO_TICKS(1000))) {
+        prv_assert_cs();
+        spi_move_array(RTC_SPI, buffer, sizeof(buffer));
+        prv_deassert_cs();
+        spi_mutex_give(RTC_SPI);
+    } else {
+        return false;
+    }
+
+    return true;
+}
+
+char* rtc_get_timestamp(void) {
+    static char timestamp[26];
+    snprintf(timestamp, sizeof(timestamp), "%04u-%02u-%02u %02u:%02u:%02u", prvRtcDateTime.year,
+            prvRtcDateTime.month, prvRtcDateTime.day, prvRtcDateTime.hour, prvRtcDateTime.minute, prvRtcDateTime.second);
+    return timestamp;
 }
 
 static uint32_t prv_make_unix_time(void) {
@@ -157,100 +256,17 @@ static uint32_t prv_make_unix_time(void) {
     return (uint32_t) epoch;
 }
 
-void rtc_print_time(void) {
-    uint8_t time[8];
-    memset(time, 0xFF, sizeof(time));
-    time[0] = COMMAND_READ(CLOCK_SECONDS);
-    if (spi_mutex_take(RTC_SPI, pdMS_TO_TICKS(100))) {
-        prv_assert_cs();
-        spi_move_array(RTC_SPI, time, sizeof(time));
-        prv_deassert_cs();
-        spi_mutex_give(RTC_SPI);
-        PRINTF("%02u.%02u.%04u %02u:%02u:%02u\n", DAYTODEC(time[4]), MONTODEC(time[6]), YEARTODEC(time[7]) + 2000, HOURTODEC(time[3]), MINTODEC(time[2]), SECTODEC(time[1]));
-    }
-    char* s = rtc_get_timestamp();
-    PRINTF("%S\n", s);
-
-    uint32_t epoch = prv_make_unix_time();
-    PRINTF("%lu\n", epoch);
-}
-
-rtc_date_time_t get_rtc_date_time(void) {
-    return prvRtcDateTime;
-}
-
-void rtc_set_date_time(rtc_date_time_t *dateTime) {
-    uint8_t buffer[8];
-    buffer[0] = COMMAND_WRITE(CLOCK_SECONDS);
-    buffer[1] = DECTOSEC(dateTime->second);
-    buffer[2] = DECTOMIN(dateTime->minute);
-    buffer[3] = DECTOHOUR(dateTime->hour);
-    buffer[4] = DECTODAY(dateTime->day);
-    buffer[5] = 0; //Weekday
-    buffer[6] = DECTOMON(dateTime->month);
-    buffer[7] = DECTOYEAR((dateTime->year - 2000));
-
-    if (spi_mutex_take(RTC_SPI, pdMS_TO_TICKS(100))) {
-        prv_assert_cs();
-        spi_move_array(RTC_SPI, buffer, sizeof(buffer));
-        prv_deassert_cs();
-        spi_mutex_give(RTC_SPI);
-    }
-}
-
-char* rtc_get_timestamp(void) {
-    static char timestamp[26];
-    snprintf(timestamp, sizeof(timestamp), "%04u-%02u-%02u %02u:%02u:%02u", prvRtcDateTime.year,
-            prvRtcDateTime.month, prvRtcDateTime.day, prvRtcDateTime.hour, prvRtcDateTime.minute, prvRtcDateTime.second);
-    return timestamp;
-}
-
-void rtc_sync(void) {
-    uint8_t time[8];
-    memset(time, 0xFF, sizeof(time));
-    time[0] = COMMAND_READ(CLOCK_SECONDS);
-
-    if (spi_mutex_take(RTC_SPI, pdMS_TO_TICKS(100))) {
-        prv_assert_cs();
-        spi_move_array(RTC_SPI, time, sizeof(time));
-        prv_deassert_cs();
-        spi_mutex_give(RTC_SPI);
-
-        prvRtcDateTime.second = SECTODEC(time[1]);
-        prvRtcDateTime.minute = MINTODEC(time[2]);
-        prvRtcDateTime.hour = HOURTODEC(time[3]);
-        prvRtcDateTime.day = DAYTODEC(time[4]);
-        prvRtcDateTime.month = MONTODEC(time[6]);
-        prvRtcDateTime.year = YEARTODEC(time[7]) + 2000;
-    }
-}
-
-uint32_t uptime_in_100_ms(void) {
-    return prvUptime;
-}
-
 static void prv_rtc_clkout_handler(BaseType_t *higherPrioTaskWoken) {
     //Restart the software timer to sync it with the RTC
     xTimerResetFromISR(prvTimer, higherPrioTaskWoken);
     prvEpoch++;
 }
 
-static inline void prv_assert_cs(void) {
-    set_pin(CS_RTC_PORT, CS_RTC_PIN);
-}
-
-static inline void prv_deassert_cs(void) {
-    clear_pin(CS_RTC_PORT, CS_RTC_PIN);
-}
-
 static void prv_timer_callback(TimerHandle_t timer) {
     (void) timer;
     prvUptime++;
     if (prvTickHook != NULL) {
-        (prvTickHook)(); //Invoke callback function
+        (prvTickHook)(prvUptime); //Invoke callback function
     }
-    PRINTF("Uptime: %lu\n", prvEpoch);
 }
-
-
 

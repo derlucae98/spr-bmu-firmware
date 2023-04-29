@@ -367,7 +367,6 @@ static void prv_system_state_task(void *p) {
 
         stacks_data_t* stacksData = get_stacks_data(portMAX_DELAY);
         if (stacksData != NULL) {
-            //Check for critical AMS values. This represents the AMS status.
             prvAmsFault = !stacksData->voltageValid;
             prvAmsFault |= !stacksData->temperatureValid;
             release_stacks_data();
