@@ -21,8 +21,8 @@
 /* Platform dependent macros and functions needed to be modified           */
 /*-------------------------------------------------------------------------*/
 
-#define CS_H()      set_pin(CS_CARD_PORT, CS_CARD_PIN)   /* Set MMC CS "high" */
-#define CS_L()      clear_pin(CS_CARD_PORT, CS_CARD_PIN)  /* Set MMC CS "low" */
+#define CS_H()      {set_pin(CS_CARD_PORT, CS_CARD_PIN); clear_pin(LED_CARD_PORT, LED_CARD_PIN);}   /* Set MMC CS "high" */
+#define CS_L()      {clear_pin(CS_CARD_PORT, CS_CARD_PIN); set_pin(LED_CARD_PORT, LED_CARD_PIN);}  /* Set MMC CS "low" */
 
 
 /*--------------------------------------------------------------------------
