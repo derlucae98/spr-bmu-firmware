@@ -22,7 +22,7 @@
 /*-------------------------------------------------------------------------*/
 
 #define CS_H()      set_pin(CS_CARD_PORT, CS_CARD_PIN)   /* Set MMC CS "high" */
-#define CS_L()      clear_pin(CS_CARD_PORT, CS_CARD_PIN)   /* Set MMC CS "low" */
+#define CS_L()      clear_pin(CS_CARD_PORT, CS_CARD_PIN)  /* Set MMC CS "low" */
 
 
 /*--------------------------------------------------------------------------
@@ -483,25 +483,14 @@ void sd_available(bool available) {
 
 DWORD get_fattime() {
     DWORD dateTime = 0;
-    rtc_date_time_t *rtcDateTime = get_rtc_date_time(pdMS_TO_TICKS(200));
-    if (rtcDateTime != NULL) {
-        clear_pin(LED_CARD_PORT, LED_CARD_PIN);
-        dateTime = ((DWORD)(rtcDateTime->year - 1980) << 25)
-                  | ((DWORD)rtcDateTime->month << 21)
-                  | ((DWORD)rtcDateTime->day << 16)
-                  | ((DWORD)rtcDateTime->hour << 11)
-                  | ((DWORD)rtcDateTime->minute << 5)
-                  | ((DWORD)rtcDateTime->second >> 1);
-        release_rtc_date_time();
-    } else {
-        set_pin(LED_CARD_PORT, LED_CARD_PIN);
-        //We have to return a valid timestamp on failure
-        dateTime = ((DWORD)(1980) << 25)
-                | ((DWORD)1 << 21)
-                | ((DWORD)1 << 16)
-                | ((DWORD)0 << 11)
-                | ((DWORD)0 << 5)
-                | ((DWORD)0 >> 1);
-    }
+
+    rtc_date_time_t rtcDateTime = rtc_get_date_time();
+    dateTime = ((DWORD)(rtcDateTime.year - 1980) << 25)
+              | ((DWORD)rtcDateTime.month << 21)
+              | ((DWORD)rtcDateTime.day << 16)
+              | ((DWORD)rtcDateTime.hour << 11)
+              | ((DWORD)rtcDateTime.minute << 5)
+              | ((DWORD)rtcDateTime.second >> 1);
+
     return dateTime;
 }

@@ -14,6 +14,7 @@
 #include "adc.h"
 #include "contactor.h"
 #include "rtc.h"
+#include "sd.h"
 
 
 #include <alloca.h>
@@ -148,7 +149,7 @@ void init_task(void *p) {
         init_bmu();
         init_stacks();
         init_rtc(NULL);
-
+        sd_init(NULL);
         vTaskDelete(NULL);
     }
 }
