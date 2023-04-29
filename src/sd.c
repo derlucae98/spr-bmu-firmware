@@ -42,10 +42,11 @@ static void sd_init_task(void *p) {
             PRINTF("SD ready!\n");
             char* timestamp = rtc_get_timestamp();
             char path[32];
+
             snprintf(path, 32, "%s.log", timestamp);
 
             PRINTF("Creating file...\n");
-            uint8_t timeout = 10;
+            uint8_t timeout = 100;
             do {
                 status = f_open(&file, path, FA_WRITE | FA_OPEN_APPEND | FA_CREATE_NEW);
                 if (--timeout == 0) {
