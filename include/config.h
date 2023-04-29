@@ -47,7 +47,7 @@
 #define SYSTEM_STATE_TASK_PRIO 3
 
 #define SD_TASK_STACK 500
-#define SD_TASK_PRIO  2
+#define SD_TASK_PRIO  1
 
 
 #define EEPROM_SOC_PAGE_1 0x100

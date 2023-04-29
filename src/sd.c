@@ -60,7 +60,10 @@ static void sd_init_task(void *p) {
                 continue;
             }
 
-            PRINTF("Done!");
+            f_sync(&file);
+
+            PRINTF("Done!\n");
+
             prvSdInitialized = true;
             if (prvSdInitHook != NULL) {
                 (prvSdInitHook)(prvSdInitialized, &file);
