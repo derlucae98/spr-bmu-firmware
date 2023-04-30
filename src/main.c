@@ -127,6 +127,12 @@ static void uart_rec(char* s) {
         }
     } else if (strcmp(tokens[0], "ack") == 0) {
         value_applied(atof(tokens[1]));
+    } else if (strcmp(tokens[0], "format") == 0) {
+        bool ret;
+        ret = sd_format();
+        if (ret) {
+            sd_get_file_list(NULL, NULL);
+        }
     }
 
     /* Calibration process:

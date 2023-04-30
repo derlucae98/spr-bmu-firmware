@@ -18,6 +18,9 @@ typedef void (*sd_status_hook_t)(bool ready, FIL *file);
 
 void sd_init(sd_status_hook_t sdInitHook);
 bool sd_get_file_list(FILINFO *entries, uint8_t *numberOfEntries);
+bool sd_delete_file(FILINFO file);
+bool sd_format(void);
+
 bool sd_initialized(void);
 
 #endif /* SD_H_ */

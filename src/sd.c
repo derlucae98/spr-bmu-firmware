@@ -9,7 +9,6 @@ static sd_status_hook_t prvSdInitHook = NULL;
 static void sd_init_task(void *p);
 static bool prv_mount(void);
 static bool prv_create_file(void);
-static bool prv_delete_file(FILINFO file);
 static bool prv_get_number_of_files(uint8_t *numberOfFiles);
 static bool prv_get_oldest_file(FILINFO *oldest);
 
@@ -40,7 +39,6 @@ bool sd_get_file_list(FILINFO *entries, uint8_t *numberOfEntries) {
 
     res = f_findfirst(&dir, &fno, "", "*.log");
     files[0] = fno;
-    index++;
 
     if (res != FR_OK) {
         f_closedir(&dir);
@@ -93,12 +91,36 @@ static bool prv_create_file(void) {
     return true;
 }
 
-static bool prv_delete_file(FILINFO file) {
+bool sd_delete_file(FILINFO file) {
     FRESULT res;
     res = f_unlink(file.fname);
     if (res != FR_OK) {
         return false;
     }
+    return true;
+}
+
+bool sd_format(void) {
+    FRESULT res;
+    static BYTE work[4 * FF_MAX_SS];
+    TickType_t start;
+    TickType_t finish;
+
+    PRINTF("Formatting SD card...\n");
+    start = xTaskGetTickCount();
+    f_unmount("");
+
+    res = f_mkfs("", 0, work, sizeof work);
+
+    if (res != FR_OK) {
+        PRINTF("Formatting SD card failed!\n");
+        return false;
+    }
+
+    prv_mount();
+    finish = xTaskGetTickCount();
+
+    PRINTF("Done! Took %lu seconds\n", (finish - start) / 1000);
     return true;
 }
 
@@ -126,7 +148,6 @@ static bool prv_get_number_of_files(uint8_t *numberOfFiles) {
     }
 
     res = f_findfirst(&dir, &fno, "", "*.log");
-    index++;
 
     if (res != FR_OK) {
         f_closedir(&dir);
@@ -134,8 +155,8 @@ static bool prv_get_number_of_files(uint8_t *numberOfFiles) {
     }
 
     while (res == FR_OK && fno.fname[0]) {
-        res = f_findnext(&dir, &fno);
         index++;
+        res = f_findnext(&dir, &fno);
     }
 
     f_closedir(&dir);
@@ -234,7 +255,7 @@ static void sd_init_task(void *p) {
                 if (prv_delete_oldest) {
                     PRINTF("Deleting oldest file...\n");
                     prv_get_oldest_file(&oldest);
-                    prv_delete_file(oldest);
+                    sd_delete_file(oldest);
                     numberOfFiles--;
                     PRINTF("Done!\n");
                 } else {
