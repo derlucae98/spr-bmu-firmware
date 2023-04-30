@@ -7,7 +7,14 @@ static FIL file;
 static sd_status_hook_t prvSdInitHook = NULL;
 
 static void sd_init_task(void *p);
-static bool prv_delete_oldest_file(void);
+static bool prv_mount(void);
+static bool prv_create_file(void);
+static bool prv_delete_file(FILINFO file);
+static bool prv_get_number_of_files(uint8_t *numberOfFiles);
+static bool prv_get_oldest_file(FILINFO *oldest);
+
+static bool prv_delete_oldest = true;
+
 
 void sd_init(sd_status_hook_t sdInitHook) {
     prvSdInitHook = sdInitHook;
@@ -18,32 +25,24 @@ bool sd_initialized(void) {
     return prvSdInitialized;
 }
 
-bool sd_list_files(void) {
+bool sd_get_file_list(FILINFO *entries, uint8_t *numberOfEntries) {
     FRESULT res;
     DIR dir;
     static FILINFO fno;
     uint8_t index = 0;
-
-
-    uint32_t oldest = 0xFFFFFFFF;
-    uint32_t lastModified = 0;
-    char oldestFile[32];
+    static FILINFO files[MAX_NUMBER_OF_LOGFILES];
 
     res = f_opendir(&dir, "");
 
     if (res != FR_OK) {
-        PRINTF("SD: Failed to open directory!\n");
         return false;
     }
 
-    PRINTF("Done!\n");
-    PRINTF("SD: Reading files...\n");
-
     res = f_findfirst(&dir, &fno, "", "*.log");
+    files[0] = fno;
     index++;
 
     if (res != FR_OK) {
-        PRINTF("SD: Error reading files!\n");
         f_closedir(&dir);
         return false;
     }
@@ -51,32 +50,137 @@ bool sd_list_files(void) {
     while (res == FR_OK && fno.fname[0]) {
         PRINTF("%u: %s\n", index, fno.fname);
         index++;
+        files[index] = fno;
+        res = f_findnext(&dir, &fno);
+    }
 
+    if (entries != NULL) {
+        entries = files;
+    }
+    if (numberOfEntries != NULL) {
+        *numberOfEntries = index;
+    }
+
+    f_closedir(&dir);
+
+    return true;
+}
+
+static bool prv_create_file(void) {
+    FRESULT status;
+    char* timestamp = rtc_get_timestamp();
+    char path[32];
+
+    snprintf(path, 32, "%s.log", timestamp);
+
+    uint8_t timeout = 100;
+    do {
+        status = f_open(&file, path, FA_WRITE | FA_OPEN_APPEND | FA_CREATE_NEW);
+        if (--timeout == 0) {
+            break;
+        }
+    } while (status != FR_OK);
+
+    if (status != FR_OK) {
+
+        prvSdInitialized = false;
+        return false;
+    }
+
+    f_sync(&file);
+    f_close(&file);
+
+    return true;
+}
+
+static bool prv_delete_file(FILINFO file) {
+    FRESULT res;
+    res = f_unlink(file.fname);
+    if (res != FR_OK) {
+        return false;
+    }
+    return true;
+}
+
+static bool prv_mount(void) {
+    FRESULT status;
+    status = f_mount(&FatFs, "", 1);
+
+    if (status != FR_OK) {
+        prvSdInitialized = false;
+        return false;
+    }
+    return true;
+}
+
+static bool prv_get_number_of_files(uint8_t *numberOfFiles) {
+    FRESULT res;
+    DIR dir;
+    static FILINFO fno;
+    uint8_t index = 0;
+
+    res = f_opendir(&dir, "");
+
+    if (res != FR_OK) {
+        return false;
+    }
+
+    res = f_findfirst(&dir, &fno, "", "*.log");
+    index++;
+
+    if (res != FR_OK) {
+        f_closedir(&dir);
+        return false;
+    }
+
+    while (res == FR_OK && fno.fname[0]) {
+        res = f_findnext(&dir, &fno);
+        index++;
+    }
+
+    f_closedir(&dir);
+
+    *numberOfFiles = index;
+    return true;
+}
+
+static bool prv_get_oldest_file(FILINFO *oldest) {
+    FRESULT res;
+    DIR dir;
+    static FILINFO fno;
+
+    uint32_t oldestFile = 0xFFFFFFFF;
+    uint32_t lastModified = 0;
+
+    res = f_opendir(&dir, "");
+
+    if (res != FR_OK) {
+        return false;
+    }
+
+    res = f_findfirst(&dir, &fno, "", "*.log");
+
+    if (res != FR_OK) {
+        f_closedir(&dir);
+        return false;
+    }
+
+    while (res == FR_OK && fno.fname[0]) {
         lastModified = ((uint32_t)(fno.fdate << 16) | fno.ftime);
-        if (lastModified < oldest) {
-            oldest = lastModified;
-            strcpy(oldestFile, fno.fname);
+
+        if (lastModified < oldestFile) {
+            oldestFile = lastModified;
+            *oldest = fno;
         }
 
         res = f_findnext(&dir, &fno);
     }
 
-    if (index >= 30) {
-        PRINTF("Deleting oldest file...\n");
-        res = f_unlink(oldestFile);
-        if (res != FR_OK) {
-            PRINTF("SD: Error deleting file!\n");
-            f_closedir(&dir);
-            return false;
-        }
-        PRINTF("Done!\n");
-    } else {
-        sd_list_files();
-    }
-
     f_closedir(&dir);
+
     return true;
 }
+
 
 static void sd_init_task(void *p) {
     (void) p;
@@ -90,40 +194,72 @@ static void sd_init_task(void *p) {
         bool sdAvailable = !get_pin(CARD_DETECT_PORT, CARD_DETECT_PIN);
 
         if (sdAvailable && !sdAvailableLast) {
+            char *timestamp;
+            timestamp = rtc_get_timestamp();
+            PRINTF("%s\n", timestamp);
+
             PRINTF("SD inserted!\n");
             sdAvailableLast = true;
-            FRESULT status = f_mount(&FatFs, "", 1);
 
-            if (status != FR_OK) {
-                PRINTF("SD initialization failed!\n");
-                prvSdInitialized = false;
+            bool res;
+
+            PRINTF("Mounting SD card...\n");
+
+            res = prv_mount();
+
+            if (res != true) {
+                PRINTF("Mounting SD card failed!\n");
                 continue;
             }
-
-            PRINTF("SD ready!\n");
-            char* timestamp = rtc_get_timestamp();
-            char path[32];
-
-            snprintf(path, 32, "%s.log", timestamp);
-
-            PRINTF("Creating file...\n");
-            uint8_t timeout = 100;
-            do {
-                status = f_open(&file, path, FA_WRITE | FA_OPEN_APPEND | FA_CREATE_NEW);
-                if (--timeout == 0) {
-                    break;
-                }
-            } while (status != FR_OK);
-
-            if (status != FR_OK) {
-                PRINTF("SD file creation failed!\n");
-                prvSdInitialized = false;
-                continue;
-            }
-
-            f_sync(&file);
 
             PRINTF("Done!\n");
+
+            uint8_t numberOfFiles;
+            res = prv_get_number_of_files(&numberOfFiles);
+
+            if (res != true) {
+                PRINTF("Could not read from SD card!\n");
+                continue;
+            }
+
+            PRINTF("Number of files: %u\n", numberOfFiles);
+
+            /* Either delete the oldest file oder stop with an error,
+             * if more than MAX_NUMBER_OF_LOGFILES files are on the card. */
+
+            FILINFO oldest;
+            bool maxNumberReached = false;
+
+            while (numberOfFiles > MAX_NUMBER_OF_LOGFILES) {
+                if (prv_delete_oldest) {
+                    PRINTF("Deleting oldest file...\n");
+                    prv_get_oldest_file(&oldest);
+                    prv_delete_file(oldest);
+                    numberOfFiles--;
+                    PRINTF("Done!\n");
+                } else {
+                    maxNumberReached = true;
+                    break;
+                }
+            }
+
+            if (maxNumberReached) {
+                PRINTF("Cannot store more than %u logfiles!\n", MAX_NUMBER_OF_LOGFILES);
+                continue;
+            }
+
+            PRINTF("Creating logfile...\n");
+
+            res = prv_create_file();
+
+            if (res != true) {
+                PRINTF("SD file creation failed!\n");
+                continue;
+            }
+
+            PRINTF("Done!\n");
+
+            sd_get_file_list(NULL, NULL);
 
             prvSdInitialized = true;
             if (prvSdInitHook != NULL) {

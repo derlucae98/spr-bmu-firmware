@@ -140,7 +140,7 @@ static void uart_rec(char* s) {
 }
 
 void sd_init_hook(bool ready, FIL *file) {
-    sd_list_files();
+
 }
 
 void init_task(void *p) {
