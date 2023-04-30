@@ -139,6 +139,9 @@ static void uart_rec(char* s) {
      */
 }
 
+void sd_init_hook(bool ready, FIL *file) {
+    sd_list_files();
+}
 
 void init_task(void *p) {
     (void)p;
@@ -149,7 +152,7 @@ void init_task(void *p) {
         init_bmu();
         init_stacks();
         init_rtc(NULL);
-        sd_init(NULL);
+        sd_init(sd_init_hook);
         vTaskDelete(NULL);
     }
 }
