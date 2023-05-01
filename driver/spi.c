@@ -1,4 +1,4 @@
-#include <spi.h>
+#include "spi.h"
 
 static SemaphoreHandle_t _spi0Mutex = NULL;
 static SemaphoreHandle_t _spi1Mutex = NULL;
@@ -35,7 +35,7 @@ void spi_init(LPSPI_Type *spi, uint8_t presc, uint8_t mode) {
     case LPSPI2_BASE:
         dmaEnabled[2] = 0;
         spiIrq = LPSPI2_IRQn;
-        PCC->PCCn[PCC_LPSPI2_INDEX]  = PCC_PCCn_PCS(1) | PCC_PCCn_CGC(1);  //Set clock to option 1: SOSCDIV2_CLK
+        PCC->PCCn[PCC_LPSPI2_INDEX]  = PCC_PCCn_PCS(6) | PCC_PCCn_CGC(1);  //Set clock to option 6: SPLLDIV2
         _spi2Mutex = xSemaphoreCreateRecursiveMutex();
         configASSERT(_spi2Mutex);
         break;
@@ -50,6 +50,11 @@ void spi_init(LPSPI_Type *spi, uint8_t presc, uint8_t mode) {
     nvic_set_priority(spiIrq, 0xFF);
     nvic_enable_irq(spiIrq);
 
+}
+
+void spi_change_mode(LPSPI_Type *spi, uint8_t presc, uint8_t mode) {
+    spi->TCR    = LPSPI_TCR_PRESCALE(presc) | LPSPI_TCR_CPOL((mode & 0x2) >> 1) |
+                  LPSPI_TCR_CPHA(mode & 0x1) | LPSPI_TCR_FRAMESZ(7); //8-bit frame size
 }
 
 void spi_enable_dma(LPSPI_Type *spi) {

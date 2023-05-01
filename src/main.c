@@ -133,6 +133,8 @@ static void uart_rec(char* s) {
         if (ret) {
             sd_get_file_list(NULL, NULL);
         }
+    } else if (strcmp(tokens[0], "sync") == 0) {
+        rtc_sync();
     }
 
     /* Calibration process:
@@ -176,7 +178,7 @@ int main(void)
 
     spi_init(LPSPI1, LPSPI_PRESC_1, LPSPI_MODE_0);
     spi_init(LPSPI0, LPSPI_PRESC_4, LPSPI_MODE_3);
-    spi_init(LPSPI2, LPSPI_PRESC_4, LPSPI_MODE_0);
+    spi_init(LPSPI2, PERIPH_SPI_SLOW, LPSPI_MODE_0);
 //    spi_enable_dma(LPSPI1);
 
     xTaskCreate(init_task, "", 1000, NULL, configMAX_PRIORITIES-1, NULL);

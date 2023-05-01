@@ -21,9 +21,23 @@
 /* Platform dependent macros and functions needed to be modified           */
 /*-------------------------------------------------------------------------*/
 
-#define CS_H()      {set_pin(CS_CARD_PORT, CS_CARD_PIN); clear_pin(LED_CARD_PORT, LED_CARD_PIN);}   /* Set MMC CS "high" */
-#define CS_L()      {clear_pin(CS_CARD_PORT, CS_CARD_PIN); set_pin(LED_CARD_PORT, LED_CARD_PIN);}  /* Set MMC CS "low" */
+static inline void assert_cs(void) {
+    if (disk_status(0) == 0) {
+        //If card is initialized, switch to high speed
+        spi_change_mode(SD_SPI, PERIPH_SPI_FAST, LPSPI_MODE_0);
+    }
+    set_pin(LED_CARD_PORT, LED_CARD_PIN);
+    clear_pin(CS_CARD_PORT, CS_CARD_PIN);
+}
 
+static inline void deassert_cs(void) {
+    set_pin(CS_CARD_PORT, CS_CARD_PIN);
+    clear_pin(LED_CARD_PORT, LED_CARD_PIN);
+    spi_change_mode(SD_SPI, PERIPH_SPI_SLOW, LPSPI_MODE_0);
+}
+
+#define CS_H()      deassert_cs();   /* Set MMC CS "high" */
+#define CS_L()      assert_cs();  /* Set MMC CS "low" */
 
 /*--------------------------------------------------------------------------
 
@@ -266,7 +280,6 @@ BYTE send_cmd (     /* Returns command response (bit7==1:Send failed)*/
 
     return d;           /* Return with the response value */
 }
-
 
 /*--------------------------------------------------------------------------
 

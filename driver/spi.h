@@ -37,6 +37,7 @@ void spi_mutex_give(LPSPI_Type *spi);
 void spi_enable_dma(LPSPI_Type *spi);
 void spi_disable_dma(LPSPI_Type *spi);
 
+void spi_change_mode(LPSPI_Type *spi, uint8_t presc, uint8_t mode);
 
 
 
