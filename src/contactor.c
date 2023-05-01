@@ -365,6 +365,20 @@ static void prv_system_state_task(void *p) {
 
     while (1) {
 
+        static bool blinkEnable;
+        blinkEnable = !blinkEnable;
+
+        static bool oneSecondElapsed = false;
+        static uint8_t oneSecondCounter = 0;
+
+        if (oneSecondCounter < 10) {
+            oneSecondCounter++;
+            oneSecondElapsed = false;
+        } else {
+            oneSecondCounter = 0;
+            oneSecondElapsed = true;
+        }
+
         stacks_data_t* stacksData = get_stacks_data(portMAX_DELAY);
         if (stacksData != NULL) {
             prvAmsFault = !stacksData->voltageValid;
@@ -394,7 +408,11 @@ static void prv_system_state_task(void *p) {
                 set_pin(LED_AMS_OK_PORT, LED_AMS_OK_PIN);
             } else {
                 //A blinking green LED signalizes, that the AMS is ready but needs manual reset
-                toggle_pin(LED_AMS_OK_PORT, LED_AMS_OK_PIN);
+                if (blinkEnable) {
+                    set_pin(LED_AMS_OK_PORT, LED_AMS_OK_PIN);
+                } else {
+                    clear_pin(LED_AMS_OK_PORT, LED_AMS_OK_PIN);
+                }
             }
         }
 
@@ -409,24 +427,23 @@ static void prv_system_state_task(void *p) {
                 set_pin(LED_IMD_OK_PORT, LED_IMD_OK_PIN);
             } else {
                 //A blinking green LED signalizes, that the IMD is ready but needs manual reset
-                toggle_pin(LED_IMD_OK_PORT, LED_IMD_OK_PIN);
+                if (blinkEnable) {
+                    set_pin(LED_IMD_OK_PORT, LED_IMD_OK_PIN);
+                } else {
+                    clear_pin(LED_IMD_OK_PORT, LED_IMD_OK_PIN);
+                }
             }
         }
 
-        static bool oneSecondElapsed = false;
-        static uint8_t oneSecondCounter = 0;
 
-        if (oneSecondCounter < 10) {
-            oneSecondCounter++;
-            oneSecondElapsed = false;
-        } else {
-            oneSecondCounter = 0;
-            oneSecondElapsed = true;
-        }
 
         //Warning LED: Slow blinking: No errors, fast blinking: Error
         if (prvStateMachineError != ERROR_NO_ERROR) {
-            toggle_pin(LED_WARNING_PORT, LED_WARNING_PIN);
+            if (blinkEnable) {
+                set_pin(LED_WARNING_PORT, LED_WARNING_PIN);
+            } else {
+                clear_pin(LED_WARNING_PORT, LED_WARNING_PIN);
+            }
         } else {
             if (oneSecondElapsed) {
                 toggle_pin(LED_WARNING_PORT, LED_WARNING_PIN);
