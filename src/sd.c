@@ -1,12 +1,38 @@
-#include "sd.h"
+/*!
+ * @file            sd.c
+ * @brief           Module which handles the interaction with the SD card.
+ */
 
+/*
+Copyright 2023 Luca Engelmann
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+#include "sd.h"
 
 volatile bool prvSdInitialized = true;
 static FATFS FatFs;
 static FIL file;
 static sd_status_hook_t prvSdInitHook = NULL;
 
-static void sd_init_task(void *p);
+static void prv_sd_init_task(void *p);
 static bool prv_mount(void);
 static bool prv_create_file(void);
 static bool prv_get_number_of_files(uint8_t *numberOfFiles);
@@ -17,7 +43,7 @@ static bool prv_delete_oldest = true;
 
 void sd_init(sd_status_hook_t sdInitHook) {
     prvSdInitHook = sdInitHook;
-    xTaskCreate(sd_init_task, "sd", SD_TASK_STACK, NULL, SD_TASK_PRIO, NULL);
+    xTaskCreate(prv_sd_init_task, "sd", SD_TASK_STACK, NULL, SD_TASK_PRIO, NULL);
 }
 
 bool sd_initialized(void) {
@@ -37,7 +63,7 @@ bool sd_get_file_list(FILINFO *entries, uint8_t *numberOfEntries) {
         return false;
     }
 
-    res = f_findfirst(&dir, &fno, "", "*.log");
+    res = f_findfirst(&dir, &fno, "", "*.log"); //Only search for *.log files
     files[0] = fno;
 
     if (res != FR_OK) {
@@ -48,6 +74,12 @@ bool sd_get_file_list(FILINFO *entries, uint8_t *numberOfEntries) {
     while (res == FR_OK && fno.fname[0]) {
         PRINTF("%u: %s\n", index, fno.fname);
         index++;
+
+        if (index >= MAX_NUMBER_OF_LOGFILES) {
+            f_closedir(&dir);
+            return false;
+        }
+
         files[index] = fno;
         res = f_findnext(&dir, &fno);
     }
@@ -203,7 +235,7 @@ static bool prv_get_oldest_file(FILINFO *oldest) {
 }
 
 
-static void sd_init_task(void *p) {
+static void prv_sd_init_task(void *p) {
     (void) p;
 
     const TickType_t period = pdMS_TO_TICKS(100);
@@ -246,7 +278,8 @@ static void sd_init_task(void *p) {
             PRINTF("Number of files: %u\n", numberOfFiles);
 
             /* Either delete the oldest file oder stop with an error,
-             * if more than MAX_NUMBER_OF_LOGFILES files are on the card. */
+             * if more than MAX_NUMBER_OF_LOGFILES files are on the card.
+             * This can be configured by the user.*/
 
             FILINFO oldest;
             bool maxNumberReached = false;
