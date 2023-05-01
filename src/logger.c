@@ -91,7 +91,6 @@ void prv_logger_prepare_task(void *p) {
             if (prvLoggerActive && prvSdInitialized) {
 
                 //Daten zusammenkopieren
-
                 size_t len;
                 char *enc = base64_encode((unsigned char*)&loggingData, sizeof(loggingData), &len);
                 encoded_data_t data;
@@ -118,28 +117,26 @@ void prv_logger_prepare_task(void *p) {
 void prv_logger_write_task(void *p) {
     (void) p;
     static encoded_data_t buf;
-    static char enc[NUMBER_OF_Q_ITEMS][LOGDATA_RAW_SIZE];
+    static char enc[NUMBER_OF_Q_ITEMS * LOGDATA_RAW_SIZE];
     static uint32_t len = 0;
     static uint8_t index = 0;
 
     while (1) {
         if (xQueueReceive(prvLoggingQ, &buf, portMAX_DELAY)) {
-            strcpy(&enc[index][0], buf.enc);
-            //PRINTF("Len: %lu\n", len);
+            strcat(enc, &buf.enc[0]);
             len += buf.len;
             index++;
             if (index >= NUMBER_OF_Q_ITEMS) {
                 PRINTF("Writing data to file...\n");
                 UINT bw;
                 volatile TickType_t start = xTaskGetTickCount();
-                FRESULT res;
-                res = f_write(prvFile, (void*)&enc[0][0], len, &bw);
-                PRINTF("Res: %u\n", res);
+                f_write(prvFile, (void*)&enc[0], len, &bw);
                 f_sync(prvFile);
                 volatile TickType_t end = xTaskGetTickCount();
                 PRINTF("Logger: %lu bytes written! Took %lu ms\n", bw, end - start);
                 index = 0;
                 len = 0;
+                memset(enc, 0, sizeof(enc));
             }
         }
     }
