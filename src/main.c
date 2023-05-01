@@ -15,6 +15,7 @@
 #include "contactor.h"
 #include "rtc.h"
 #include "sd.h"
+#include "logger.h"
 
 
 #include <alloca.h>
@@ -159,8 +160,9 @@ void init_task(void *p) {
         init_contactor();
         init_bmu();
         init_stacks();
-        init_rtc(NULL);
-        sd_init(sd_init_hook);
+        init_rtc(logger_tick_hook);
+        sd_init(logger_control);
+        logger_init();
         vTaskDelete(NULL);
     }
 }

@@ -435,8 +435,6 @@ static void prv_system_state_task(void *p) {
             }
         }
 
-
-
         //Warning LED: Slow blinking: No errors, fast blinking: Error
         if (prvStateMachineError != ERROR_NO_ERROR) {
             if (blinkEnable) {

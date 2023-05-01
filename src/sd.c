@@ -118,7 +118,6 @@ static bool prv_create_file(void) {
     }
 
     f_sync(&file);
-    f_close(&file);
 
     return true;
 }

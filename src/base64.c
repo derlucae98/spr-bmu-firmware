@@ -14,10 +14,10 @@
 
 #include <stdlib.h>
 #include <string.h>
-
+#include "config.h"
 #include "base64.h"
 
-#define LOGDATA_RAW_SIZE 900
+
 
 static const unsigned char base64_table[65] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
