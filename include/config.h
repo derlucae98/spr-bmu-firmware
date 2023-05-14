@@ -61,8 +61,10 @@
 
 #define NOMINAL_CELL_CAPACITY_mAh 15000
 
-#define ADC_VOLTAGE_CONVERSION_RATIO 299.9f
+#define ADC_VOLTAGE_CONVERSION_RATIO 301.0f
 #define ADC_CURRENT_CONVERSION_RATIO 0 //Todo: to be defined
+
+#define AUTO_RESET_ENABLED 1
 
 
 
@@ -73,48 +75,48 @@
 
 //LEDs
 #define LED_IMD_FAULT_PORT  PORTC
-#define LED_IMD_FAULT_PIN   13
-#define LED_IMD_OK_PORT     PORTB
-#define LED_IMD_OK_PIN      29
+#define LED_IMD_FAULT_PIN   8
+#define LED_IMD_OK_PORT     PORTC
+#define LED_IMD_OK_PIN      9
 
-#define LED_AMS_FAULT_PORT  PORTC
-#define LED_AMS_FAULT_PIN   19
+#define LED_AMS_FAULT_PORT  PORTA
+#define LED_AMS_FAULT_PIN   7
 #define LED_AMS_OK_PORT     PORTC
-#define LED_AMS_OK_PIN      12
+#define LED_AMS_OK_PIN      29
 
-#define LED_WARNING_PORT    PORTB
-#define LED_WARNING_PIN     2
+#define LED_WARNING_PORT    PORTC
+#define LED_WARNING_PIN     28
 
 #define LED_CARD_PORT       PORTA
-#define LED_CARD_PIN        12
+#define LED_CARD_PIN        13
 
 //AIR
 #define AIR_POS_SET_PORT    PORTD //Set AIR+ latch
-#define AIR_POS_SET_PIN     29
+#define AIR_POS_SET_PIN     4
 #define AIR_POS_CLR_PORT    PORTA //Clear AIR+ latch
-#define AIR_POS_CLR_PIN     1
-#define AIR_POS_INTENT_PORT PORTA //Current state of AIR+ latch
+#define AIR_POS_CLR_PIN     3
+#define AIR_POS_INTENT_PORT PORTD //Current state of AIR+ latch
 #define AIR_POS_INTENT_PIN  3
-#define AIR_POS_STATE_PORT  PORTD //Mechanical state of AIR+
-#define AIR_POS_STATE_PIN   22
+#define AIR_POS_STATE_PORT  PORTC //Mechanical state of AIR+
+#define AIR_POS_STATE_PIN   31
 
 #define AIR_NEG_SET_PORT    PORTD //Set AIR- latch
-#define AIR_NEG_SET_PIN     24
-#define AIR_NEG_CLR_PORT    PORTB //Clear AIR- latch
-#define AIR_NEG_CLR_PIN     10
-#define AIR_NEG_INTENT_PORT PORTD //Current state of AIR- latch
-#define AIR_NEG_INTENT_PIN  2
-#define AIR_NEG_STATE_PORT  PORTD //Mechanical state of AIR-
-#define AIR_NEG_STATE_PIN   3
+#define AIR_NEG_SET_PIN     22
+#define AIR_NEG_CLR_PORT    PORTD //Clear AIR- latch
+#define AIR_NEG_CLR_PIN     24
+#define AIR_NEG_INTENT_PORT PORTB //Current state of AIR- latch
+#define AIR_NEG_INTENT_PIN  12
+#define AIR_NEG_STATE_PORT  PORTE //Mechanical state of AIR-
+#define AIR_NEG_STATE_PIN   7
 
-#define AIR_PRE_SET_PORT    PORTA //Set PRE latch
+#define AIR_PRE_SET_PORT    PORTD //Set PRE latch
 #define AIR_PRE_SET_PIN     2
 #define AIR_PRE_CLR_PORT    PORTB //Clear PRE latch
 #define AIR_PRE_CLR_PIN     11
 #define AIR_PRE_INTENT_PORT PORTD //Current state of PRE latch
 #define AIR_PRE_INTENT_PIN  23
-#define AIR_PRE_STATE_PORT  PORTD //Mechanical state of Precharge AIR
-#define AIR_PRE_STATE_PIN   4
+#define AIR_PRE_STATE_PORT  PORTA //Mechanical state of Precharge AIR
+#define AIR_PRE_STATE_PIN   6
 
 //SPI
 #define SPI0_SCK_PORT       PORTD
@@ -205,8 +207,8 @@
 #define IMD_RES_STAT_PIN    27
 #define IMD_STAT_PORT       PORTE
 #define IMD_STAT_PIN        22
-#define SC_STATUS_PORT      PORTB
-#define SC_STATUS_PIN       12
+#define SC_STATUS_PORT      PORTA
+#define SC_STATUS_PIN       2
 
 //IMD PWM signal
 #define IMD_MEAS_PORT       PORTE
@@ -217,8 +219,8 @@
 #define AMS_FAULT_PIN       21
 
 //TS voltage detection
-#define TSAC_HV_PORT        PORTA
-#define TSAC_HV_PIN         17
+#define TSAC_HV_PORT        PORTC
+#define TSAC_HV_PIN         30
 
 //CAN
 #define CAN_DIAG_PORT       PORTC
@@ -233,25 +235,29 @@
 #define UART_RX             2
 #define UART_TX             3
 
+//Auto reset on start-up
+#define AUTO_RESET_PORT     PORTD
+#define AUTO_RESET_PIN      28
+
 //Debug
-#define DBG_1_PORT          PORTA
-#define DBG_1_PIN           7
-#define DBG_2_PORT          PORTC
+#define DBG_1_PORT          PORTC
+#define DBG_1_PIN           19
+#define DBG_2_PORT          PORTB
 #define DBG_2_PIN           29
-#define DBG_3_PORT          PORTC
-#define DBG_3_PIN           8
+#define DBG_3_PORT          PORTB
+#define DBG_3_PIN           2
 #define DBG_4_PORT          PORTC
-#define DBG_4_PIN           9
+#define DBG_4_PIN           12
 #define DBG_5_PORT          PORTC
-#define DBG_5_PIN           28
+#define DBG_5_PIN           13
 #define DBG_6_PORT          PORTC
-#define DBG_6_PIN           27
+#define DBG_6_PIN           23
 #define DBG_7_PORT          PORTC
-#define DBG_7_PIN           10
+#define DBG_7_PIN           11
 #define DBG_8_PORT          PORTC
-#define DBG_8_PIN           11
+#define DBG_8_PIN           10
 #define DBG_9_PORT          PORTC
-#define DBG_9_PIN           23
+#define DBG_9_PIN           27
 
 #define dbg1(x) (x ? set_pin : clear_pin)(DBG_1_PORT, DBG_1_PIN);
 #define dbg2(x) (x ? set_pin : clear_pin)(DBG_2_PORT, DBG_2_PIN);
