@@ -7,11 +7,13 @@ static bool _terminated = false;
 
 static void prv_logger_prepare_task(void *p);
 static void prv_logger_write_task(void *p);
+static void prv_write_header(void);
 static TaskHandle_t prvLoggerPrepareHandle = NULL;
 static TaskHandle_t prvLoggerWriteHandle = NULL;
 static QueueHandle_t prvLoggingQ = NULL;
 static uint32_t prvUptime;
 static bool prvSdInitialized = false;
+static bool prvHeaderWritten = false;
 
 #define NUMBER_OF_Q_ITEMS 10
 
@@ -58,7 +60,12 @@ void logger_init(void) {
 
 void logger_control(bool ready, FIL *file) {
     prvSdInitialized = ready;
-    prvFile = file;
+    if (file != prvFile) {
+        //New file. Write CSV header.
+        prvFile = file;
+        prv_write_header();
+        prvHeaderWritten = true;
+    }
 }
 
 bool logger_is_active(void) {
@@ -83,19 +90,54 @@ void prv_logger_prepare_task(void *p) {
     (void) p;
     logging_data_t loggingData;
     memset(&loggingData, 0, sizeof(logging_data_t));
-
+    stacks_data_t stacksData;
+    memset(&stacksData, 0, sizeof(stacks_data_t));
+    adc_data_t adcData;
+    memset(&adcData, 0, sizeof(adc_data_t));
 
     while (1) {
         if (ulTaskNotifyTake(pdFALSE, portMAX_DELAY)) {
 
-            if (prvLoggerActive && prvSdInitialized) {
+            if (prvLoggerActive && prvSdInitialized && prvHeaderWritten) {
 
-                //Daten zusammenkopieren
-                size_t len;
-                char *enc = base64_encode((unsigned char*)&loggingData, sizeof(loggingData), &len);
+                copy_stacks_data(&stacksData, portMAX_DELAY);
+                copy_adc_data(&adcData, portMAX_DELAY);
+                static char buffer[300];
+                memset(buffer, 0xFF, sizeof(buffer)); //Clear buffer
+                uint16_t offset = 0;
+
+
+
+                snprintf(buffer, 8, "%06lu;", prvUptime);
+                offset += 7; // Length - 1, following string overrides termination character to build one long string
+
+                //Cell voltage 1 to 12
+                for (size_t cell = 0; cell < 12; cell++) {
+                    snprintf(buffer + offset, 8, "%6.4f;", (float)(stacksData.cellVoltage[0][cell] * 0.0001f));
+                    offset += 7;
+                }
+
+                //Current
+                snprintf(buffer + offset, 6, "%04.1f;", adcData.current);
+                offset += 5;
+
+                //Temperature 1 to 12
+                for (size_t sensor = 0; sensor < 6; sensor++) {
+                    snprintf(buffer + offset, 6, "%04.1f;", (float)(stacksData.temperature[0][sensor] * 0.1f));
+                    offset += 5;
+                }
+
+                //Temperature 13 to 24
+                for (size_t sensor = 0; sensor < 6; sensor++) {
+                    snprintf(buffer + offset, 6, "%04.1f;", (float)(stacksData.temperature[1][sensor] * 0.1f));
+                    offset += 5;
+                }
+
+                snprintf(buffer + offset - 1, 3, "\r\n");
+
                 encoded_data_t data;
-                strcpy(data.enc, enc);
-                data.len = len;
+                strcpy(data.enc, buffer);
+                data.len = strlen(buffer) + 1;
 
                 xQueueSendToBack(prvLoggingQ, &data, portMAX_DELAY);
 
@@ -140,6 +182,19 @@ void prv_logger_write_task(void *p) {
             }
         }
     }
+}
+
+static void prv_write_header(void) {
+    static const char *header = "time;Cell 1;Cell 2;Cell 3;Cell 4;Cell 5;Cell 6;Cell 7;Cell 8;"
+                                        "Cell 9;Cell 10;Cell 11;Cell 12;Current;Temp 1;Temp 2;"
+                                        "Temp 3;Temp 4;Temp 5;Temp 6;Temp 7;Temp 8;Temp 9;"
+                                        "Temp 10;Temp 11;Temp 12\r\n";
+
+        UINT bw;
+        PRINTF("Writing header...\n");
+        DSTATUS stat = f_write(prvFile, header, strlen(header), &bw);
+        f_sync(prvFile);
+        PRINTF("Done! %u, %u bytes written!\n", stat, bw);
 }
 
 
