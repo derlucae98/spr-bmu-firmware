@@ -54,7 +54,7 @@ static FIL *prvFile = NULL;
 void logger_init(void) {
     prvLoggingQ = xQueueCreate(NUMBER_OF_Q_ITEMS, sizeof(encoded_data_t));
     configASSERT(prvLoggingQ);
-    xTaskCreate(prv_logger_prepare_task, "logprep", 2000, NULL, 2, &prvLoggerPrepareHandle);
+    xTaskCreate(prv_logger_prepare_task, "logprep", 3000, NULL, 2, &prvLoggerPrepareHandle);
     xTaskCreate(prv_logger_write_task, "logwrite", 4000, NULL, 2, &prvLoggerWriteHandle);
 }
 
@@ -169,13 +169,13 @@ void prv_logger_write_task(void *p) {
             len += buf.len;
             index++;
             if (index >= NUMBER_OF_Q_ITEMS) {
-                PRINTF("Writing data to file...\n");
+//                PRINTF("Writing data to file...\n");
                 UINT bw;
                 volatile TickType_t start = xTaskGetTickCount();
                 f_write(prvFile, (void*)&enc[0], len, &bw);
                 f_sync(prvFile);
                 volatile TickType_t end = xTaskGetTickCount();
-                PRINTF("Logger: %lu bytes written! Took %lu ms\n", bw, end - start);
+//                PRINTF("Logger: %lu bytes written! Took %lu ms\n", bw, end - start);
                 index = 0;
                 len = 0;
                 memset(enc, 0, sizeof(enc));

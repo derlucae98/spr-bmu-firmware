@@ -249,7 +249,7 @@ static void prv_adc_print_data(void *p) {
         copy_adc_data(&adcData, portMAX_DELAY);
         PRINTF("U_Batt: %.1f\n", adcData.batteryVoltage);
         PRINTF("U_Link: %.1f\n", adcData.dcLinkVoltage);
-        PRINTF("Current: %.1f\n", adcData.current);
+        PRINTF("Current: %.2f\n", adcData.current);
         vTaskDelayUntil(&lastWake, period);
     }
 }

@@ -217,6 +217,11 @@ void vApplicationTickHook(void) {
 void vApplicationStackOverflowHook(TaskHandle_t pxTask, char *pcTaskName) {
     (void) pxTask;
     (void) pcTaskName;
+    clear_pin(LED_WARNING_PORT, LED_WARNING_PIN);
+    clear_pin(LED_IMD_FAULT_PORT, LED_IMD_FAULT_PIN);
+    clear_pin(LED_IMD_OK_PORT, LED_IMD_OK_PIN);
+    set_pin(LED_AMS_OK_PORT, LED_AMS_OK_PIN);
+    set_pin(LED_AMS_FAULT_PORT, LED_AMS_FAULT_PIN);
     configASSERT(0);
 }
 

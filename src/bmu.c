@@ -58,7 +58,7 @@ typedef struct {
 } can_data_t;
 
 void init_bmu(void) {
-    xTaskCreate(can_send_task, "CAN", 900, NULL, 3, NULL);
+    xTaskCreate(can_send_task, "CAN", 1500, NULL, 3, NULL);
     xTaskCreate(can_rec_task, "CAN rec", 600, NULL, 3, NULL);
 }
 
@@ -84,13 +84,6 @@ static void can_send_task(void *p) {
             memcpy(canData.temperature, stacksData->temperature, sizeof(canData.temperature));
             memcpy(canData.temperatureStatus, stacksData->temperatureStatus, sizeof(canData.temperatureStatus));
 
-            for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
-                for (size_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
-                    canData.cellVoltage[slave][cell] /= 10; //chop off the 100 uV digit TODO: Remove with new CAN protocol
-                }
-            }
-
-
             canData.minCellVolt = stacksData->minCellVolt;
             canData.minCellVoltValid = stacksData->voltageValid;
             canData.maxCellVolt = stacksData->maxCellVolt;
@@ -106,6 +99,12 @@ static void can_send_task(void *p) {
             canData.avgTempValid = stacksData->temperatureValid;
 
             release_stacks_data();
+        }
+
+        for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
+            for (size_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
+                canData.cellVoltage[slave][cell] /= 10; //chop off the 100 uV digit TODO: Remove with new CAN protocol
+            }
         }
 
         adc_data_t *adcData = get_adc_data(portMAX_DELAY);
