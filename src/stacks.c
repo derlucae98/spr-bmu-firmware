@@ -107,12 +107,6 @@ void stacks_worker_task(void *p) {
         ltc6811_set_balancing_gates(prvBalancingGates);
         ltc6811_get_voltage(stacksDataLocal.cellVoltage, pecVoltage);
 
-//        for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
-//            for (size_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
-//                stacksDataLocal.cellVoltage[slave][cell] /= 10; //chop off the 100 uV digit TODO: Remove with new CAN protocol
-//            }
-//        }
-
         switch (cycle) {
         case 0:
             ltc6811_get_temperatures_in_degC(stacksDataLocal.temperature, stacksDataLocal.temperatureStatus, 0, 3);

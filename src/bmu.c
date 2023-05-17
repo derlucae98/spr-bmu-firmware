@@ -84,6 +84,12 @@ static void can_send_task(void *p) {
             memcpy(canData.temperature, stacksData->temperature, sizeof(canData.temperature));
             memcpy(canData.temperatureStatus, stacksData->temperatureStatus, sizeof(canData.temperatureStatus));
 
+            for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
+                for (size_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
+                    canData.cellVoltage[slave][cell] /= 10; //chop off the 100 uV digit TODO: Remove with new CAN protocol
+                }
+            }
+
 
             canData.minCellVolt = stacksData->minCellVolt;
             canData.minCellVoltValid = stacksData->voltageValid;
@@ -102,24 +108,28 @@ static void can_send_task(void *p) {
             release_stacks_data();
         }
 
+        adc_data_t *adcData = get_adc_data(portMAX_DELAY);
+        if (adcData != NULL) {
+            canData.batteryVoltage = (uint16_t)(adcData->batteryVoltage * 10);
+            canData.batteryVoltageValid = adcData->voltageValid;
+            canData.dcLinkVoltage = (uint16_t)(adcData->dcLinkVoltage * 10);
+            canData.dcLinkVoltageValid = adcData->voltageValid;
+            canData.current = (int16_t)(adcData->current * 160);
+            canData.currentValid = adcData->currentValid;
+            release_adc_data();
+        }
 
-            canData.current = 0;
-            canData.currentValid = 0;
-            canData.batteryVoltage = 0;
-            canData.batteryVoltageValid = 0;
-            canData.dcLinkVoltage = 0;
-            canData.dcLinkVoltageValid = 0;
 
 
-            canData.isolationResistance = 0; //TODO isolation resistance CAN
-            canData.isolationResistanceValid = false; //TODO isolation resistance CAN validity
-            canData.shutdownStatus = 0;
-            canData.tsState = 0;
-            canData.amsResetStatus = 0;
-            canData.amsStatus = 0;
-            canData.imdResetStatus = 0;
-            canData.imdStatus = 0;
-            canData.errorCode = 0;
+        canData.isolationResistance = 0; //TODO isolation resistance CAN
+        canData.isolationResistanceValid = false; //TODO isolation resistance CAN validity
+        canData.shutdownStatus = 0;
+        canData.tsState = 0;
+        canData.amsResetStatus = 0;
+        canData.amsStatus = 0;
+        canData.imdResetStatus = 0;
+        canData.imdStatus = 0;
+        canData.errorCode = 0;
 
 
 

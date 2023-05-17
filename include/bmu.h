@@ -18,6 +18,7 @@
 #include "config.h"
 #include "can.h"
 #include "stacks.h"
+#include "adc.h"
 
 
 void init_bmu(void);

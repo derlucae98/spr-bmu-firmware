@@ -158,7 +158,7 @@ static void prv_adc_task(void *p) {
     float current = 0.0f;
 
     bool adcError = false;
-    bool currentValid = false;
+    bool currentValid = true;
 
     uint8_t chID;
 

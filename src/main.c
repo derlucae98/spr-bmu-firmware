@@ -147,6 +147,24 @@ static void uart_rec(char* s) {
      * Send: ack <xxx.xx>\r\n   <xxx.xx> = Exact voltage that has been applied
      * Send: cal done\r\n       Finish the calibration process
      */
+
+    unsigned int input[6];
+    if (strcmp(tokens[0], "time") == 0) {
+        if (strcmp(tokens[1], "set") == 0) {
+            sscanf(tokens[2], "%u-%u-%u", &input[0], &input[1], &input[2]);
+            sscanf(tokens[3], "%u:%u:%u", &input[3], &input[4], &input[5]);
+            PRINTF("Setting date and time to %04u-%02u-%02u %02u:%02u:%02u\n", input[0], input[1], input[2], input[3], input[4], input[5]);
+            rtc_date_time_t dateTime;
+            dateTime.year = input[0];
+            dateTime.month = input[1];
+            dateTime.day = input[2];
+            dateTime.hour = input[3];
+            dateTime.minute = input[4];
+            dateTime.second = input[5];
+            rtc_set_date_time(&dateTime);
+        }
+    }
+
 }
 
 void sd_init_hook(bool ready, FIL *file) {
