@@ -126,9 +126,7 @@ bool eeprom_busy(BaseType_t blocktime) {
             spi_mutex_give(EEPROM_SPI);
             prv_eeprom_mutex_give();
 
-            if (cmd[1] & SR_BUSY) {
-                return true;
-            }
+            return cmd[1] & SR_BUSY;
         } else {
             prv_eeprom_mutex_give();
             return false;
