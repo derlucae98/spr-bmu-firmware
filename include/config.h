@@ -62,7 +62,7 @@
 #define NOMINAL_CELL_CAPACITY_mAh 15000
 
 #define ADC_VOLTAGE_CONVERSION_RATIO 301.0f
-#define ADC_CURRENT_CONVERSION_RATIO 0 //Todo: to be defined
+#define ADC_CURRENT_CONVERSION_RATIO 41.6667f //I = Us * k/R; k = current ratio (1000), R = shunt resistance (24R)
 
 #define AUTO_RESET_ENABLED 1
 
