@@ -208,11 +208,11 @@ static void prv_adc_task(void *p) {
         //Apply calibration values
         adcValUlinkCorr   = prvCal.ulink_gain   * (adcValUlink   - prvCal.ulink_offset);
         adcValUbattCorr   = prvCal.ubatt_gain   * (adcValUbatt   - prvCal.ubatt_offset);
-        //adcValCurrentCorr = prvCal.current_gain * (adcValCurrent - prvCal.current_offset);
+        adcValCurrentCorr = prvCal.current_gain * (adcValCurrent - prvCal.current_offset);
 
         ulinkVolt = ADC_VOLTAGE_CONVERSION_RATIO * (adcValUlinkCorr   * (-1) * prvCal.reference) / 8388608.0f; //*(-1) to compensate the inverting ADC driver
         ubattVolt = ADC_VOLTAGE_CONVERSION_RATIO * (adcValUbattCorr   * (-1) * prvCal.reference) / 8388608.0f; //*(-1) to compensate the inverting ADC driver
-        current   = ADC_CURRENT_CONVERSION_RATIO * (adcValCurrent * prvCal.reference) / 8388608.0f;
+        current   = ADC_CURRENT_CONVERSION_RATIO * (adcValCurrentCorr * prvCal.reference) / 8388608.0f;
 
         adc_data_t newAdcData;
         newAdcData.batteryVoltage = ubattVolt;
@@ -245,10 +245,11 @@ static void prv_adc_print_data(void *p) {
     TickType_t lastWake = xTaskGetTickCount();
     while (1) {
         adc_data_t adcData;
+        memset(&adcData, 0, sizeof(adc_data_t));
         copy_adc_data(&adcData, portMAX_DELAY);
         PRINTF("U_Batt: %.1f\n", adcData.batteryVoltage);
         PRINTF("U_Link: %.1f\n", adcData.dcLinkVoltage);
-        PRINTF("Current: %f\n", adcData.current);
+        PRINTF("Current: %.1f\n", adcData.current);
         vTaskDelayUntil(&lastWake, period);
     }
 }

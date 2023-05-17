@@ -153,8 +153,8 @@ static void prv_update_calibration(void) {
         adcValue2Ideal = (-1) * prvVal2 * 8388608.0f / (ADC_VOLTAGE_CONVERSION_RATIO * prvRef);
         break;
     case CAL_INPUT_CURRENT:
-        adcValue1Ideal = (-1) * prvVal1 * 8388608.0f / (ADC_CURRENT_CONVERSION_RATIO * prvRef);
-        adcValue2Ideal = (-1) * prvVal2 * 8388608.0f / (ADC_CURRENT_CONVERSION_RATIO * prvRef);
+        adcValue1Ideal = prvVal1 * 8388608.0f / (ADC_CURRENT_CONVERSION_RATIO * prvRef);
+        adcValue2Ideal = prvVal2 * 8388608.0f / (ADC_CURRENT_CONVERSION_RATIO * prvRef);
         break;
     }
 
@@ -230,7 +230,7 @@ static void prv_write_calibration(void) {
         configASSERT(0);
     }
 
-    uint8_t timeout = 200; //2 seconds
+    uint16_t timeout = 500; //5 seconds
     while (eeprom_busy(pdMS_TO_TICKS(500))) {
         if (--timeout > 0) {
             vTaskDelay(pdMS_TO_TICKS(10));
