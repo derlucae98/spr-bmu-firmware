@@ -113,7 +113,7 @@ void prv_logger_prepare_task(void *p) {
 
                 //Cell voltage 1 to 12
                 for (size_t cell = 0; cell < 12; cell++) {
-                    snprintf(buffer + offset, 8, "%6.4f;", (float)(stacksData.cellVoltage[0][cell] * 0.0001f));
+                    snprintf(buffer + offset, 8, "%6.4f;", (float)(stacksData.cellVoltage[1][cell] * 0.0001f));
                     offset += 7;
                 }
 
