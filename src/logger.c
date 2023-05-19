@@ -102,7 +102,6 @@ void prv_logger_prepare_task(void *p) {
 
             if (prvHeaderWritten) {
                 if (prvLoggerActive && prvSdInitialized) {
-
                     copy_stacks_data(&stacksData, portMAX_DELAY);
                     copy_adc_data(&adcData, portMAX_DELAY);
                     static char buffer[300];
@@ -114,16 +113,15 @@ void prv_logger_prepare_task(void *p) {
                     snprintf(buffer, 8, "%06lu;", prvUptime);
                     offset += 7; // Length - 1, following string overrides termination character to build one long string
 
-                //Cell voltage 1 to 12
-                for (size_t cell = 0; cell < 12; cell++) {
-                    snprintf(buffer + offset, 8, "%6.4f;", (float)(stacksData.cellVoltage[1][cell] * 0.0001f));
-                    offset += 7;
-                }
+                    //Cell voltage 1 to 12
+                    for (size_t cell = 0; cell < 12; cell++) {
+                        snprintf(buffer + offset, 8, "%6.4f;", (float)(stacksData.cellVoltage[1][cell] * 0.0001f));
+                        offset += 7;
+                    }
 
                     //Current
                     snprintf(buffer + offset, 6, "%04.1f;", adcData.current);
                     offset += 5;
-                }
 
                     //Temperature 1 to 12
                     for (size_t sensor = 0; sensor < 6; sensor++) {
@@ -200,7 +198,7 @@ static void prv_write_header(void) {
 
         UINT bw;
         PRINTF("Writing header...\n");
-        DSTATUS stat = f_write(prvFile, header, strlen(header), &bw);
+        f_write(prvFile, header, strlen(header), &bw);
         f_sync(prvFile);
         PRINTF("Done!, %u bytes written!\n", bw);
 }
