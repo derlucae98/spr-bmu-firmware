@@ -18,6 +18,7 @@
 #include "adc.h"
 #include "base64.h"
 #include "contactor.h"
+#include "eeprom.h"
 
 
 extern volatile bool sdInitPending;

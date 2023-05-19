@@ -52,8 +52,6 @@
 #define PERIPH_SPI_SLOW LPSPI_PRESC_16
 #define PERIPH_SPI_FAST LPSPI_PRESC_1
 
-#define LOGDATA_RAW_SIZE 700 //Size of the base64 encoded string in bytes
-
 
 #define EEPROM_SOC_PAGE_1 0x100
 #define EEPROM_SOC_PAGE_2 0x200
