@@ -106,6 +106,9 @@ static void can_send_task(void *p) {
                 canData.cellVoltage[slave][cell] /= 10; //chop off the 100 uV digit TODO: Remove with new CAN protocol
             }
         }
+        canData.minCellVolt /= 10;
+        canData.maxCellVolt /= 10;
+        canData.avgCellVolt /= 10;
 
         adc_data_t *adcData = get_adc_data(portMAX_DELAY);
         if (adcData != NULL) {

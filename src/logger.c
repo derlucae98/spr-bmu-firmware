@@ -63,8 +63,7 @@ void logger_control(bool ready, FIL *file) {
     if (file != prvFile) {
         //New file. Write CSV header.
         prvFile = file;
-        prv_write_header();
-        prvHeaderWritten = true;
+        prvHeaderWritten = false;
     }
 }
 
@@ -97,19 +96,23 @@ void prv_logger_prepare_task(void *p) {
 
     while (1) {
         if (ulTaskNotifyTake(pdFALSE, portMAX_DELAY)) {
+            if (prvFile == NULL) {
+                continue;
+            }
 
-            if (prvLoggerActive && prvSdInitialized && prvHeaderWritten) {
+            if (prvHeaderWritten) {
+                if (prvLoggerActive && prvSdInitialized) {
 
-                copy_stacks_data(&stacksData, portMAX_DELAY);
-                copy_adc_data(&adcData, portMAX_DELAY);
-                static char buffer[300];
-                memset(buffer, 0xFF, sizeof(buffer)); //Clear buffer
-                uint16_t offset = 0;
+                    copy_stacks_data(&stacksData, portMAX_DELAY);
+                    copy_adc_data(&adcData, portMAX_DELAY);
+                    static char buffer[300];
+                    memset(buffer, 0xFF, sizeof(buffer)); //Clear buffer
+                    uint16_t offset = 0;
 
 
 
-                snprintf(buffer, 8, "%06lu;", prvUptime);
-                offset += 7; // Length - 1, following string overrides termination character to build one long string
+                    snprintf(buffer, 8, "%06lu;", prvUptime);
+                    offset += 7; // Length - 1, following string overrides termination character to build one long string
 
                 //Cell voltage 1 to 12
                 for (size_t cell = 0; cell < 12; cell++) {
@@ -117,30 +120,35 @@ void prv_logger_prepare_task(void *p) {
                     offset += 7;
                 }
 
-                //Current
-                snprintf(buffer + offset, 6, "%04.1f;", adcData.current);
-                offset += 5;
-
-                //Temperature 1 to 12
-                for (size_t sensor = 0; sensor < 6; sensor++) {
-                    snprintf(buffer + offset, 6, "%04.1f;", (float)(stacksData.temperature[0][sensor] * 0.1f));
+                    //Current
+                    snprintf(buffer + offset, 6, "%04.1f;", adcData.current);
                     offset += 5;
                 }
 
-                //Temperature 13 to 24
-                for (size_t sensor = 0; sensor < 6; sensor++) {
-                    snprintf(buffer + offset, 6, "%04.1f;", (float)(stacksData.temperature[1][sensor] * 0.1f));
-                    offset += 5;
+                    //Temperature 1 to 12
+                    for (size_t sensor = 0; sensor < 6; sensor++) {
+                        snprintf(buffer + offset, 6, "%04.1f;", (float)(stacksData.temperature[0][sensor] * 0.1f));
+                        offset += 5;
+                    }
+
+                    //Temperature 13 to 24
+                    for (size_t sensor = 0; sensor < 6; sensor++) {
+                        snprintf(buffer + offset, 6, "%04.1f;", (float)(stacksData.temperature[1][sensor] * 0.1f));
+                        offset += 5;
+                    }
+
+                    snprintf(buffer + offset - 1, 3, "\r\n");
+
+                    encoded_data_t data;
+                    strcpy(data.enc, buffer);
+                    data.len = strlen(buffer) + 1;
+
+                    xQueueSendToBack(prvLoggingQ, &data, portMAX_DELAY);
+
                 }
-
-                snprintf(buffer + offset - 1, 3, "\r\n");
-
-                encoded_data_t data;
-                strcpy(data.enc, buffer);
-                data.len = strlen(buffer) + 1;
-
-                xQueueSendToBack(prvLoggingQ, &data, portMAX_DELAY);
-
+            } else {
+                prv_write_header();
+                prvHeaderWritten = true;
             }
 
 //            if (_terminateRequest) {
@@ -194,7 +202,7 @@ static void prv_write_header(void) {
         PRINTF("Writing header...\n");
         DSTATUS stat = f_write(prvFile, header, strlen(header), &bw);
         f_sync(prvFile);
-        PRINTF("Done! %u, %u bytes written!\n", stat, bw);
+        PRINTF("Done!, %u bytes written!\n", bw);
 }
 
 

@@ -235,6 +235,7 @@ bool rtc_set_date_time(rtc_date_time_t *dateTime) {
 }
 
 char* rtc_get_timestamp(void) {
+    rtc_sync();
     static char timestamp[26];
     snprintf(timestamp, sizeof(timestamp), "%04u-%02u-%02u_%02u-%02u-%02u", prvRtcDateTime.year,
             prvRtcDateTime.month, prvRtcDateTime.day, prvRtcDateTime.hour, prvRtcDateTime.minute, prvRtcDateTime.second);
