@@ -5,8 +5,8 @@
  *      Author: Luca Engelmann
  */
 
-#ifndef BMU_H_
-#define BMU_H_
+#ifndef COMMUNICATION_H_
+#define COMMUNICATION_H_
 
 #include "adc.h"
 #include "S32K14x.h"
@@ -26,4 +26,4 @@ void init_bmu(void);
 
 
 
-#endif /* BMU_H_ */
+#endif /* COMMUNICATION_H_ */

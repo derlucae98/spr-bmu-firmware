@@ -5,7 +5,7 @@
  *      Author: Luca Engelmann
  */
 
-#include "bmu.h"
+#include "communication.h"
 
 static void can_send_task(void *p);
 static void can_rec_task(void *p);

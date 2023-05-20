@@ -10,15 +10,15 @@
 #include "can.h"
 #include "spi.h"
 #include "stacks.h"
-#include "bmu.h"
 #include "adc.h"
 #include "contactor.h"
 #include "rtc.h"
 #include "sd.h"
 #include "logger.h"
-
+#include "communication.h"
 
 #include <alloca.h>
+
 #include <string.h>
 #include <stdlib.h>
 
