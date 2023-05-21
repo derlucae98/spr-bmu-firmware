@@ -214,11 +214,24 @@ static void prv_update_param(uint8_t ID, void *value, size_t len, uint8_t DLC) {
         break;
 
     case ID_CONTROL_CALIBRATION:
-        //TODO call function to start calibration
+        {
+            uint8_t channel = *((uint8_t*)value);
+            if (channel == 0) {
+                //Stop calibration
+                acknowledge_calibration();
+            } else {
+                if (channel > 3) {
+                    prv_send_negative_response(ID); //Invalid channel
+                    return;
+                } else {
+                    start_calibration(channel - 1);
+                }
+            }
+        }
         break;
 
     case ID_CALIBRATION_VALUE:
-        //TODO call function to set calibration value
+        value_applied(*((float*)value));
         break;
 
     case ID_FORMAT_SD_CARD:

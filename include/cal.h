@@ -15,6 +15,7 @@
 #include "config.h"
 #include "can.h"
 #include "rtc.h"
+#include "adc_cal.h"
 
 #define CAN_CAL CAN_VEHIC
 
