@@ -193,6 +193,7 @@ bool rtc_sync(void) {
         prvRtcDateTime.day    = DAYTODEC(time[4]);
         prvRtcDateTime.month  = MONTODEC(time[6]);
         prvRtcDateTime.year   = YEARTODEC(time[7]) + 2000;
+        prvEpoch = prv_make_unix_time();
     } else {
         return false;
     }
@@ -201,10 +202,12 @@ bool rtc_sync(void) {
 }
 
 rtc_date_time_t rtc_get_date_time(void) {
+    rtc_sync();
     return prvRtcDateTime;
 }
 
 uint32_t rtc_get_unix_time(void) {
+    rtc_sync();
     return prvEpoch;
 }
 
