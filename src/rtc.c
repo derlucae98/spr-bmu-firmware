@@ -273,7 +273,7 @@ static uint32_t prv_make_unix_time(void) {
 
 static rtc_date_time_t prv_make_date_time_from_epoch(uint32_t epoch) {
     struct tm t;
-    volatile rtc_date_time_t dateTime;
+    rtc_date_time_t dateTime;
     time_t unix = epoch + TIMEZONE_GMT_PLUS_2;
     localtime_r(&unix, &t);
     dateTime.year = t.tm_year + 1900;
