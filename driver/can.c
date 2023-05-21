@@ -55,13 +55,13 @@ void can_init(CAN_Type *can) {
     }
 
     for (size_t i = 0; i < CAN_MB_REC; i++) {
-        can->RXIMR[i] = 0x1FC3FFFF; //Filter Mask 0x00F
+        can->RXIMR[i] = 0x00000000; //Filter Mask 0x00F
     }
     //Mask for message buffer 14 and 15 is handled separately
-    can->RX14MASK = 0x1FC3FFFF;
-    can->RX15MASK = 0x1FC3FFFF;
+    can->RX14MASK = 0x00000000;
+    can->RX15MASK = 0x00000000;
 
-    can->RXMGMASK = 0x1FC3FFFF;
+    can->RXMGMASK = 0x00000000;
 
     //Prepare message buffer for reception
     for (size_t i = 0; i < CAN_MB_REC; i++) {
