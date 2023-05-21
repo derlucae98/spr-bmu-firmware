@@ -8,7 +8,7 @@
 #ifndef COMMUNICATION_H_
 #define COMMUNICATION_H_
 
-#include "adc.h"
+
 #include "S32K14x.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -19,9 +19,16 @@
 #include "can.h"
 #include "stacks.h"
 #include "adc.h"
+#include "cal.h"
 
 
-void init_bmu(void);
+
+enum {
+    CAN_ID_CAL_REQUEST  = 0x010,
+    CAN_ID_CAL_RESPONSE = 0x011
+};
+
+void init_comm(void);
 
 
 

@@ -16,6 +16,7 @@
 #include "sd.h"
 #include "logger.h"
 #include "communication.h"
+#include "cal.h"
 
 #include <alloca.h>
 
@@ -175,9 +176,10 @@ void init_task(void *p) {
     (void)p;
 
     while (1) {
+        init_cal();
         init_adc(NULL);
         init_contactor();
-        init_bmu();
+        init_comm();
         init_stacks();
         init_rtc(logger_tick_hook);
         sd_init(logger_control);

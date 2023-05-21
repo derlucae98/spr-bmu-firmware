@@ -9,8 +9,7 @@
 
 static void can_send_task(void *p);
 static void can_rec_task(void *p);
-static void handle_diag_request(can_msg_t *msg);
-static void send_diag_response(can_msg_t *msg);
+
 
 typedef struct {
     uint32_t UID[MAX_NUM_OF_SLAVES];
@@ -57,9 +56,9 @@ typedef struct {
     bool avgTempValid;
 } can_data_t;
 
-void init_bmu(void) {
+void init_comm(void) {
     xTaskCreate(can_send_task, "CAN", 1500, NULL, 3, NULL);
-    xTaskCreate(can_rec_task, "CAN rec", 600, NULL, 3, NULL);
+    xTaskCreate(can_rec_task, "CAN rec", 1500, NULL, 3, NULL);
 }
 
 static void can_send_task(void *p) {
@@ -332,8 +331,9 @@ static void can_rec_task(void *p) {
                         request_tractive_system(false);
                     }
                     break;
-                case 0xC:
-                    handle_diag_request(&msg);
+                case CAN_ID_CAL_REQUEST:
+                    PRINTF("New CAN message!\n");
+                    handle_cal_request(&msg);
                     break;
                 default:
                     break;
@@ -342,74 +342,6 @@ static void can_rec_task(void *p) {
     }
 }
 
-static void handle_diag_request(can_msg_t *msg) {
-    can_msg_t resp;
-    switch(msg->payload[0]) {
-    case 0x01: // Firmware version
-        resp.DLC = 6;
-        resp.ID = 0xD;
-        resp.payload[0] = 0x01;
-        resp.payload[1] = 0x00;
-        resp.payload[2] = 0x03;
-        resp.payload[3] = VERS_MAJOR;
-        resp.payload[4] = VERS_MINOR;
-        resp.payload[5] = VERS_BUILD;
-        send_diag_response(&resp);
-        break;
-    case 0x02: //SOC lookup
-        {
-            bool ret;
-            //ret = soc_lookup();
-            resp.DLC = 4;
-            resp.ID = 0xD;
-            resp.payload[0] = 0x02;
-            resp.payload[1] = 0x00;
-            resp.payload[2] = (uint8_t) ret;
-            resp.payload[3] = 0x00;
-            send_diag_response(&resp);
-            break;
-        }
-    case 0x03: //Get balancing
-        {
-            uint8_t balance[MAX_NUM_OF_SLAVES][MAX_NUM_OF_CELLS];
-            get_balancing_status(balance);
-            resp.DLC = 5;
-            resp.ID = 0xD;
-            resp.payload[0] = 0x03;
-            resp.payload[1] = 0x00;
-            resp.payload[2] = 0x02;
-            resp.payload[3] = 0;
-            for (size_t i = 0; i < 8; i++) {
-                resp.payload[3] |= (balance[0][i] & 0x01) << (7 - i);
-            }
-            resp.payload[4] = 0;
-            for (size_t i = 0; i < 4; i++) {
-                resp.payload[4] |= (balance[0][i + 8] & 0x01) << (7 - i);
-            }
-            send_diag_response(&resp);
-        }
-        break;
-    case 0x04: // Set balancing
-        {
-        if (msg->payload[2] == 0x0) {
-            control_balancing(false);
-        } else {
-            control_balancing(true);
-        }
-        resp.DLC = 4;
-        resp.ID = 0xD;
-        resp.payload[0] = 0x04;
-        resp.payload[1] = 0x00;
-        resp.payload[2] = 0x01;
-        resp.payload[3] = 0x00;
-        send_diag_response(&resp);
-        break;
-        }
-    }
-}
 
-static void send_diag_response(can_msg_t *msg) {
-    can_send(CAN0, msg);
-}
 
 

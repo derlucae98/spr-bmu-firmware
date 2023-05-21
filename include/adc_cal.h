@@ -34,11 +34,6 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdbool.h>
 #include <string.h>
 
-/*!
- * @def CAL_DATA_EEPROM_PAGE
- * Defines the EEPROM page at which the calibration data will be stored
- */
-#define CAL_DATA_EEPROM_PAGE 0x0
 
 /*!
  * @enum adc_cal_state_t

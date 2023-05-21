@@ -54,10 +54,15 @@
 
 #define LOGDATA_RAW_SIZE 700 //Size of the base64 encoded string in bytes
 
-
-#define EEPROM_SOC_PAGE_1 0x100
-#define EEPROM_SOC_PAGE_2 0x200
-#define EEPROM_SOC_PAGE_3 0x300
+/*!
+ * @def CAL_DATA_EEPROM_PAGE
+ * Defines the EEPROM page at which the calibration data will be stored
+ */
+#define CAL_DATA_EEPROM_PAGE 0x000
+#define CONFIG_EEPROM_PAGE 0x100
+#define EEPROM_SOC_PAGE_1 0x200
+#define EEPROM_SOC_PAGE_2 0x300
+#define EEPROM_SOC_PAGE_3 0x400
 
 #define NOMINAL_CELL_CAPACITY_mAh 15000
 
@@ -66,6 +71,8 @@
 
 #define AUTO_RESET_ENABLED 1
 
+#define CAN_VEHIC CAN0
+#define CAN_DIAG  CAN1
 
 
 
