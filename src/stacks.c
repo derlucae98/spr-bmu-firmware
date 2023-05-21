@@ -222,11 +222,11 @@ void balancing_task(void *p) {
                 PRINTF("Balancing stopped due to invalid values!\n");
             }
 
-            if (delta > 5 && valid && avgCellVoltage >= prvBalanceThreshold) {
+            if (delta > 50 && valid && avgCellVoltage >= prvBalanceThreshold) {
                 //Balance only, if difference is greater than 5 mV
                 for (size_t stack = 0; stack < NUMBEROFSLAVES; stack++) {
                     for (size_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
-                        if (cellVoltage[stack][cell] > (minCellVoltage + 5)) {
+                        if (cellVoltage[stack][cell] > (minCellVoltage + 50)) {
                             balancingGates[stack][cell] = 1;
                         } else {
                             balancingGates[stack][cell] = 0;
