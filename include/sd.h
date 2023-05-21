@@ -37,6 +37,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "ff.h"
 #include "diskio.h"
 #include "rtc.h"
+#include "cal.h"
 
 /*!
  * @def MAX_NUMBER_OF_LOGFILES

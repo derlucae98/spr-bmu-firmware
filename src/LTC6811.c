@@ -93,6 +93,7 @@ typedef enum {
 
 
 static uint8_t prvConfig;
+uint8_t NUMBEROFSLAVES = 12; //Default value
 
 static ltc_spi_move_array_t prv_ltc_spi_move_array;
 static ltc_assert_cs_t      prv_ltc_assert_cs;
@@ -132,12 +133,14 @@ enum {
 
 //############################################################################################
 
-void ltc6811_init(ltc_spi_move_array_t ltc_spi_move_array, ltc_assert_cs_t ltc_assert_cs, ltc_deassert_cs_t ltc_deassert_cs) {
+void ltc6811_init(ltc_spi_move_array_t ltc_spi_move_array, ltc_assert_cs_t ltc_assert_cs, ltc_deassert_cs_t ltc_deassert_cs, uint8_t numberOfSlaves) {
     prvConfig = CFGR0_GPIO5 | CFGR0_GPIO4 | CFGR0_GPIO3 | CFGR0_GPIO2 | CFGR0_GPIO1 | CFGR0_REFON | CFGR0_ADCOPT;
 
     prv_ltc_spi_move_array  = ltc_spi_move_array;
     prv_ltc_assert_cs       = ltc_assert_cs;
     prv_ltc_deassert_cs     = ltc_deassert_cs;
+
+    NUMBEROFSLAVES = numberOfSlaves;
 
     ltc6811_wake_daisy_chain();
     set_config(prvConfig, NULL);

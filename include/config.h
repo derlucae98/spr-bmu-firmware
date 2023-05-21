@@ -69,7 +69,6 @@
 #define ADC_VOLTAGE_CONVERSION_RATIO 301.0f
 #define ADC_CURRENT_CONVERSION_RATIO 41.6667f //I = Us * k/R; k = current ratio (1000), R = shunt resistance (24R)
 
-#define AUTO_RESET_ENABLED 1
 
 #define CAN_VEHIC CAN0
 #define CAN_DIAG  CAN1

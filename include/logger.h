@@ -18,9 +18,9 @@
 #include "adc.h"
 #include "base64.h"
 #include "contactor.h"
+#include "cal.h"
 
 
-extern volatile bool sdInitPending;
 void logger_init(void);
 void logger_control(bool ready, FIL *file);
 bool logger_is_active(void);

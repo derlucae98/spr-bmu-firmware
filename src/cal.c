@@ -196,6 +196,12 @@ static void prv_update_param(param_type_t *param, void *value) {
         break;
 
     case ID_NUMBER_OF_STACKS:
+        PRINTF("Number of slaves: %u\n", *((uint8_t*)value));
+        if (*((uint8_t*)value) > MAX_NUM_OF_SLAVES) {
+            release_config();
+            prv_send_negative_response(ID); //More stacks requested as possible
+            return;
+        }
         prvConfig.numberOfStacks = *((uint8_t*)value);
         break;
 

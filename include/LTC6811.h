@@ -43,10 +43,10 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 #define NTC_CELL 3435
 
-/*! @def NUMBEROFSLAVES
+/*! @brief NUMBEROFSLAVES
  *  Defines the number of devices in a the daisy-chain
  */
-#define NUMBEROFSLAVES 2
+extern uint8_t NUMBEROFSLAVES;
 
 /*! @def MAX_NUM_OF_CELLS
  *  Defines the number of cells per stack.
@@ -92,11 +92,13 @@ typedef enum {
  *  @param ltc_spi_move_array Callback for the SPI transceive function. @see ltc_spi_move_array_t for parameters.
  *  @param ltc_assert_cs Callback for the chip-select assert function. @see ltc_assert_cs_t for parameters.
  *  @param ltc_deassert_cs Callback for the chip-select de-assert function. @see ltc_deassert_cs_t for parameters.
+ *  @param numberOfSlaves Number of devices in a the daisy-chain
  *
  */
 void ltc6811_init(ltc_spi_move_array_t ltc_spi_move_array,
                   ltc_assert_cs_t      ltc_assert_cs,
-                  ltc_deassert_cs_t    ltc_deassert_cs);
+                  ltc_deassert_cs_t    ltc_deassert_cs,
+                  uint8_t              numberOfSlaves);
 
 /*! @brief Wakes a daisy-chain of NUMBEROFSLAVES devices.
  */

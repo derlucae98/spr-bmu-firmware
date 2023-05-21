@@ -58,7 +58,7 @@ static void set_gpio_config(void) {
     GPIO_IN(IMD_MEAS_PORT, IMD_MEAS_PIN, PULL_NONE);
     GPIO_OUT_STRONG(AMS_FAULT_PORT, AMS_FAULT_PIN, 0);
     GPIO_IN(TSAC_HV_PORT, TSAC_HV_PIN, PULL_NONE);
-    GPIO_OUT_STRONG(AUTO_RESET_PORT, AUTO_RESET_PIN, AUTO_RESET_ENABLED);
+    GPIO_OUT_STRONG(AUTO_RESET_PORT, AUTO_RESET_PIN, 0);
 
     GPIO_IN(AIR_POS_INTENT_PORT, AIR_POS_INTENT_PIN, PULL_NONE);
     GPIO_IN(AIR_NEG_INTENT_PORT, AIR_NEG_INTENT_PIN, PULL_NONE);
@@ -177,6 +177,17 @@ void init_task(void *p) {
 
     while (1) {
         init_cal();
+
+        config_t* config  = get_config(pdMS_TO_TICKS(500));
+        if (config != NULL) {
+            if (config->autoResetOnPowerCycleEnable) {
+                set_pin(AUTO_RESET_PORT, AUTO_RESET_PIN);
+            } else {
+                clear_pin(AUTO_RESET_PORT, AUTO_RESET_PIN);
+            }
+            release_config();
+        }
+
         init_adc(NULL);
         init_contactor();
         init_comm();

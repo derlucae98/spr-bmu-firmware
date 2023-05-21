@@ -31,6 +31,7 @@ volatile bool prvSdInitialized = true;
 static FATFS FatFs;
 static FIL file;
 static sd_status_hook_t prvSdInitHook = NULL;
+static bool prvDeleteOldest = false;
 
 static void prv_sd_init_task(void *p);
 static bool prv_mount(void);
@@ -38,11 +39,13 @@ static bool prv_create_file(void);
 static bool prv_get_number_of_files(uint8_t *numberOfFiles);
 static bool prv_get_oldest_file(FILINFO *oldest);
 
-static bool prv_delete_oldest = true;
-
-
 void sd_init(sd_status_hook_t sdInitHook) {
     prvSdInitHook = sdInitHook;
+    config_t* config  = get_config(pdMS_TO_TICKS(500));
+    if (config != NULL) {
+        prvDeleteOldest = config->loggerDeleteOldestFile;
+        release_config();
+    }
     xTaskCreate(prv_sd_init_task, "sd", SD_TASK_STACK, NULL, SD_TASK_PRIO, NULL);
 }
 
@@ -284,7 +287,7 @@ static void prv_sd_init_task(void *p) {
             bool maxNumberReached = false;
 
             while (numberOfFiles > MAX_NUMBER_OF_LOGFILES) {
-                if (prv_delete_oldest) {
+                if (prvDeleteOldest) {
                     PRINTF("Deleting oldest file...\n");
                     prv_get_oldest_file(&oldest);
                     sd_delete_file(oldest);

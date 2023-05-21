@@ -54,6 +54,11 @@ static FIL *prvFile = NULL;
 void logger_init(void) {
     prvLoggingQ = xQueueCreate(NUMBER_OF_Q_ITEMS, sizeof(encoded_data_t));
     configASSERT(prvLoggingQ);
+    config_t* config  = get_config(pdMS_TO_TICKS(500));
+    if (config != NULL) {
+        prvLoggerActive = config->loggerEnable;
+        release_config();
+    }
     xTaskCreate(prv_logger_prepare_task, "logprep", 3000, NULL, 2, &prvLoggerPrepareHandle);
     xTaskCreate(prv_logger_write_task, "logwrite", 4000, NULL, 2, &prvLoggerWriteHandle);
 }

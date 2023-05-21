@@ -33,8 +33,9 @@ static SemaphoreHandle_t prvBalancingGatesMutex = NULL;
 
 static stacks_data_t prvStacksData;
 
-static uint8_t prvBalancingGates[NUMBEROFSLAVES][MAX_NUM_OF_CELLS];
+static uint8_t prvBalancingGates[MAX_NUM_OF_SLAVES][MAX_NUM_OF_CELLS];
 static bool prvBalanceEnable = false;
+static uint16_t prvBalanceThreshold;
 
 
 static BaseType_t prv_balancingGatesMutex_take(TickType_t blocktime);
@@ -76,7 +77,16 @@ void init_stacks(void) {
     configASSERT(prvBalancingGatesMutex);
     memset(prvBalancingGates, 0, sizeof(prvBalancingGates));
 
-    ltc6811_init(prv_ltc_spi, prv_ltc_assert, prv_ltc_deassert);
+    uint8_t numberOfStacks = MAX_NUM_OF_SLAVES;
+    config_t* config  = get_config(pdMS_TO_TICKS(500));
+    if (config != NULL) {
+        numberOfStacks = config->numberOfStacks;
+        prvBalanceEnable = config->globalBalancingEnable;
+        prvBalanceThreshold = config->balancingThreshold;
+        release_config();
+    }
+
+    ltc6811_init(prv_ltc_spi, prv_ltc_assert, prv_ltc_deassert, numberOfStacks);
 
     uint32_t UID[MAX_NUM_OF_SLAVES];
     ltc6811_get_uid(UID);
@@ -193,6 +203,7 @@ void balancing_task(void *p) {
             uint16_t cellVoltage[MAX_NUM_OF_SLAVES][MAX_NUM_OF_CELLS];
             uint16_t maxCellVoltage = 0;
             uint16_t minCellVoltage = 0;
+            uint16_t avgCellVoltage = 0;
             bool valid = false;
 
             stacks_data_t *stacksData = get_stacks_data(portMAX_DELAY);
@@ -200,6 +211,7 @@ void balancing_task(void *p) {
                 memcpy(cellVoltage, stacksData->cellVoltage, sizeof(cellVoltage));
                 minCellVoltage = stacksData->minCellVolt;
                 maxCellVoltage = stacksData->maxCellVolt;
+                avgCellVoltage = stacksData->avgCellVolt;
                 valid = stacksData->voltageValid;
                 release_stacks_data();
             }
@@ -210,7 +222,7 @@ void balancing_task(void *p) {
                 PRINTF("Balancing stopped due to invalid values!\n");
             }
 
-            if (delta > 5 && valid) {
+            if (delta > 5 && valid && avgCellVoltage >= prvBalanceThreshold) {
                 //Balance only, if difference is greater than 5 mV
                 for (size_t stack = 0; stack < NUMBEROFSLAVES; stack++) {
                     for (size_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
