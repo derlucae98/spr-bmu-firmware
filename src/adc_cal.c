@@ -186,7 +186,7 @@ static void prv_load_calibration(void) {
     bool uncal = true;
 
     bool ret;
-    ret = eeprom_read(pageBuffer, 0, EEPROM_PAGESIZE, pdMS_TO_TICKS(500));
+    ret = eeprom_read(pageBuffer, CAL_DATA_EEPROM_PAGE, EEPROM_PAGESIZE, pdMS_TO_TICKS(500));
     if (ret == false) {
         PRINTF("Unable to read from EEPROM!\n");
         configASSERT(0);
