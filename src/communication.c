@@ -332,7 +332,6 @@ static void can_rec_task(void *p) {
                     }
                     break;
                 case CAN_ID_CAL_REQUEST:
-                    PRINTF("New CAN message!\n");
                     handle_cal_request(&msg);
                     break;
                 default:

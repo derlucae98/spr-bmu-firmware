@@ -174,19 +174,16 @@ static void prv_update_param(param_type_t *param, void *value) {
     //Only the RW and WO parameters are listed here
     switch (ID) {
     case ID_LOAD_DEFAULT_CONFIG:
-        PRINTF("Loading default config.\n");
         if (prv_default_config() != true) {
             prv_send_negative_response(ID); //Error loading default config
             return;
         }
         break;
     case ID_GLOBAL_BALANCING_ENABLE:
-        PRINTF("Setting balancing enable to %u\n", *((uint8_t*)value));
         prvConfig.globalBalancingEnable = *((bool*)value);
         break;
 
     case ID_BALANCING_THRESHOLD:
-        PRINTF("Setting balancing threshold to %u\n", *((uint16_t*)value));
         prvConfig.balancingThreshold = *((uint16_t*)value);
         break;
 
@@ -292,7 +289,7 @@ static void prv_get_param(param_type_t *param) {
         break;
 
     case ID_BALANCING_FEEDBACK:
-        //TODO: response with active balancing gates
+        //TODO: respond with active balancing gates
         break;
 
     case ID_AUTOMATIC_SOC_LOOKUP_ENABLE:
@@ -402,7 +399,6 @@ static void prv_load_config(void) {
     }
 
     memcpy(&prvConfig, &pageBuffer[0], sizeof(config_t));
-    prv_print_config();
 }
 
 static bool prv_write_config(void) {
