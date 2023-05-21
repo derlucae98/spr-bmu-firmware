@@ -50,7 +50,7 @@ static param_type_t prvParamTypes[NUMBER_OF_CONFIG_PARAMS] = {
         {ID_GLOBAL_BALANCING_ENABLE,     true,  RW, sizeof(prvConfig.globalBalancingEnable)},
         {ID_BALANCING_THRESHOLD,         true,  RW, sizeof(prvConfig.balancingThreshold)},
         {ID_BALANCING_FEEDBACK,          false, RO, sizeof(uint16_t)},
-        {ID_SOC_LOOKUP,                  false, RW, 0},
+        {ID_SOC_LOOKUP,                  false, WO, 0},
         {ID_AUTOMATIC_SOC_LOOKUP_ENABLE, true,  RW, sizeof(prvConfig.automaticSocLookupEnable)},
         {ID_NUMBER_OF_STACKS,            true,  RW, sizeof(prvConfig.numberOfStacks)},
         {ID_LOGGER_ENABLE,               true,  RW, sizeof(prvConfig.loggerEnable)},
@@ -74,9 +74,11 @@ static config_t prvDefaultConfig = {
 };
 
 static bool prv_find_param_type(uint8_t ID, param_type_t *found);
-static void prv_update_param(uint8_t ID, void *value, size_t len, uint8_t DLC);
+static void prv_update_param(param_type_t *param, void *value);
+static void prv_get_param(param_type_t *param);
 static void prv_send_negative_response(uint8_t ID);
 static void prv_send_posititve_response(uint8_t ID);
+static void prv_send_response(uint8_t *data, uint8_t len);
 static BaseType_t prv_config_mutex_take(TickType_t blocktime);
 static void prv_load_config(void);
 static bool prv_write_config(void);
@@ -116,46 +118,52 @@ void release_config(void) {
 
 void handle_cal_request(can_msg_t *msg) {
 
-    uint8_t paramID = msg->payload[0];
-
-    if (paramID & 0x80) {
-        //Read value
-        PRINTF("Read param requested\n");
-    } else {
-        //Set value
-        PRINTF("Set param requested\n");
-        PRINTF("Param ID: %u\n", paramID);
-        PRINTF("len: %u\n", msg->payload[1]);
-        PRINTF("DLC: %u\n", msg->DLC);
-        prv_update_param(paramID, (void*)&msg->payload[2], msg->payload[1], msg->DLC);
-    }
-}
-
-static void prv_update_param(uint8_t ID, void *value, size_t len, uint8_t DLC) {
+    uint8_t ID = msg->payload[0];
+    uint8_t len = msg->payload[1];
+    uint8_t modify = ID & 0x80; //Read or modify value requested?
     param_type_t param;
-    if (!prv_find_param_type(ID, &param)) {
+
+    if (!prv_find_param_type(ID & 0x7F, &param)) {
         PRINTF("Error: Requested parameter does not exist!\n");
         prv_send_negative_response(ID); //Requested parameter does not exist
         return;
     } else {
-        if (param.modifier == RO) {
+        if (modify && param.modifier == RO) {
             PRINTF("Error: Requested the modification of a read only value!\n");
             prv_send_negative_response(ID); //Requested the modification of a read only value
             return;
         }
-        if ((len + 2) != DLC) {
+        if (modify && ((len + 2) != msg->DLC)) {
             PRINTF("Error: DLC does not match the expected number of bytes!\n");
             prv_send_negative_response(ID); //DLC does not match the expected number of bytes
             return;
         }
-        if (param.dataTypeLength != len) {
+        if (!modify && (msg->DLC > 1)) {
+            //More bytes than needed -> invalid
+            PRINTF("Error: Too many bytes for a read request!\n");
+            prv_send_negative_response(ID);
+            return;
+        }
+        if (modify && param.dataTypeLength != len) {
             PRINTF("Error: Number of transmitted bytes does not match the length of the datatype!\n");
             prv_send_negative_response(ID); //Number of transmitted bytes does not match the length of the datatype
             return;
         }
     }
 
-    if (param.NV) {
+    if (modify) {
+        //Set value
+        prv_update_param(&param, &msg->payload[2]);
+    } else {
+        //Read value
+        prv_get_param(&param);
+    }
+}
+
+static void prv_update_param(param_type_t *param, void *value) {
+    uint8_t ID = param->ID;
+
+    if (param->NV) {
         if (get_config(pdMS_TO_TICKS(1000)) == NULL) {
             PRINTF("Error: Could not lock mutex!\n");
             prv_send_negative_response(ID); //Could not lock mutex
@@ -244,7 +252,7 @@ static void prv_update_param(uint8_t ID, void *value, size_t len, uint8_t DLC) {
     }
 
 
-    if (param.NV) {
+    if (param->NV) {
         release_config();
         if (prv_write_config() != true) { //Update non-volatile memory if the requested parameter has the non-voltatile flag
             prv_send_negative_response(ID); //Error while updating NV data
@@ -253,6 +261,88 @@ static void prv_update_param(uint8_t ID, void *value, size_t len, uint8_t DLC) {
     }
 
     prv_send_posititve_response(ID);
+}
+
+static void prv_get_param(param_type_t *param) {
+    //Only the RW and RO parameters are listed here
+    uint8_t ID = param->ID;
+    uint8_t DLC = 0; //DLC to send
+
+    if (param->NV) {
+        if (get_config(pdMS_TO_TICKS(1000)) == NULL) {
+            PRINTF("Error: Could not lock mutex!\n");
+            prv_send_negative_response(ID); //Could not lock mutex
+            return;
+        }
+    }
+
+    DLC = param->dataTypeLength + 2;
+    uint8_t resp[DLC];
+    resp[0] = ID;
+    resp[1] = param->dataTypeLength;
+
+
+    switch (ID) {
+    case ID_GLOBAL_BALANCING_ENABLE:
+        memcpy(&resp[2], &prvConfig.globalBalancingEnable, param->dataTypeLength);
+        break;
+
+    case ID_BALANCING_THRESHOLD:
+        memcpy(&resp[2], &prvConfig.balancingThreshold, param->dataTypeLength);
+        break;
+
+    case ID_BALANCING_FEEDBACK:
+        //TODO: response with active balancing gates
+        break;
+
+    case ID_AUTOMATIC_SOC_LOOKUP_ENABLE:
+        memcpy(&resp[2], &prvConfig.automaticSocLookupEnable, param->dataTypeLength);
+        break;
+
+    case ID_NUMBER_OF_STACKS:
+        memcpy(&resp[2], &prvConfig.numberOfStacks, param->dataTypeLength);
+        break;
+
+    case ID_LOGGER_ENABLE:
+        memcpy(&resp[2], &prvConfig.loggerEnable, param->dataTypeLength);
+        break;
+
+    case ID_LOGGER_DELETE_OLDEST_FILE:
+        memcpy(&resp[2], &prvConfig.loggerDeleteOldestFile, param->dataTypeLength);
+        break;
+
+    case ID_AUTORESET_ENABLE:
+        memcpy(&resp[2], &prvConfig.autoResetOnPowerCycleEnable, param->dataTypeLength);
+        break;
+
+    case ID_SET_GET_RTC:
+        {
+            uint32_t epoch = rtc_get_unix_time();
+            memcpy(&resp[2], &epoch, param->dataTypeLength);
+        }
+        break;
+
+    case ID_CALIBRATION_STATE:
+        {
+            adc_cal_state_t calState = get_cal_state();
+            memcpy(&resp[2], &calState, param->dataTypeLength);
+        }
+        break;
+
+    case ID_FORMAT_SD_CARD:
+        //TODO: Repond with Card busy flag
+        break;
+
+    default:
+        prv_send_negative_response(ID); //Unknown error
+        return;
+    }
+
+    if (param->NV) {
+        release_config();
+    }
+
+    prv_send_response(resp, DLC);
 }
 
 static bool prv_find_param_type(uint8_t ID, param_type_t *found) {
@@ -278,6 +368,14 @@ static void prv_send_posititve_response(uint8_t ID) {
     msg.ID = CAN_ID_CAL_RESPONSE;
     msg.DLC = 1;
     msg.payload[0] = ID;
+    can_send(CAN_CAL, &msg);
+}
+
+static void prv_send_response(uint8_t *data, uint8_t len) {
+    can_msg_t msg;
+    msg.ID = CAN_ID_CAL_RESPONSE;
+    msg.DLC = len;
+    memcpy(&msg.payload, data, len);
     can_send(CAN_CAL, &msg);
 }
 
