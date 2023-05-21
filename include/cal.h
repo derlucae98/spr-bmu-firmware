@@ -14,6 +14,7 @@
 #include "sd.h"
 #include "config.h"
 #include "can.h"
+#include "rtc.h"
 
 #define CAN_CAL CAN_VEHIC
 

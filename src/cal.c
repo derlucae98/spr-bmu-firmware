@@ -207,7 +207,10 @@ static void prv_update_param(uint8_t ID, void *value, size_t len, uint8_t DLC) {
         break;
 
     case ID_SET_GET_RTC:
-        //TODO call set_rtc();
+        if (rtc_set_date_time_from_epoch(*((uint32_t*)value)) != true) {
+            prv_send_negative_response(ID); //Error setting time
+            return;
+        }
         break;
 
     case ID_CONTROL_CALIBRATION:
