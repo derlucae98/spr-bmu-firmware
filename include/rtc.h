@@ -49,6 +49,12 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define RTC_SPI LPSPI2
 
 /*!
+ * @def TIMEZONE_GMT_PLUS_2
+ * Timezone offset for GMT+2
+ */
+#define TIMEZONE_GMT_PLUS_2 (2 * 3600)
+
+/*!
  * @struct rtc_date_time_t
  * @brief Data type for the date and time
  */
@@ -109,6 +115,13 @@ uint32_t uptime_in_100_ms(void);
  * @return true on success, false on failure
  */
 bool rtc_set_date_time(rtc_date_time_t *dateTime);
+
+/*!
+ * @brief Set the RTC with a unix timestamp.
+ * @param epoch Unix timestamp
+ * @return true on success, false on failure
+ */
+bool rtc_set_date_time_from_epoch(uint32_t epoch);
 
 /*!
  * @brief Return the local date time as string.

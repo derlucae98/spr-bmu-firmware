@@ -123,6 +123,7 @@ static uint32_t prvEpoch = 0;
 
 static void prv_rtc_clkout_handler(BaseType_t *higherPrioTaskWoken);
 static uint32_t prv_make_unix_time(void);
+static rtc_date_time_t prv_make_date_time_from_epoch(uint32_t epoch);
 
 static TimerHandle_t prvTimer;
 static void prv_timer_callback(TimerHandle_t xTimer);
@@ -234,6 +235,18 @@ bool rtc_set_date_time(rtc_date_time_t *dateTime) {
     return true;
 }
 
+bool rtc_set_date_time_from_epoch(uint32_t epoch) {
+    rtc_date_time_t dateTime;
+    dateTime = prv_make_date_time_from_epoch(epoch);
+
+    bool ret = rtc_set_date_time(&dateTime);
+
+    if (ret) {
+        rtc_sync();
+    }
+    return ret;
+}
+
 char* rtc_get_timestamp(void) {
     rtc_sync();
     static char timestamp[26];
@@ -252,9 +265,24 @@ static uint32_t prv_make_unix_time(void) {
     t.tm_hour = prvRtcDateTime.hour;
     t.tm_min = prvRtcDateTime.minute;
     t.tm_sec = prvRtcDateTime.second;
-    t.tm_isdst = -1;
+    t.tm_isdst = -1; //TODO DST flag should be stored in EEPROM
     epoch = mktime(&t);
+    epoch -= TIMEZONE_GMT_PLUS_2;
     return (uint32_t) epoch;
+}
+
+static rtc_date_time_t prv_make_date_time_from_epoch(uint32_t epoch) {
+    struct tm t;
+    volatile rtc_date_time_t dateTime;
+    time_t unix = epoch + TIMEZONE_GMT_PLUS_2;
+    localtime_r(&unix, &t);
+    dateTime.year = t.tm_year + 1900;
+    dateTime.month = t.tm_mon + 1;
+    dateTime.day = t.tm_mday;
+    dateTime.hour = t.tm_hour;
+    dateTime.minute = t.tm_min;
+    dateTime.second = t.tm_sec;
+    return dateTime;
 }
 
 static void prv_rtc_clkout_handler(BaseType_t *higherPrioTaskWoken) {
