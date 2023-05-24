@@ -77,7 +77,7 @@ static bool prv_find_param_type(uint8_t ID, param_type_t *found);
 static void prv_update_param(param_type_t *param, void *value);
 static void prv_get_param(param_type_t *param);
 static void prv_send_negative_response(uint8_t ID);
-static void prv_send_posititve_response(uint8_t ID);
+static void prv_send_positive_response(uint8_t ID);
 static void prv_send_response(uint8_t *data, uint8_t len);
 static BaseType_t prv_config_mutex_take(TickType_t blocktime);
 static void prv_load_config(void);
@@ -263,7 +263,7 @@ static void prv_update_param(param_type_t *param, void *value) {
         }
     }
 
-    prv_send_posititve_response(ID);
+    prv_send_positive_response(ID);
 }
 
 static void prv_get_param(param_type_t *param) {
@@ -366,7 +366,7 @@ static void prv_send_negative_response(uint8_t ID) {
     can_send(CAN_CAL, &msg);
 }
 
-static void prv_send_posititve_response(uint8_t ID) {
+static void prv_send_positive_response(uint8_t ID) {
     can_msg_t msg;
     msg.ID = CAN_ID_CAL_RESPONSE;
     msg.DLC = 1;
