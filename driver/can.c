@@ -43,25 +43,32 @@ void can_init(CAN_Type *can) {
         break;
     }
 
-    can->MCR |= CAN_MCR_MDIS_MASK;
+    can->MCR = CAN_MCR_MDIS_MASK;
     can->CTRL1 &= ~CAN_CTRL1_CLKSRC_MASK;
-    can->MCR &= ~CAN_MCR_MDIS_MASK;
+    can->MCR &= ~CAN_MCR_MDIS_MASK; //Enable module
+
+    can->MCR |= CAN_MCR_FRZ_MASK;
+    can->MCR |= CAN_MCR_HALT_MASK; //Request freeze mode
+
     while (!(can->MCR & CAN_MCR_FRZACK_MASK));
 
     can->CTRL1 = 0x10003; //1 MBit/s
+
+    can->MCR |= CAN_MCR_SRXDIS_MASK | CAN_MCR_MAXMB(0x1F); //Disable self reception
+
+    //Mask for message buffer 14 and 15 is handled separately
+    can->RX14MASK = 0x00000000;
+    can->RX15MASK = 0x00000000;
+    can->RXMGMASK = 0x00000000;
+
     //Initialize message buffer
     for (size_t i = 0; i < ((CAN_MB_REC + CAN_MB_SEND) * CAN_MB_SIZE); i++) {
         can->RAMn[i] = 0; //Clear buffer
     }
 
     for (size_t i = 0; i < CAN_MB_REC; i++) {
-        can->RXIMR[i] = 0x00000000; //Filter Mask 0x00F
+        can->RXIMR[i] = 0xFFFFFFFF; //Filter Mask 0x00F
     }
-    //Mask for message buffer 14 and 15 is handled separately
-    can->RX14MASK = 0x00000000;
-    can->RX15MASK = 0x00000000;
-
-    can->RXMGMASK = 0x00000000;
 
     //Prepare message buffer for reception
     for (size_t i = 0; i < CAN_MB_REC; i++) {
@@ -74,7 +81,7 @@ void can_init(CAN_Type *can) {
 
     can->IMASK1 = 0xFFFF; //Enable interrupt for all rec buffers
 
-    can->MCR = 0x4002001F;
+    can->MCR &= ~CAN_MCR_HALT_MASK;
 
     //Wait for module readiness
     while (can->MCR & CAN_MCR_FRZACK_MASK);
@@ -207,6 +214,7 @@ bool can_send(CAN_Type *can, can_msg_t *msg) {
 
         //No free message buffer found
         //TODO: Request abortion to free a message buffer
+
 
         //Give the mutex back
         switch (canModule) {
