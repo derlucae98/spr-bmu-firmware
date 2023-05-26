@@ -76,7 +76,7 @@ static config_t prvDefaultConfig = {
 static bool prv_find_param_type(uint8_t ID, param_type_t *found);
 static void prv_update_param(param_type_t *param, void *value);
 static void prv_get_param(param_type_t *param);
-static void prv_send_negative_response(uint8_t ID);
+static void prv_send_negative_response(uint8_t ID, uint8_t reason);
 static void prv_send_positive_response(uint8_t ID);
 static void prv_send_response(uint8_t *data, uint8_t len);
 static BaseType_t prv_config_mutex_take(TickType_t blocktime);
@@ -125,28 +125,22 @@ void handle_cal_request(can_msg_t *msg) {
 
     if (!prv_find_param_type(ID & 0x7F, &param)) {
         PRINTF("Error: Requested parameter does not exist!\n");
-        prv_send_negative_response(ID); //Requested parameter does not exist
+        prv_send_negative_response(ID, ERROR_PARAM_DOES_NOT_EXIST); //Requested parameter does not exist
         return;
     } else {
         if (modify && param.modifier == RO) {
             PRINTF("Error: Requested the modification of a read only value!\n");
-            prv_send_negative_response(ID); //Requested the modification of a read only value
+            prv_send_negative_response(ID, ERROR_CANNOT_MODIFY_RO_PARAMETER); //Requested the modification of a read only value
             return;
         }
         if (modify && ((len + 2) != msg->DLC)) {
             PRINTF("Error: DLC does not match the expected number of bytes!\n");
-            prv_send_negative_response(ID); //DLC does not match the expected number of bytes
-            return;
-        }
-        if (!modify && (msg->DLC > 1)) {
-            //More bytes than needed -> invalid
-            PRINTF("Error: Too many bytes for a read request!\n");
-            prv_send_negative_response(ID);
+            prv_send_negative_response(ID, ERROR_DLC_DOES_NOT_MATCH_NUMBER_OF_BYTES); //DLC does not match the expected number of bytes
             return;
         }
         if (modify && param.dataTypeLength != len) {
             PRINTF("Error: Number of transmitted bytes does not match the length of the datatype!\n");
-            prv_send_negative_response(ID); //Number of transmitted bytes does not match the length of the datatype
+            prv_send_negative_response(ID, ERROR_NUMBER_OF_BYTES_DOES_NOT_MATCH_DATATYPE); //Number of transmitted bytes does not match the length of the datatype
             return;
         }
     }
@@ -166,7 +160,7 @@ static void prv_update_param(param_type_t *param, void *value) {
     if (param->NV) {
         if (get_config(pdMS_TO_TICKS(1000)) == NULL) {
             PRINTF("Error: Could not lock mutex!\n");
-            prv_send_negative_response(ID); //Could not lock mutex
+            prv_send_negative_response(ID, ERROR_INTERNAL_ERROR); //Could not lock mutex
             return;
         }
     }
@@ -175,7 +169,7 @@ static void prv_update_param(param_type_t *param, void *value) {
     switch (ID) {
     case ID_LOAD_DEFAULT_CONFIG:
         if (prv_default_config() != true) {
-            prv_send_negative_response(ID); //Error loading default config
+            prv_send_negative_response(ID, ERROR_LOADING_DEFAULT_CONFIG); //Error loading default config
             return;
         }
         break;
@@ -199,7 +193,7 @@ static void prv_update_param(param_type_t *param, void *value) {
         PRINTF("Number of slaves: %u\n", *((uint8_t*)value));
         if (*((uint8_t*)value) > MAX_NUM_OF_SLAVES || *((uint8_t*)value) == 0) {
             release_config();
-            prv_send_negative_response(ID); //More stacks requested as possible
+            prv_send_negative_response(ID, ERROR_NUMBER_OF_STACKS_OUT_OF_RANGE); //More stacks requested as possible
             return;
         }
         prvConfig.numberOfStacks = *((uint8_t*)value);
@@ -219,7 +213,7 @@ static void prv_update_param(param_type_t *param, void *value) {
 
     case ID_SET_GET_RTC:
         if (rtc_set_date_time_from_epoch(*((uint32_t*)value)) != true) {
-            prv_send_negative_response(ID); //Error setting time
+            prv_send_negative_response(ID, ERROR_SETTING_TIME); //Error setting time
             return;
         }
         break;
@@ -232,7 +226,7 @@ static void prv_update_param(param_type_t *param, void *value) {
                 acknowledge_calibration();
             } else {
                 if (channel > 3) {
-                    prv_send_negative_response(ID); //Invalid channel
+                    prv_send_negative_response(ID, ERROR_CALIBRATION_INVALID_CHANNEL); //Invalid channel
                     return;
                 } else {
                     start_calibration(channel - 1);
@@ -250,7 +244,7 @@ static void prv_update_param(param_type_t *param, void *value) {
         break;
 
     default:
-        prv_send_negative_response(ID); //Unknown error
+        prv_send_negative_response(ID, ERROR_INTERNAL_ERROR); //Unknown error
         return;
     }
 
@@ -258,7 +252,7 @@ static void prv_update_param(param_type_t *param, void *value) {
     if (param->NV) {
         release_config();
         if (prv_write_config() != true) { //Update non-volatile memory if the requested parameter has the non-voltatile flag
-            prv_send_negative_response(ID); //Error while updating NV data
+            prv_send_negative_response(ID, ERROR_UPDATING_NV_DATA); //Error while updating NV data
             return;
         }
     }
@@ -274,7 +268,7 @@ static void prv_get_param(param_type_t *param) {
     if (param->NV) {
         if (get_config(pdMS_TO_TICKS(1000)) == NULL) {
             PRINTF("Error: Could not lock mutex!\n");
-            prv_send_negative_response(ID); //Could not lock mutex
+            prv_send_negative_response(ID, ERROR_INTERNAL_ERROR); //Could not lock mutex
             return;
         }
     }
@@ -337,7 +331,7 @@ static void prv_get_param(param_type_t *param) {
         break;
 
     default:
-        prv_send_negative_response(ID); //Unknown error
+        prv_send_negative_response(ID, ERROR_INTERNAL_ERROR); //Unknown error
         return;
     }
 
@@ -358,11 +352,13 @@ static bool prv_find_param_type(uint8_t ID, param_type_t *found) {
     return false;
 }
 
-static void prv_send_negative_response(uint8_t ID) {
+static void prv_send_negative_response(uint8_t ID, uint8_t reason) {
     can_msg_t msg;
     msg.ID = CAN_ID_CAL_RESPONSE;
-    msg.DLC = 1;
+    msg.DLC = 3;
     msg.payload[0] = ID | 0x80;
+    msg.payload[1] = 0x01;
+    msg.payload[2] = reason;
     can_send(CAN_CAL, &msg);
 }
 
