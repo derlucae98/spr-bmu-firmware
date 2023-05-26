@@ -131,11 +131,9 @@ static void uart_rec(char* s) {
     } else if (strcmp(tokens[0], "ack") == 0) {
         value_applied(atof(tokens[1]));
     } else if (strcmp(tokens[0], "format") == 0) {
-        bool ret;
-        ret = sd_format();
-        if (ret) {
-            sd_get_file_list(NULL, NULL);
-        }
+        sd_format();
+        sd_get_file_list(NULL, NULL);
+
     } else if (strcmp(tokens[0], "sync") == 0) {
         rtc_sync();
     }

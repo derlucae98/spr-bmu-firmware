@@ -45,6 +45,13 @@ enum error_codes {
 #define ERROR_CALIBRATION_INVALID_CHANNEL 0x10
 #define ERROR_UPDATING_NV_DATA 0x10
 
+#define CARD_FORMATTING_FINISHED 0x10
+#define CARD_FORMATTING_BUSY 0x11
+#define ERROR_CARD_FORMATTING_FAILED 0x12
+#define ERROR_NO_CARD 0x13
+
+
+
 void init_cal(void);
 
 config_t* get_config(TickType_t blocktime);

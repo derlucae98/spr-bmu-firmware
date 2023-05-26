@@ -8,7 +8,7 @@
 
 #include "cal.h"
 
-#define NUMBER_OF_CONFIG_PARAMS 16
+#define NUMBER_OF_CONFIG_PARAMS 17
 
 static config_t prvConfig;
 static SemaphoreHandle_t prvConfigMutex = NULL;
@@ -30,7 +30,8 @@ enum {
     ID_CALIBRATION_STATE,
     ID_CALIBRATION_VALUE,
     ID_FORMAT_SD_CARD,
-    ID_SAVE_NV
+    ID_SAVE_NV,
+    ID_FORMAT_SD_CARD_STATUS
 };
 
 enum {
@@ -61,8 +62,9 @@ static param_type_t prvParamTypes[NUMBER_OF_CONFIG_PARAMS] = {
         {ID_CONTROL_CALIBRATION,         false, WO, sizeof(uint8_t)},
         {ID_CALIBRATION_STATE,           false, RO, sizeof(uint8_t)},
         {ID_CALIBRATION_VALUE,           false, WO, sizeof(float)},
-        {ID_FORMAT_SD_CARD,              false, RW, sizeof(bool)},
-        {ID_SAVE_NV,                     false, WO, 0}
+        {ID_FORMAT_SD_CARD,              false, WO, 0},
+        {ID_SAVE_NV,                     false, WO, 0},
+        {ID_FORMAT_SD_CARD_STATUS,       false, RO, 1},
 };
 
 static config_t prvDefaultConfig = {
@@ -248,6 +250,39 @@ static void prv_update_param(param_type_t *param, void *value) {
 
     case ID_FORMAT_SD_CARD:
         sd_format();
+        if (sd_format_status() == SD_FORMAT_BUSY) {
+            //Busy right after requesting?
+            //Another request is pending!
+            uint8_t resp[3];
+            resp[0] = ID;
+            resp[1] = 0x01; //Number of following bytes
+            resp[2] = CARD_FORMATTING_BUSY;
+            prv_send_response(resp, sizeof(resp));
+            return;
+        }
+
+        while (sd_format_status() == SD_FORMAT_DONE) {
+            //Wait for the SD task to begin with the process
+            vTaskDelay(pdMS_TO_TICKS(10));
+        }
+        if (sd_format_status() == SD_FORMAT_BUSY) {
+            //Busy after some time?
+            //Request is now processed
+            uint8_t resp[3];
+            resp[0] = ID;
+            resp[1] = 0x01; //Number of following bytes
+            resp[2] = CARD_FORMATTING_BUSY;
+            prv_send_response(resp, sizeof(resp));
+            return;
+        }
+        if (sd_format_status() == SD_FORMAT_NO_CARD) {
+            uint8_t resp[3];
+            resp[0] = ID;
+            resp[1] = 0x01; //Number of following bytes
+            resp[2] = ERROR_NO_CARD;
+            prv_send_response(resp, sizeof(resp));
+            return;
+        }
         break;
 
     case ID_SAVE_NV:
@@ -336,8 +371,29 @@ static void prv_get_param(param_type_t *param) {
         }
         break;
 
-    case ID_FORMAT_SD_CARD:
-        //TODO: Repond with Card busy flag
+    case ID_FORMAT_SD_CARD_STATUS:
+        {
+            uint8_t ret = sd_format_status();
+            uint8_t resp[3];
+            switch (ret) {
+            case SD_FORMAT_DONE:
+                resp[2] = CARD_FORMATTING_FINISHED;
+                break;
+            case SD_FORMAT_BUSY:
+                resp[2] = CARD_FORMATTING_BUSY;
+                break;
+            case SD_FORMAT_ERROR:
+                resp[2] = ERROR_CARD_FORMATTING_FAILED;
+                break;
+            case SD_FORMAT_NO_CARD:
+                resp[2] = ERROR_NO_CARD;
+                break;
+            }
+            resp[0] = ID;
+            resp[1] = 0x01; //Number of following bytes
+            prv_send_response(resp, sizeof(resp)); //Right after formatting has been requested, respond with busy flag
+            return;
+        }
         break;
 
     default:

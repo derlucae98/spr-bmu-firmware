@@ -27,17 +27,20 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "sd.h"
 
-volatile bool prvSdInitialized = true;
+volatile bool prvSdInitialized = false;
 static FATFS FatFs;
 static FIL file;
 static sd_status_hook_t prvSdInitHook = NULL;
 static bool prvDeleteOldest = false;
+static uint8_t prvFormatStatus = 0;
+static bool prvFormatCard = false;
 
 static void prv_sd_init_task(void *p);
 static bool prv_mount(void);
 static bool prv_create_file(void);
 static bool prv_get_number_of_files(uint8_t *numberOfFiles);
 static bool prv_get_oldest_file(FILINFO *oldest);
+static void prv_sd_format();
 
 void sd_init(sd_status_hook_t sdInitHook) {
     prvSdInitHook = sdInitHook;
@@ -134,12 +137,29 @@ bool sd_delete_file(FILINFO file) {
     return true;
 }
 
-bool sd_format(void) {
+void sd_format(void) {
+    if (prvFormatStatus != SD_FORMAT_BUSY) {
+        //Do not request formatting if it is already in progress!
+        prvFormatStatus = SD_FORMAT_DONE; //Initialize with default value
+        prvFormatCard = true;
+    }
+}
+
+uint8_t sd_format_status(void) {
+    return prvFormatStatus;
+}
+
+static void prv_sd_format() {
+    if (prvFormatStatus == SD_FORMAT_BUSY) {
+        return; //If formatting already in process, stop
+    }
+
     FRESULT res;
     static BYTE work[4 * FF_MAX_SS];
     TickType_t start;
     TickType_t finish;
 
+    prvFormatStatus = SD_FORMAT_BUSY;
     PRINTF("Formatting SD card...\n");
     start = xTaskGetTickCount();
     f_unmount("");
@@ -148,14 +168,16 @@ bool sd_format(void) {
 
     if (res != FR_OK) {
         PRINTF("Formatting SD card failed!\n");
-        return false;
+        prvFormatStatus = SD_FORMAT_ERROR;
+        return;
     }
 
     prv_mount();
     finish = xTaskGetTickCount();
 
     PRINTF("Done! Took %lu seconds\n", (finish - start) / 1000);
-    return true;
+    prvFormatStatus = SD_FORMAT_DONE;
+    return;
 }
 
 static bool prv_mount(void) {
@@ -333,6 +355,15 @@ static void prv_sd_init_task(void *p) {
 
             if (prvSdInitHook != NULL) {
                 (prvSdInitHook)(prvSdInitialized, NULL);
+            }
+        }
+
+        if (prvFormatCard) {
+            prvFormatCard = false;
+            if (!prvSdInitialized) {
+                prvFormatStatus = SD_FORMAT_NO_CARD;
+            } else {
+                prv_sd_format();
             }
         }
 

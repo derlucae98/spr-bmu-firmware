@@ -39,6 +39,13 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "rtc.h"
 #include "cal.h"
 
+enum {
+    SD_FORMAT_DONE,
+    SD_FORMAT_BUSY,
+    SD_FORMAT_ERROR,
+    SD_FORMAT_NO_CARD
+};
+
 /*!
  * @def MAX_NUMBER_OF_LOGFILES
  * Defines the maximum number of logfiles that can be stored on the SD card.
@@ -86,11 +93,17 @@ bool sd_get_file_list(FILINFO *entries, uint8_t *numberOfEntries);
 bool sd_delete_file(FILINFO file);
 
 /*!
- * @brief Format the SD card.
+ * @brief Request formatting of SD card.
  * This deletes all files on the card!
  * Depending on the size of the card, this can take several minutes.
+ * Call sd_format_status() for the current status of the process.
  */
-bool sd_format(void);
+void sd_format(void);
+
+/*!
+ * @brief Request the current status of the SD formatting process.
+ */
+uint8_t sd_format_status(void);
 
 /*!
  * @brief Return the initialization status of the SD card.
