@@ -8,7 +8,7 @@
 
 #include "cal.h"
 
-#define NUMBER_OF_CONFIG_PARAMS 15
+#define NUMBER_OF_CONFIG_PARAMS 16
 
 static config_t prvConfig;
 static SemaphoreHandle_t prvConfigMutex = NULL;
@@ -29,7 +29,8 @@ enum {
     ID_CONTROL_CALIBRATION,
     ID_CALIBRATION_STATE,
     ID_CALIBRATION_VALUE,
-    ID_FORMAT_SD_CARD
+    ID_FORMAT_SD_CARD,
+    ID_SAVE_NV
 };
 
 enum {
@@ -60,7 +61,8 @@ static param_type_t prvParamTypes[NUMBER_OF_CONFIG_PARAMS] = {
         {ID_CONTROL_CALIBRATION,         false, WO, sizeof(uint8_t)},
         {ID_CALIBRATION_STATE,           false, RO, sizeof(uint8_t)},
         {ID_CALIBRATION_VALUE,           false, WO, sizeof(float)},
-        {ID_FORMAT_SD_CARD,              false, RW, sizeof(bool)}
+        {ID_FORMAT_SD_CARD,              false, RW, sizeof(bool)},
+        {ID_SAVE_NV,                     false, WO, 0}
 };
 
 static config_t prvDefaultConfig = {
@@ -141,6 +143,11 @@ void handle_cal_request(can_msg_t *msg) {
         if (modify && param.dataTypeLength != len) {
             PRINTF("Error: Number of transmitted bytes does not match the length of the datatype!\n");
             prv_send_negative_response(ID, ERROR_NUMBER_OF_BYTES_DOES_NOT_MATCH_DATATYPE); //Number of transmitted bytes does not match the length of the datatype
+            return;
+        }
+        if (!modify && param.modifier == WO) {
+            PRINTF("Cannot read a write-only parameter!\n");
+            prv_send_negative_response(ID, ERROR_CANNOT_READ_WO_PARAMETER);
             return;
         }
     }
@@ -243,6 +250,13 @@ static void prv_update_param(param_type_t *param, void *value) {
         sd_format();
         break;
 
+    case ID_SAVE_NV:
+        if (prv_write_config() != true) { //Update non-volatile memory if the requested parameter has the non-voltatile flag
+            prv_send_negative_response(ID, ERROR_UPDATING_NV_DATA); //Error while updating NV data
+            return;
+        }
+        break;
+
     default:
         prv_send_negative_response(ID, ERROR_INTERNAL_ERROR); //Unknown error
         return;
@@ -251,10 +265,6 @@ static void prv_update_param(param_type_t *param, void *value) {
 
     if (param->NV) {
         release_config();
-        if (prv_write_config() != true) { //Update non-volatile memory if the requested parameter has the non-voltatile flag
-            prv_send_negative_response(ID, ERROR_UPDATING_NV_DATA); //Error while updating NV data
-            return;
-        }
     }
 
     prv_send_positive_response(ID);
