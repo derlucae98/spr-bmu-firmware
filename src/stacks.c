@@ -36,6 +36,8 @@ static stacks_data_t prvStacksData;
 static uint8_t prvBalancingGates[MAX_NUM_OF_SLAVES][MAX_NUM_OF_CELLS];
 static bool prvBalanceEnable = false;
 static uint16_t prvBalanceThreshold;
+static TaskHandle_t prvBalanceTaskHandle = NULL;
+static bool prvCharging = false;
 
 
 static BaseType_t prv_balancingGatesMutex_take(TickType_t blocktime);
@@ -97,7 +99,11 @@ void init_stacks(void) {
     }
 
     xTaskCreate(stacks_worker_task, "LTC", LTC_WORKER_TASK_STACK, NULL, LTC_WORKER_TASK_PRIO, NULL);
-    xTaskCreate(balancing_task, "balance", BALANCING_TASK_STACK, NULL, BALANCING_TASK_PRIO, NULL);
+    xTaskCreate(balancing_task, "balance", BALANCING_TASK_STACK, NULL, BALANCING_TASK_PRIO, &prvBalanceTaskHandle);
+
+    if (!prvCharging) {
+        vTaskSuspend(prvBalanceTaskHandle); //Balancing must only be activated during charging TODO: Implement a function to detect charging and resuming task
+    }
 }
 
 void stacks_worker_task(void *p) {
