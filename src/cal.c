@@ -260,7 +260,6 @@ static void prv_update_param(param_type_t *param, void *value) {
             prv_send_response(resp, sizeof(resp));
             return;
         }
-
         while (sd_format_status() == SD_FORMAT_DONE) {
             //Wait for the SD task to begin with the process
             vTaskDelay(pdMS_TO_TICKS(10));
@@ -391,7 +390,7 @@ static void prv_get_param(param_type_t *param) {
             }
             resp[0] = ID;
             resp[1] = 0x01; //Number of following bytes
-            prv_send_response(resp, sizeof(resp)); //Right after formatting has been requested, respond with busy flag
+            prv_send_response(resp, sizeof(resp));
             return;
         }
         break;
