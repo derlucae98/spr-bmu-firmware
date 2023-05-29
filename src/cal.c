@@ -430,8 +430,9 @@ static void prv_send_negative_response(uint8_t ID, uint8_t reason) {
 static void prv_send_positive_response(uint8_t ID) {
     can_msg_t msg;
     msg.ID = CAN_ID_CAL_RESPONSE;
-    msg.DLC = 1;
+    msg.DLC = 2;
     msg.payload[0] = ID;
+    msg.payload[1] = 0;
     can_send(CAN_CAL, &msg);
 }
 
