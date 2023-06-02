@@ -137,12 +137,12 @@ void handle_cal_request(can_msg_t *msg) {
             prv_send_negative_response(ID, ERROR_CANNOT_MODIFY_RO_PARAMETER); //Requested the modification of a read only value
             return;
         }
-        if (modify && ((len + 2) != msg->DLC)) {
+        if ((len + 2) != msg->DLC) {
             PRINTF("Error: DLC does not match the expected number of bytes!\n");
             prv_send_negative_response(ID, ERROR_DLC_DOES_NOT_MATCH_NUMBER_OF_BYTES); //DLC does not match the expected number of bytes
             return;
         }
-        if (modify && param.dataTypeLength != len) {
+        if (param.dataTypeLength != len) {
             PRINTF("Error: Number of transmitted bytes does not match the length of the datatype!\n");
             prv_send_negative_response(ID, ERROR_NUMBER_OF_BYTES_DOES_NOT_MATCH_DATATYPE); //Number of transmitted bytes does not match the length of the datatype
             return;
@@ -152,6 +152,7 @@ void handle_cal_request(can_msg_t *msg) {
             prv_send_negative_response(ID, ERROR_CANNOT_READ_WO_PARAMETER);
             return;
         }
+
     }
 
     if (modify) {
