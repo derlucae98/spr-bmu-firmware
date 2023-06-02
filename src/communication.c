@@ -334,6 +334,12 @@ static void can_rec_task(void *p) {
                 case CAN_ID_CAL_REQUEST:
                     handle_cal_request(&msg);
                     break;
+                case CAN_ID_ISOTP_DOWN:
+                    isotp_on_recv(&msg);
+                    break;
+                case CAN_ID_TEST:
+                    isotp_send_test();
+                    break;
                 default:
                     break;
             }

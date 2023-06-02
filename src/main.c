@@ -17,6 +17,7 @@
 #include "logger.h"
 #include "communication.h"
 #include "cal.h"
+#include "isotp_handler.h"
 
 #include <alloca.h>
 
@@ -193,6 +194,7 @@ void init_task(void *p) {
         init_rtc(logger_tick_hook);
         sd_init(logger_control);
         logger_init();
+        init_isotp();
         vTaskDelete(NULL);
     }
 }

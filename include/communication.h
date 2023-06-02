@@ -20,12 +20,16 @@
 #include "stacks.h"
 #include "adc.h"
 #include "cal.h"
+#include "isotp.h"
 
 
 
 enum {
     CAN_ID_CAL_REQUEST  = 0x010,
-    CAN_ID_CAL_RESPONSE = 0x011
+    CAN_ID_CAL_RESPONSE = 0x011,
+    CAN_ID_ISOTP_UP     = 0x012,
+    CAN_ID_ISOTP_DOWN   = 0x013,
+    CAN_ID_TEST         = 0x014
 };
 
 void init_comm(void);
