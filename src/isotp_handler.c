@@ -20,7 +20,7 @@ void init_isotp(void) {
     isotp_init_link(&prvIsotpLink, CAN_ID_ISOTP_UP,
             prvIsotpSendBuffer, sizeof(prvIsotpSendBuffer),
             prvIsotpRecvBuffer, sizeof(prvIsotpRecvBuffer));
-    xTaskCreate(isotp_task, "isoto", ISOTP_TASK_STACK, NULL, ISOTP_TASK_PRIO, NULL);
+    xTaskCreate(isotp_task, "isotp", ISOTP_TASK_STACK, NULL, ISOTP_TASK_PRIO, NULL);
 }
 
 void isotp_on_recv(can_msg_t *msg) {
@@ -40,7 +40,7 @@ void isotp_send_test(void) {
 static void isotp_task(void* p) {
     (void) p;
     TickType_t lastWakeTime = xTaskGetTickCount();
-    const TickType_t period = pdMS_TO_TICKS(10);
+    const TickType_t period = pdMS_TO_TICKS(5);
 
     while (1) {
 
@@ -49,6 +49,10 @@ static void isotp_task(void* p) {
         int ret = isotp_receive(&prvIsotpLink, prvPayload, ISOTP_BUFFFERSIZE, &recSize);
         if (ISOTP_RET_OK == ret) {
             PRINTF("ISOTP: New data available!\n");
+            for (size_t i = 0; i < recSize; i++) {
+                PRINTF("[%02X]", prvPayload[i]);
+            }
+            PRINTF("\n");
         }
 
         vTaskDelayUntil(&lastWakeTime, period);
@@ -59,7 +63,7 @@ int  isotp_user_send_can(const uint32_t arbitration_id,
                          const uint8_t* data, const uint8_t size) {
     can_msg_t msg;
     msg.ID = arbitration_id;
-    memcpy(&msg.ID, data, size);
+    memcpy(&msg.payload, data, size);
     msg.DLC = size;
     can_send(CAN_ISOTP, &msg);
     return ISOTP_RET_OK;

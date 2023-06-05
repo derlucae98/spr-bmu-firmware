@@ -57,7 +57,7 @@ typedef struct {
 } can_data_t;
 
 void init_comm(void) {
-    xTaskCreate(can_send_task, "CAN", 1500, NULL, 3, NULL);
+//    xTaskCreate(can_send_task, "CAN", 1500, NULL, 3, NULL);
     xTaskCreate(can_rec_task, "CAN rec", 1500, NULL, 3, NULL);
 }
 
