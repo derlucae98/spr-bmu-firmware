@@ -21,9 +21,18 @@
 #include "isotp_defines.h"
 #include "isotp.h"
 #include "communication.h"
+#include "cal.h"
+
+typedef enum {
+    ISOTP_CAL_REQUEST,
+    ISOTP_CAL_RESPONSE,
+    ISOTP_LOGFILE, //Transmitted data is a logfile
+    ISOTP_BALANCING //Transmitted data is currently active balancing gates
+} isotp_transmission_type_t;
 
 void init_isotp(void);
 void isotp_on_recv(can_msg_t *msg);
+void isotp_send_static(void *data, size_t len); //Use the default IsoTP link
 void isotp_send_test(void);
 
 

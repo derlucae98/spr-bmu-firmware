@@ -27,6 +27,15 @@ void isotp_on_recv(can_msg_t *msg) {
     isotp_on_can_message(&prvIsotpLink, msg->payload, msg->DLC);
 }
 
+void isotp_send_static(void *data, size_t len) {
+    int ret = isotp_send(&prvIsotpLink, data, len);
+    if (ISOTP_RET_OK == ret) {
+        PRINTF("ISOTP: Send ok.\n");
+    } else {
+        PRINTF("ISOTP: Send failed!\n");
+    }
+}
+
 void isotp_send_test(void) {
     memset(&prvPayload, 0x5A, sizeof(prvPayload));
     int ret = isotp_send(&prvIsotpLink, prvPayload, ISOTP_BUFFFERSIZE);
@@ -53,14 +62,21 @@ static void isotp_task(void* p) {
                 PRINTF("[%02X]", prvPayload[i]);
             }
             PRINTF("\n");
+
+            switch (prvPayload[0]) {
+            case ISOTP_CAL_REQUEST:
+                handle_cal_request(prvPayload, recSize);
+                break;
+            }
+
         }
 
         vTaskDelayUntil(&lastWakeTime, period);
     }
 }
 
-int  isotp_user_send_can(const uint32_t arbitration_id,
-                         const uint8_t* data, const uint8_t size) {
+int isotp_user_send_can(const uint32_t arbitration_id,
+                        const uint8_t* data, const uint8_t size) {
     can_msg_t msg;
     msg.ID = arbitration_id;
     memcpy(&msg.payload, data, size);

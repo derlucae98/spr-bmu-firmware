@@ -16,11 +16,12 @@
 #include "can.h"
 #include "rtc.h"
 #include "adc_cal.h"
+#include "isotp.h"
 
 #define CAN_CAL CAN_VEHIC
 
 
-typedef struct {
+typedef struct __attribute__((packed)){
     bool globalBalancingEnable;
     uint16_t balancingThreshold;
     bool automaticSocLookupEnable;
@@ -28,6 +29,7 @@ typedef struct {
     bool loggerEnable;
     bool loggerDeleteOldestFile;
     bool autoResetOnPowerCycleEnable;
+    uint16_t crc16;
 } config_t;
 
 enum error_codes {
@@ -36,7 +38,9 @@ enum error_codes {
     ERROR_DLC_DOES_NOT_MATCH_NUMBER_OF_BYTES,
     ERROR_NUMBER_OF_BYTES_DOES_NOT_MATCH_DATATYPE,
     ERROR_INTERNAL_ERROR,
-    ERROR_CANNOT_READ_WO_PARAMETER
+    ERROR_CANNOT_READ_WO_PARAMETER,
+    ERROR_ISOTOP_ERROR,
+    ERROR_CRC_ERROR
 };
 
 #define ERROR_LOADING_DEFAULT_CONFIG 0x10
@@ -57,10 +61,11 @@ void init_cal(void);
 config_t* get_config(TickType_t blocktime);
 
 
+
 bool copy_config(config_t *dest, TickType_t blocktime);
 
 void release_config(void);
-void handle_cal_request(can_msg_t *msg);
+void handle_cal_request(uint8_t *data, size_t len);
 
 
 #endif /* CAL_H_ */
