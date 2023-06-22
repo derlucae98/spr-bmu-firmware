@@ -27,7 +27,6 @@ typedef enum {
     ISOTP_CAL_REQUEST,
     ISOTP_CAL_RESPONSE,
     ISOTP_LOGFILE, //Transmitted data is a logfile
-    ISOTP_BALANCING //Transmitted data is currently active balancing gates
 } isotp_transmission_type_t;
 
 void init_isotp(void);

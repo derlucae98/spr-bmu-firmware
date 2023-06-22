@@ -28,7 +28,9 @@ void isotp_on_recv(can_msg_t *msg) {
 }
 
 void isotp_send_static(void *data, size_t len) {
-    int ret = isotp_send(&prvIsotpLink, data, len);
+    vTaskDelay(pdMS_TO_TICKS(20));
+    int ret = 0;
+    ret = isotp_send(&prvIsotpLink, data, len);
     if (ISOTP_RET_OK == ret) {
         PRINTF("ISOTP: Send ok.\n");
     } else {

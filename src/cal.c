@@ -20,7 +20,7 @@ enum {
     ID_UPDATE_CONFIG,
     ID_BALANCING_FEEDBACK,
     ID_SOC_LOOKUP,
-    ID_SET_GET_RTC,
+    ID_SET_RTC,
     ID_CONTROL_CALIBRATION,
     ID_CALIBRATION_STATE,
     ID_CALIBRATION_VALUE,
@@ -46,7 +46,7 @@ static param_type_t prvParamTypes[NUMBER_OF_CONFIG_PARAMS] = {
         {ID_UPDATE_CONFIG,               WO, sizeof(config_t)},
         {ID_BALANCING_FEEDBACK,          RO, sizeof(uint16_t)},
         {ID_SOC_LOOKUP,                  WO, 0},
-        {ID_SET_GET_RTC,                 RW, sizeof(uint32_t)},
+        {ID_SET_RTC,                 RW, sizeof(uint32_t)},
         {ID_CONTROL_CALIBRATION,         WO, sizeof(uint8_t)},
         {ID_CALIBRATION_STATE,           RO, sizeof(uint8_t)},
         {ID_CALIBRATION_VALUE,           WO, sizeof(float)},
@@ -178,7 +178,7 @@ static void prv_update_param(param_type_t *param, void *value) {
         //TODO call soc_lookup();
         break;
 
-    case ID_SET_GET_RTC:
+    case ID_SET_RTC:
         if (rtc_set_date_time_from_epoch(*((uint32_t*)value)) != true) {
             prv_send_negative_response(ID, ERROR_SETTING_TIME); //Error setting time
             return;
@@ -270,7 +270,7 @@ static void prv_get_param(param_type_t *param) {
         //TODO: respond with active balancing gates
         break;
 
-    case ID_SET_GET_RTC:
+    case ID_SET_RTC:
         {
             uint32_t epoch = rtc_get_unix_time();
             memcpy(&resp[2], &epoch, param->dataTypeLength);
@@ -377,10 +377,10 @@ static void prv_new_config(config_t *config) {
 }
 
 static void prv_send_config(void) {
-    uint8_t resp[sizeof(prvConfig) + 1];
+    uint8_t resp[sizeof(prvConfig) + 2];
     resp[0] = ID_QUERY_CONFIG;
     resp[1] = sizeof(prvConfig); //Number of following bytes
-    memcpy(resp + 1, &prvConfig, sizeof(prvConfig));
+    memcpy(resp + 2, &prvConfig, sizeof(prvConfig));
     prv_send_response(resp, sizeof(resp));
 }
 
