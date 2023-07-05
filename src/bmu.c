@@ -104,7 +104,7 @@ static void can_send_task(void *p) {
 
             canData.minTemp = stacksData->minTemperature;
             canData.minTempValid = stacksData->temperatureValid;
-            canData.maxTemp = stacksData->maxTemperature;
+            canData.maxTemp = stacksData->avgTemperature;
             canData.maxTempValid = stacksData->temperatureValid;
             canData.avgTemp = stacksData->avgTemperature;
             canData.avgTempValid = stacksData->temperatureValid;

@@ -116,8 +116,8 @@ void stacks_worker_task(void *p) {
             }
         }
 
-        if (errorCounter <= 5) {
-            //Battery has one faulty temperature sensor. Ignore up to five sensor faults. Faulty sensors are ignored in the statistics
+        if (errorCounter <= 1) {
+            //Battery has one faulty temperature sensor.
             for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
                 for (size_t tempsens = 0; tempsens < MAXTEMPSENS; tempsens++) {
                     stacksDataLocal.temperatureStatus[slave][tempsens] = NOERROR;
