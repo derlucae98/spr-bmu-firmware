@@ -55,7 +55,7 @@
 #define PERIPH_SPI_SLOW LPSPI_PRESC_16
 #define PERIPH_SPI_FAST LPSPI_PRESC_1
 
-#define LOGDATA_RAW_SIZE 700 //Size of the base64 encoded string in bytes
+
 
 /*!
  * @def CAL_DATA_EEPROM_PAGE
@@ -71,6 +71,7 @@
 
 #define ADC_VOLTAGE_CONVERSION_RATIO 301.0f
 #define ADC_CURRENT_CONVERSION_RATIO 41.6667f //I = Us * k/R; k = current ratio (1000), R = shunt resistance (24R)
+
 
 
 #define CAN_VEHIC CAN0

@@ -21,6 +21,7 @@
 #include "cal.h"
 
 
+
 void logger_init(void);
 void logger_control(bool ready, FIL *file);
 bool logger_is_active(void);

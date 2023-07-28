@@ -7,18 +7,18 @@ static bool _terminated = false;
 
 static void prv_logger_prepare_task(void *p);
 static void prv_logger_write_task(void *p);
-static void prv_write_header(void);
 static TaskHandle_t prvLoggerPrepareHandle = NULL;
 static TaskHandle_t prvLoggerWriteHandle = NULL;
 static QueueHandle_t prvLoggingQ = NULL;
 static uint32_t prvUptime;
 static bool prvSdInitialized = false;
-static bool prvHeaderWritten = false;
 
 #define NUMBER_OF_Q_ITEMS 10
 
+#define START_TOKEN 0xF5A5
 
 typedef struct {
+    uint16_t start; //Token to recognize the start of a block of data. Value does not match a valid cell voltage to be distinguishable from following bytes.
     uint32_t msgCnt; //Relative timestamp in 100 ms intervals
     uint16_t cellVoltage[MAX_NUM_OF_SLAVES][MAX_NUM_OF_CELLS];
     uint16_t temperature[MAX_NUM_OF_SLAVES][MAX_NUM_OF_TEMPSENS];
@@ -34,25 +34,23 @@ typedef struct {
     uint16_t minTemperature;
     uint16_t maxTemperature;
     uint16_t avgTemperature;
-    bool cellTemperatureValid;
+    bool temperatureValid;
     uint32_t stateMachineError;
     uint8_t stateMachineState;
     uint16_t minSoc;
     uint16_t maxSoc;
     bool socValid;
+    uint16_t isoResistance;
+    bool isoResistanceValid;
     uint16_t crc16;
-} __attribute__((packed)) logging_data_t;
+} __attribute__((packed)) logging_data_t; //481 bytes
 
-typedef struct {
-    char enc[LOGDATA_RAW_SIZE];
-    size_t len;
-} encoded_data_t;
 
 static FIL *prvFile = NULL;
 
 
 void logger_init(void) {
-    prvLoggingQ = xQueueCreate(NUMBER_OF_Q_ITEMS, sizeof(encoded_data_t));
+    prvLoggingQ = xQueueCreate(NUMBER_OF_Q_ITEMS, sizeof(logging_data_t));
     configASSERT(prvLoggingQ);
     config_t* config  = get_config(pdMS_TO_TICKS(500));
     if (config != NULL) {
@@ -65,11 +63,7 @@ void logger_init(void) {
 
 void logger_control(bool ready, FIL *file) {
     prvSdInitialized = ready;
-    if (file != prvFile) {
-        //New file. Write CSV header.
-        prvFile = file;
-        prvHeaderWritten = false;
-    }
+    prvFile = file;
 }
 
 bool logger_is_active(void) {
@@ -101,111 +95,70 @@ void prv_logger_prepare_task(void *p) {
 
     while (1) {
         if (ulTaskNotifyTake(pdFALSE, portMAX_DELAY)) {
+
             if (prvFile == NULL) {
                 continue;
             }
 
-            if (prvHeaderWritten) {
-                if (prvLoggerActive && prvSdInitialized) {
-                    copy_stacks_data(&stacksData, portMAX_DELAY);
-                    copy_adc_data(&adcData, portMAX_DELAY);
-                    static char buffer[300];
-                    memset(buffer, 0xFF, sizeof(buffer)); //Clear buffer
-                    uint16_t offset = 0;
+            if (prvLoggerActive && prvSdInitialized) {
+                copy_stacks_data(&stacksData, portMAX_DELAY);
+                copy_adc_data(&adcData, portMAX_DELAY);
 
+                loggingData.start              = START_TOKEN;
+                loggingData.msgCnt             = prvUptime;
+                memcpy(loggingData.cellVoltage, stacksData.cellVoltage, sizeof(loggingData.cellVoltage));
+                memcpy(loggingData.temperature, stacksData.temperature, sizeof(loggingData.temperature));
+                loggingData.current            = adcData.current;
+                loggingData.currentValid       = adcData.currentValid;
+                loggingData.batteryVoltage     = adcData.batteryVoltage;
+                loggingData.dcLinkVoltage      = adcData.dcLinkVoltage;
+                loggingData.voltageValid       = adcData.voltageValid;
+                loggingData.minCellVolt        = stacksData.minCellVolt;
+                loggingData.maxCellVolt        = stacksData.maxCellVolt;
+                loggingData.avgCellVolt        = stacksData.avgCellVolt;
+                loggingData.cellVoltageValid   = stacksData.voltageValid;
+                loggingData.minTemperature     = stacksData.minTemperature;
+                loggingData.maxTemperature     = stacksData.maxTemperature;
+                loggingData.avgTemperature     = stacksData.avgTemperature;
+                loggingData.temperatureValid   = stacksData.temperatureValid;
+                loggingData.stateMachineError  = get_contactor_error();
+                loggingData.stateMachineState  = get_contactor_SM_state();
+                loggingData.minSoc             = 0; //TODO: Add SOC to logs
+                loggingData.maxSoc             = 0; //TODO: Add SOC to logs
+                loggingData.socValid           = false; //TODO: Add SOC to logs
+                loggingData.isoResistance      = 0; //TODO: Add Iso Resistance to logs
+                loggingData.isoResistanceValid = false; //TODO: Add Iso Resistance to logs
+                loggingData.crc16              = eeprom_get_crc16((uint8_t*)&loggingData, sizeof(logging_data_t) - sizeof(uint16_t));
 
+                xQueueSendToBack(prvLoggingQ, &loggingData, portMAX_DELAY);
 
-                    snprintf(buffer, 8, "%06lu;", prvUptime);
-                    offset += 7; // Length - 1, following string overrides termination character to build one long string
-
-                    //Cell voltage 1 to 12
-                    for (size_t cell = 0; cell < 12; cell++) {
-                        snprintf(buffer + offset, 8, "%6.4f;", (float)(stacksData.cellVoltage[1][cell] * 0.0001f));
-                        offset += 7;
-                    }
-
-                    //Current
-                    snprintf(buffer + offset, 6, "%04.1f;", adcData.current);
-                    offset += 5;
-
-                    //Temperature 1 to 12
-                    for (size_t sensor = 0; sensor < 6; sensor++) {
-                        snprintf(buffer + offset, 6, "%04.1f;", (float)(stacksData.temperature[0][sensor] * 0.1f));
-                        offset += 5;
-                    }
-
-                    //Temperature 13 to 24
-                    for (size_t sensor = 0; sensor < 6; sensor++) {
-                        snprintf(buffer + offset, 6, "%04.1f;", (float)(stacksData.temperature[1][sensor] * 0.1f));
-                        offset += 5;
-                    }
-
-                    snprintf(buffer + offset - 1, 3, "\r\n");
-
-                    encoded_data_t data;
-                    strcpy(data.enc, buffer);
-                    data.len = strlen(buffer) + 1;
-
-                    xQueueSendToBack(prvLoggingQ, &data, portMAX_DELAY);
-
-                }
-            } else {
-                prv_write_header();
-                prvHeaderWritten = true;
             }
-
-//            if (_terminateRequest) {
-//                if (!sdInitPending) {
-//                    f_close(prvFile);
-//                }
-//                _terminated = true;
-//                prvLoggerActive = false;
-//                vTaskSuspend(NULL);
-//            }
-
         }
     }
 }
 
 void prv_logger_write_task(void *p) {
     (void) p;
-    static encoded_data_t buf;
-    static char enc[NUMBER_OF_Q_ITEMS * LOGDATA_RAW_SIZE];
-    static uint32_t len = 0;
-    static uint8_t index = 0;
+    uint8_t index = 0;
+    static logging_data_t element;
+    static logging_data_t buf[NUMBER_OF_Q_ITEMS];
 
     while (1) {
-        if (xQueueReceive(prvLoggingQ, &buf, portMAX_DELAY)) {
-            strcat(enc, &buf.enc[0]);
-            len += buf.len;
+        if (xQueueReceive(prvLoggingQ, &element, portMAX_DELAY)) {
+            buf[index] = element;
             index++;
             if (index >= NUMBER_OF_Q_ITEMS) {
-//                PRINTF("Writing data to file...\n");
+                PRINTF("Writing data to file...\n");
                 UINT bw;
                 volatile TickType_t start = xTaskGetTickCount();
-                f_write(prvFile, (void*)&enc[0], len, &bw);
+                f_write(prvFile, (void*)&buf, NUMBER_OF_Q_ITEMS * sizeof(logging_data_t), &bw);
                 f_sync(prvFile);
                 volatile TickType_t end = xTaskGetTickCount();
-//                PRINTF("Logger: %lu bytes written! Took %lu ms\n", bw, end - start);
+                PRINTF("Logger: %lu bytes written! Took %lu ms\n", bw, end - start);
                 index = 0;
-                len = 0;
-                memset(enc, 0, sizeof(enc));
             }
         }
     }
-}
-
-static void prv_write_header(void) {
-    static const char *header = "time;Cell 1;Cell 2;Cell 3;Cell 4;Cell 5;Cell 6;Cell 7;Cell 8;"
-                                        "Cell 9;Cell 10;Cell 11;Cell 12;Current;Temp 1;Temp 2;"
-                                        "Temp 3;Temp 4;Temp 5;Temp 6;Temp 7;Temp 8;Temp 9;"
-                                        "Temp 10;Temp 11;Temp 12\r\n";
-
-        UINT bw;
-        PRINTF("Writing header...\n");
-        f_write(prvFile, header, strlen(header), &bw);
-        f_sync(prvFile);
-        PRINTF("Done!, %u bytes written!\n", bw);
 }
 
 
