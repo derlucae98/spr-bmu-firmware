@@ -21,12 +21,12 @@
 #include "cal.h"
 
 
-
 void logger_init(void);
 void logger_control(bool ready, FIL *file);
 bool logger_is_active(void);
 void logger_request_termination(void);
 bool logger_terminated(void);
 void logger_tick_hook(uint32_t uptime);
+
 
 #endif /* LOGGER_H_ */

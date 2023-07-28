@@ -8,7 +8,7 @@
 
 #include "cal.h"
 
-#define NUMBER_OF_CONFIG_PARAMS 11
+#define NUMBER_OF_CONFIG_PARAMS 12
 
 static config_t prvConfig;
 static SemaphoreHandle_t prvConfigMutex = NULL;
@@ -25,7 +25,8 @@ enum {
     ID_CALIBRATION_STATE,
     ID_CALIBRATION_VALUE,
     ID_FORMAT_SD_CARD,
-    ID_FORMAT_SD_CARD_STATUS
+    ID_FORMAT_SD_CARD_STATUS,
+    ID_QUERY_LOGFILE_INFO
 };
 
 enum {
@@ -52,6 +53,7 @@ static param_type_t prvParamTypes[NUMBER_OF_CONFIG_PARAMS] = {
         {ID_CALIBRATION_VALUE,           WO, sizeof(float)},
         {ID_FORMAT_SD_CARD,              WO, 0},
         {ID_FORMAT_SD_CARD_STATUS,       RO, 1},
+        {ID_QUERY_LOGFILE_INFO,          RO, 0}
 };
 
 static config_t prvDefaultConfig = {
@@ -70,7 +72,7 @@ static void prv_update_param(param_type_t *param, void *value);
 static void prv_get_param(param_type_t *param);
 static void prv_send_negative_response(uint8_t ID, uint8_t reason);
 static void prv_send_positive_response(uint8_t ID);
-static void prv_send_response(uint8_t *data, uint8_t len);
+static void prv_send_response(uint8_t *data, size_t len);
 static BaseType_t prv_config_mutex_take(TickType_t blocktime);
 static void prv_load_config(void);
 static bool prv_write_config(void);
@@ -78,6 +80,7 @@ static bool prv_default_config(void);
 static void prv_print_config(void);
 static void prv_new_config(config_t *config);
 static void prv_send_config(void);
+static bool prv_format_file_list(FILINFO *entries, uint8_t numberOfEntries, uint8_t *buffer);
 
 
 void init_cal(void) {
@@ -309,6 +312,29 @@ static void prv_get_param(param_type_t *param) {
         }
         break;
 
+    case ID_QUERY_LOGFILE_INFO: {
+        FILINFO *entries = NULL;
+        uint8_t numberOfEntries;
+        bool ret;
+        ret = sd_get_file_list(&entries, &numberOfEntries);
+        if (ret != true) {
+            prv_send_negative_response(ID, ERROR_INTERNAL_ERROR);
+            return;
+        }
+
+        uint8_t buffer[(sizeof(file_info_t) * MAX_NUMBER_OF_LOGFILES) + 2];
+        ret = prv_format_file_list(entries, numberOfEntries, buffer + 2);
+        if (ret == false) {
+            prv_send_negative_response(ID, ERROR_INTERNAL_ERROR);
+            return;
+        }
+        buffer[0] = ID;
+        buffer[1] = 255; //Number of following bytes
+        prv_send_response(buffer, (numberOfEntries * sizeof(file_info_t)) + 2);
+        return;
+    }
+    break;
+
     default:
         prv_send_negative_response(ID, ERROR_INTERNAL_ERROR); //Unknown error
         return;
@@ -344,7 +370,7 @@ static void prv_send_positive_response(uint8_t ID) {
     isotp_send_static(payload, sizeof(payload));
 }
 
-static void prv_send_response(uint8_t *data, uint8_t len) {
+static void prv_send_response(uint8_t *data, size_t len) {
     uint8_t payload[len + 1];
     payload[0] = ISOTP_CAL_RESPONSE;
     memcpy(payload + 1, data, len);
@@ -461,4 +487,25 @@ static void prv_print_config(void) {
         PRINTF("Auto reset enabled: %s\n", config->autoResetOnPowerCycleEnable ? "true" : "false");
         release_config();
     }
+}
+
+static bool prv_format_file_list(FILINFO *entries, uint8_t numberOfEntries, uint8_t *buffer) {
+    if (entries == NULL) {
+        return false;
+    }
+
+    if (buffer == NULL) {
+        return false;
+    }
+
+    for (size_t i = 0; i < numberOfEntries; i++) {
+        file_info_t file;
+        file.handle = i;
+        strncpy(file.name, entries[i].fname, 19);
+        file.name[19] = '\0';
+        file.size = entries[i].fsize;
+        PRINTF("Name: %s, Handle: %u, size: %lu\n", file.name, file.handle, file.size);
+        memcpy(&buffer[i * sizeof(file_info_t)], &file, sizeof(file_info_t));
+    }
+    return true;
 }

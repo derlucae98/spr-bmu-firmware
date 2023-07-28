@@ -13,6 +13,7 @@ static QueueHandle_t prvLoggingQ = NULL;
 static uint32_t prvUptime;
 static bool prvSdInitialized = false;
 
+
 #define NUMBER_OF_Q_ITEMS 10
 
 #define START_TOKEN 0xF5A5

@@ -32,6 +32,12 @@ typedef struct __attribute__((packed)){
     uint16_t crc16;
 } config_t;
 
+typedef struct __attribute__((packed)){
+    char name[20];
+    uint8_t handle;
+    size_t size;
+} file_info_t;
+
 enum error_codes {
     ERROR_PARAM_DOES_NOT_EXIST = 0x00,
     ERROR_CANNOT_MODIFY_RO_PARAMETER,

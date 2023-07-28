@@ -32,6 +32,7 @@ static FATFS FatFs;
 static FIL file;
 static sd_status_hook_t prvSdInitHook = NULL;
 static bool prvDeleteOldest = false;
+static bool prvLoggerEnabled = false;
 static uint8_t prvFormatStatus = 0;
 static bool prvFormatCard = false;
 
@@ -47,6 +48,7 @@ void sd_init(sd_status_hook_t sdInitHook) {
     config_t* config  = get_config(pdMS_TO_TICKS(500));
     if (config != NULL) {
         prvDeleteOldest = config->loggerDeleteOldestFile;
+        prvLoggerEnabled = config->loggerEnable; //Do not create a logfile if logger is disabled
         release_config();
     }
     xTaskCreate(prv_sd_init_task, "sd", SD_TASK_STACK, NULL, SD_TASK_PRIO, NULL);
@@ -56,7 +58,11 @@ bool sd_initialized(void) {
     return prvSdInitialized;
 }
 
-bool sd_get_file_list(FILINFO *entries, uint8_t *numberOfEntries) {
+bool sd_get_file_list(FILINFO **entries, uint8_t *numberOfEntries) {
+    if (prvLoggerEnabled) {
+        return false;
+    }
+
     FRESULT res;
     DIR dir;
     static FILINFO fno;
@@ -69,7 +75,7 @@ bool sd_get_file_list(FILINFO *entries, uint8_t *numberOfEntries) {
         return false;
     }
 
-    res = f_findfirst(&dir, &fno, "", "*.log"); //Only search for *.log files
+    res = f_findfirst(&dir, &fno, "", "*.log");
     files[0] = fno;
 
     if (res != FR_OK) {
@@ -86,13 +92,15 @@ bool sd_get_file_list(FILINFO *entries, uint8_t *numberOfEntries) {
             return false;
         }
 
-        files[index] = fno;
         res = f_findnext(&dir, &fno);
+        files[index] = fno;
     }
 
     if (entries != NULL) {
-        entries = files;
+        *entries = files;
     }
+
+
     if (numberOfEntries != NULL) {
         *numberOfEntries = index;
     }
@@ -105,9 +113,9 @@ bool sd_get_file_list(FILINFO *entries, uint8_t *numberOfEntries) {
 static bool prv_create_file(void) {
     FRESULT status;
     char* timestamp = rtc_get_timestamp();
-    char path[32];
+    char path[24];
 
-    snprintf(path, 32, "%s.log", timestamp);
+    snprintf(path, 24, "%s.log", timestamp);
 
     uint8_t timeout = 100;
     do {
@@ -308,36 +316,39 @@ static void prv_sd_init_task(void *p) {
             FILINFO oldest;
             bool maxNumberReached = false;
 
-            while (numberOfFiles > MAX_NUMBER_OF_LOGFILES) {
-                if (prvDeleteOldest) {
-                    PRINTF("Deleting oldest file...\n");
-                    prv_get_oldest_file(&oldest);
-                    sd_delete_file(oldest);
-                    numberOfFiles--;
-                    PRINTF("Done!\n");
-                } else {
-                    maxNumberReached = true;
-                    break;
+            if (prvLoggerEnabled) {
+                while (numberOfFiles > MAX_NUMBER_OF_LOGFILES) {
+                    if (prvDeleteOldest) {
+                        PRINTF("Deleting oldest file...\n");
+                        prv_get_oldest_file(&oldest);
+                        sd_delete_file(oldest);
+                        numberOfFiles--;
+                        PRINTF("Done!\n");
+                    } else {
+                        maxNumberReached = true;
+                        break;
+                    }
                 }
+
+                if (maxNumberReached) {
+                    PRINTF("Cannot store more than %u logfiles!\n", MAX_NUMBER_OF_LOGFILES);
+                    continue;
+                }
+
+                PRINTF("Creating logfile...\n");
+
+                res = prv_create_file();
+
+                if (res != true) {
+                    PRINTF("SD file creation failed!\n");
+                    continue;
+                }
+
+                PRINTF("Done!\n");
             }
 
-            if (maxNumberReached) {
-                PRINTF("Cannot store more than %u logfiles!\n", MAX_NUMBER_OF_LOGFILES);
-                continue;
-            }
-
-            PRINTF("Creating logfile...\n");
-
-            res = prv_create_file();
-
-            if (res != true) {
-                PRINTF("SD file creation failed!\n");
-                continue;
-            }
-
-            PRINTF("Done!\n");
-
-            sd_get_file_list(NULL, NULL);
+            FILINFO *files = NULL;
+            sd_get_file_list(&files, NULL);
 
             prvSdInitialized = true;
             if (prvSdInitHook != NULL) {
