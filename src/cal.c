@@ -8,7 +8,7 @@
 
 #include "cal.h"
 
-#define NUMBER_OF_CONFIG_PARAMS 13
+#define NUMBER_OF_CONFIG_PARAMS 14
 
 static config_t prvConfig;
 static SemaphoreHandle_t prvConfigMutex = NULL;
@@ -27,7 +27,8 @@ enum {
     ID_FORMAT_SD_CARD,
     ID_FORMAT_SD_CARD_STATUS,
     ID_QUERY_LOGFILE_INFO,
-    ID_RESTART_SYSTEM
+    ID_RESTART_SYSTEM,
+    ID_TRANSFER_LOGFILE
 };
 
 enum {
@@ -55,7 +56,8 @@ static param_type_t prvParamTypes[NUMBER_OF_CONFIG_PARAMS] = {
         {ID_FORMAT_SD_CARD,              WO, 0},
         {ID_FORMAT_SD_CARD_STATUS,       RO, 1},
         {ID_QUERY_LOGFILE_INFO,          RO, 0},
-        {ID_RESTART_SYSTEM,              WO, 0}
+        {ID_RESTART_SYSTEM,              WO, 0},
+        {ID_TRANSFER_LOGFILE,            WO, 1}
 };
 
 static config_t prvDefaultConfig = {
@@ -83,6 +85,7 @@ static void prv_print_config(void);
 static void prv_new_config(config_t *config);
 static void prv_send_config(void);
 static bool prv_format_file_list(FILINFO *entries, uint8_t numberOfEntries, uint8_t *buffer);
+static bool prv_find_file_from_handle(uint8_t handle, char *name);
 
 
 void init_cal(void) {
@@ -263,6 +266,36 @@ static void prv_update_param(param_type_t *param, void *value) {
         prv_send_positive_response(ID);
         SystemSoftwareReset();
         return;
+
+    case ID_TRANSFER_LOGFILE: {
+        char name[32];
+        uint8_t handle = *(uint8_t*)value;
+        PRINTF("File handle: &u\n", handle);
+        bool ret = prv_find_file_from_handle(handle, name);
+        if (ret != true) {
+            PRINTF("Requested logfile does not exist!\n");
+            prv_send_negative_response(ID, ERROR_FILE_DOES_NOT_EXIST);
+            return;
+        }
+        PRINTF("Requested file: %s\n", name);
+        ret = sd_open_file_read(name);
+        if (ret != true) {
+            PRINTF("Cannot open logfile for read!\n");
+            prv_send_negative_response(ID, ERROR_INTERNAL_ERROR);
+            return;
+        }
+
+        uint8_t buffer[4095];
+        size_t br;
+        //do {
+            sd_read_file(buffer + 1, 4094, &br);
+            buffer[0] = ISOTP_LOGFILE;
+            isotp_send_static(buffer, br);
+
+        sd_close_file();
+
+        break;
+    }
 
     default:
         prv_send_negative_response(ID, ERROR_INTERNAL_ERROR); //Unknown error
@@ -521,5 +554,23 @@ static bool prv_format_file_list(FILINFO *entries, uint8_t numberOfEntries, uint
         PRINTF("Name: %s, Handle: %u, size: %lu\n", file.name, file.handle, file.size);
         memcpy(&buffer[i * sizeof(file_info_t)], &file, sizeof(file_info_t));
     }
+    return true;
+}
+
+static bool prv_find_file_from_handle(uint8_t handle, char *name) {
+    uint8_t numberOfEntries;
+    FILINFO *entries = NULL;
+    sd_get_file_list(&entries, &numberOfEntries);
+
+    if (handle >= numberOfEntries) {
+        return false;
+    }
+
+    if (entries != NULL) {
+        strcpy(name, entries[handle].fname);
+    } else {
+        return false;
+    }
+
     return true;
 }

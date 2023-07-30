@@ -28,8 +28,8 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "sd.h"
 
 volatile bool prvSdInitialized = false;
-static FATFS FatFs;
-static FIL file;
+static FATFS prvFatFs;
+static FIL prvFile;
 static sd_status_hook_t prvSdInitHook = NULL;
 static bool prvDeleteOldest = false;
 static bool prvLoggerEnabled = false;
@@ -44,6 +44,7 @@ static bool prv_create_file(void);
 static bool prv_get_oldest_file(FILINFO *oldest);
 static void prv_sd_format();
 static bool prv_get_file_list(void);
+
 
 void sd_init(sd_status_hook_t sdInitHook) {
     prvSdInitHook = sdInitHook;
@@ -80,7 +81,7 @@ static bool prv_create_file(void) {
 
     uint8_t timeout = 100;
     do {
-        status = f_open(&file, path, FA_WRITE | FA_OPEN_APPEND | FA_CREATE_NEW);
+        status = f_open(&prvFile, path, FA_WRITE | FA_OPEN_APPEND | FA_CREATE_NEW);
         if (--timeout == 0) {
             break;
         }
@@ -92,7 +93,7 @@ static bool prv_create_file(void) {
         return false;
     }
 
-    f_sync(&file);
+    f_sync(&prvFile);
 
     return true;
 }
@@ -152,7 +153,7 @@ static void prv_sd_format() {
 
 static bool prv_mount(void) {
     FRESULT status;
-    status = f_mount(&FatFs, "", 1);
+    status = f_mount(&prvFatFs, "", 1);
 
     if (status != FR_OK) {
         prvSdInitialized = false;
@@ -235,6 +236,41 @@ static bool prv_get_file_list(void) {
     f_closedir(&dir);
 
     return true;
+}
+
+bool sd_open_file_read(char *name) {
+    FRESULT res;
+    char path[32];
+    memset(path, 0, sizeof(path));
+    strcat(path, "0:");
+    strcat(path, name);
+    PRINTF("path: %s\n", path);
+    res = f_open(&prvFile, path, FA_READ);
+    PRINTF("res: %u\n", res);
+    if (res != FR_OK) {
+        return false;
+    }
+    return true;
+}
+
+bool sd_close_file(void) {
+    FRESULT res;
+    res = f_close(&prvFile);
+    if (res != FR_OK) {
+        return false;
+    }
+    return true;
+}
+
+bool sd_read_file(uint8_t *buffer, size_t btr, size_t *br) {
+    FRESULT res;
+    res = f_read(&prvFile, buffer, btr, br);
+
+    if (res == FR_OK) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 
@@ -321,7 +357,7 @@ static void prv_sd_init_task(void *p) {
 
             prvSdInitialized = true;
             if (prvSdInitHook != NULL) {
-                (prvSdInitHook)(prvSdInitialized, &file);
+                (prvSdInitHook)(prvSdInitialized, &prvFile);
             }
 
         } else if (!sdAvailable && sdAvailableLast) {

@@ -33,6 +33,7 @@ void init_isotp(void);
 void isotp_on_recv(can_msg_t *msg);
 void isotp_send_static(void *data, size_t len); //Use the default IsoTP link
 void isotp_send_test(void);
+int isotp_status(void);
 
 
 #endif /* ISOTP_H_ */

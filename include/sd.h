@@ -84,6 +84,13 @@ void sd_init(sd_status_hook_t sdInitHook);
  */
 void sd_get_file_list(FILINFO **entries, uint8_t *numberOfEntries);
 
+
+bool sd_open_file_read(char *name);
+
+bool sd_close_file(void);
+
+bool sd_read_file(uint8_t *buffer, size_t btr, size_t *br);
+
 /*!
  * @brief Delete a file on the SD card.
  * @param file Provide the file info struct. The function uses only the fname member of the struct.

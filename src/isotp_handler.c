@@ -48,6 +48,10 @@ void isotp_send_test(void) {
     }
 }
 
+int isotp_status(void) {
+    return prvIsotpLink.send_status;
+}
+
 static void isotp_task(void* p) {
     (void) p;
     TickType_t lastWakeTime = xTaskGetTickCount();
