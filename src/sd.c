@@ -145,6 +145,7 @@ static void prv_sd_format() {
     finish = xTaskGetTickCount();
 
     PRINTF("Done! Took %lu seconds\n", (finish - start) / 1000);
+    prv_get_file_list();
     prvFormatStatus = SD_FORMAT_DONE;
     return;
 }
