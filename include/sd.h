@@ -78,13 +78,11 @@ void sd_init(sd_status_hook_t sdInitHook);
 /*!
  * @brief Get a list of the logfiles stored on the SD card.
  * @param entries Array for the file info of every file. All entries are stored in a static variable.
- * Therefore, the pointer can be accessed directly. This argument must not be NULL!
+ * Therefore, the pointer can be accessed directly.
  * @param numberOfEntries Number of files in the entries list. Provide a variable of type uint8_t.
- * @return true on success, false on failure.
  * @note If there are more than @ref MAX_NUMBER_OF_LOGFILES logfiles on the card, entries will hold @ref MAX_NUMBER_OF_LOGFILES files
- * but the function will fail nevertheless.
  */
-bool sd_get_file_list(FILINFO **entries, uint8_t *numberOfEntries);
+void sd_get_file_list(FILINFO **entries, uint8_t *numberOfEntries);
 
 /*!
  * @brief Delete a file on the SD card.

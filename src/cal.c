@@ -8,7 +8,7 @@
 
 #include "cal.h"
 
-#define NUMBER_OF_CONFIG_PARAMS 12
+#define NUMBER_OF_CONFIG_PARAMS 13
 
 static config_t prvConfig;
 static SemaphoreHandle_t prvConfigMutex = NULL;
@@ -26,7 +26,8 @@ enum {
     ID_CALIBRATION_VALUE,
     ID_FORMAT_SD_CARD,
     ID_FORMAT_SD_CARD_STATUS,
-    ID_QUERY_LOGFILE_INFO
+    ID_QUERY_LOGFILE_INFO,
+    ID_RESTART_SYSTEM
 };
 
 enum {
@@ -53,7 +54,8 @@ static param_type_t prvParamTypes[NUMBER_OF_CONFIG_PARAMS] = {
         {ID_CALIBRATION_VALUE,           WO, sizeof(float)},
         {ID_FORMAT_SD_CARD,              WO, 0},
         {ID_FORMAT_SD_CARD_STATUS,       RO, 1},
-        {ID_QUERY_LOGFILE_INFO,          RO, 0}
+        {ID_QUERY_LOGFILE_INFO,          RO, 0},
+        {ID_RESTART_SYSTEM,              WO, 0}
 };
 
 static config_t prvDefaultConfig = {
@@ -175,8 +177,10 @@ static void prv_update_param(param_type_t *param, void *value) {
         config_t config;
         memcpy(&config, value, sizeof(config_t));
         prv_new_config(&config);
+        SystemSoftwareReset();
         return;
         }
+
     case ID_SOC_LOOKUP:
         //TODO call soc_lookup();
         break;
@@ -210,6 +214,15 @@ static void prv_update_param(param_type_t *param, void *value) {
         break;
 
     case ID_FORMAT_SD_CARD:
+        if (prvConfig.loggerEnable) {
+            uint8_t resp[3];
+            resp[0] = ID;
+            resp[1] = 0x01; //Number of following bytes
+            resp[2] = ERROR_CARD_FORMATTING_FAILED;
+            prv_send_response(resp, sizeof(resp));
+            return;
+        }
+
         sd_format();
         if (sd_format_status() == SD_FORMAT_BUSY) {
             //Busy right after requesting?
@@ -244,6 +257,12 @@ static void prv_update_param(param_type_t *param, void *value) {
             return;
         }
         break;
+
+    case ID_RESTART_SYSTEM:
+        PRINTF("Restarting...\n");
+        prv_send_positive_response(ID);
+        SystemSoftwareReset();
+        return;
 
     default:
         prv_send_negative_response(ID, ERROR_INTERNAL_ERROR); //Unknown error
@@ -315,16 +334,11 @@ static void prv_get_param(param_type_t *param) {
     case ID_QUERY_LOGFILE_INFO: {
         FILINFO *entries = NULL;
         uint8_t numberOfEntries;
-        bool ret;
-        ret = sd_get_file_list(&entries, &numberOfEntries);
-        if (ret != true) {
-            prv_send_negative_response(ID, ERROR_INTERNAL_ERROR);
-            return;
-        }
+        sd_get_file_list(&entries, &numberOfEntries);
 
         uint8_t buffer[(sizeof(file_info_t) * MAX_NUMBER_OF_LOGFILES) + 2];
-        ret = prv_format_file_list(entries, numberOfEntries, buffer + 2);
-        if (ret == false) {
+        bool ret = prv_format_file_list(entries, numberOfEntries, buffer + 2);
+        if (ret != true) {
             prv_send_negative_response(ID, ERROR_INTERNAL_ERROR);
             return;
         }
@@ -422,7 +436,7 @@ static void prv_load_config(void) {
 
     bool ret;
     ret = eeprom_read(pageBuffer, CONFIG_EEPROM_PAGE, EEPROM_PAGESIZE, pdMS_TO_TICKS(500));
-    if (ret == false) {
+    if (ret != true) {
         PRINTF("Unable to read from EEPROM!\n");
         configASSERT(0);
     }
@@ -448,7 +462,7 @@ static bool prv_write_config(void) {
     bool ret;
     ret = eeprom_write(pageBuffer, CONFIG_EEPROM_PAGE, sizeof(pageBuffer), pdMS_TO_TICKS(500));
 
-    if (ret == false) {
+    if (ret != true) {
         PRINTF("Unable to write to EEPROM!\n");
         return false;
     }

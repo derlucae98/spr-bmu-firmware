@@ -2,8 +2,6 @@
 
 
 static bool prvLoggerActive = true;
-static bool _terminateRequest = false;
-static bool _terminated = false;
 
 static void prv_logger_prepare_task(void *p);
 static void prv_logger_write_task(void *p);
@@ -69,13 +67,6 @@ void logger_control(bool ready, FIL *file) {
 
 bool logger_is_active(void) {
     return prvLoggerActive;
-}
-
-void logger_request_termination(void) {
-    _terminateRequest = true;
-}
-bool logger_terminated(void) {
-    return _terminated;
 }
 
 void logger_tick_hook(uint32_t uptime) {
