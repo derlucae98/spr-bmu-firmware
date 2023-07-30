@@ -191,6 +191,43 @@ void init_task(void *p) {
         sd_init(logger_control);
         logger_init();
         init_isotp();
+
+        uint32_t resetReason = RCM->SRS;
+        //printf("Reset reason: 0x%lX\n", resetReason);
+        if (resetReason & 0x0002) {
+            PRINTF("Reset due to brown-out\n");
+        } else if (resetReason & 0x0004) {
+            PRINTF("Reset due to loss of clock\n");
+        } else if (resetReason & 0x0008) {
+            PRINTF("Reset due to loss of lock\n");
+        } else if (resetReason & 0x0010) {
+            PRINTF("Reset due to CMU loss of clock\n");
+        } else if (resetReason & 0x0020) {
+            PRINTF("Reset due to watchdog\n");
+        } else if (resetReason & 0x0040) {
+            PRINTF("Reset due to reset pin\n");
+        } else if (resetReason & 0x0080) {
+            PRINTF("Reset due to power cycle\n");
+        } else if (resetReason & 0x0100) {
+            PRINTF("Reset due to JTAG\n");
+        } else if (resetReason & 0x0200) {
+            PRINTF("Reset due to core lockup\n");
+        } else if (resetReason & 0x0400) {
+            PRINTF("Reset due to software\n");
+        } else if (resetReason & 0x0800) {
+            PRINTF("Reset due to host debugger\n");
+        } else if (resetReason & 0x2000) {
+            PRINTF("Reset due to stop ack error\n");
+        }
+
+        //Send reset reason on startup over CAN
+        can_msg_t msg;
+        msg.ID = 0x020;
+        msg.DLC = 2;
+        msg.payload[0] = (resetReason >> 8) & 0xFF;
+        msg.payload[1] = resetReason & 0xFF;
+        can_send(CAN_VEHIC, &msg);
+
         vTaskDelete(NULL);
     }
 }
