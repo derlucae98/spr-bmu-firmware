@@ -21,7 +21,7 @@
 #define CAN_CAL CAN_VEHIC
 
 
-typedef struct __attribute__((packed)){
+typedef struct{
     bool globalBalancingEnable;
     uint16_t balancingThreshold;
     bool automaticSocLookupEnable;

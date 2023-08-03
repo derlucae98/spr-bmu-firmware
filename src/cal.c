@@ -20,7 +20,7 @@ enum {
     ID_SET_RTC             = 0x20,
     ID_CONTROL_CALIBRATION = 0x30,
     ID_CALIBRATION_STATE   = 0x31,
-    ID_CALIBRATION_VALUE   = 0x32,
+    ID_CALIBRATION_VALUE   = 0x32
 };
 
 enum {
@@ -98,7 +98,6 @@ void release_config(void) {
 }
 
 void handle_cal_request(uint8_t *data, size_t len) {
-    PRINTF("Cal request!\n");
     if (len < 1) {
         //No command sent
         return;
@@ -145,6 +144,7 @@ void handle_cal_request(uint8_t *data, size_t len) {
 
         case ID_UPDATE_CONFIG:
             prv_update_config(&data[1]);
+            SystemSoftwareReset();
             return;
 
         case ID_SOC_LOOKUP: {
@@ -211,16 +211,18 @@ static bool prv_find_param_type(uint8_t ID, param_type_t *found) {
 static void prv_send_negative_response(uint8_t ID, uint8_t reason) {
     can_msg_t msg;
     msg.ID = CAN_ID_DIAG_RESPONSE;
-    msg.DLC = 1;
-    msg.payload[0] = (ID & 0xF0) | (reason & 0x0F);
+    msg.DLC = 2;
+    msg.payload[0] = ID | 0x08;
+    msg.payload[1] = reason;
     can_send(CAN_CAL, &msg);
 }
 
 static void prv_send_positive_response(uint8_t ID) {
     can_msg_t msg;
     msg.ID = CAN_ID_DIAG_RESPONSE;
-    msg.DLC = 1;
-    msg.payload[0] = (ID & 0xF0);
+    msg.DLC = 2;
+    msg.payload[0] = ID;
+    msg.payload[1] = 0;
     can_send(CAN_CAL, &msg);
 }
 
@@ -232,7 +234,7 @@ static void prv_send_response(uint8_t ID, uint8_t *data, size_t len) {
     can_msg_t msg;
     msg.ID = CAN_ID_DIAG_RESPONSE;
     msg.DLC = len + 1;
-    msg.payload[0] = (ID & 0xF0);
+    msg.payload[0] = ID;
     memcpy(msg.payload + 1, data, len);
     can_send(CAN_CAL, &msg);
 }
@@ -270,7 +272,6 @@ static void prv_update_config(uint8_t *data) {
         prv_send_negative_response(ID_UPDATE_CONFIG, CAL_ERROR_INTERNAL_ERROR);
         return;
     }
-    SystemSoftwareReset();
 }
 
 static BaseType_t prv_config_mutex_take(TickType_t blocktime) {
