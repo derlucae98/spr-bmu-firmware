@@ -17,7 +17,7 @@
 #include "logger.h"
 #include "communication.h"
 #include "cal.h"
-#include "isotp_handler.h"
+
 
 #include <alloca.h>
 
@@ -131,10 +131,6 @@ static void uart_rec(char* s) {
         }
     } else if (strcmp(tokens[0], "ack") == 0) {
         value_applied(atof(tokens[1]));
-    } else if (strcmp(tokens[0], "format") == 0) {
-        sd_format();
-        sd_get_file_list(NULL, NULL);
-
     } else if (strcmp(tokens[0], "sync") == 0) {
         rtc_sync();
     }
@@ -190,7 +186,6 @@ void init_task(void *p) {
         init_rtc(logger_tick_hook);
         sd_init(logger_control);
         logger_init();
-        init_isotp();
 
         uint32_t resetReason = RCM->SRS;
         //printf("Reset reason: 0x%lX\n", resetReason);

@@ -37,7 +37,6 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "ff.h"
 #include "diskio.h"
 #include "rtc.h"
-#include "cal.h"
 
 enum {
     SD_FORMAT_DONE,
@@ -45,17 +44,6 @@ enum {
     SD_FORMAT_ERROR,
     SD_FORMAT_NO_CARD
 };
-
-
-/*!
- * @def MAX_NUMBER_OF_LOGFILES
- * Defines the maximum number of logfiles that can be stored on the SD card.
- * The limit is needed, because the file info for every logfile is stored locally,
- * when calling sd_get_file_list(). The length of the file names is limited to 32 in the current
- * configuration of FatFS. This leads to a size of 56 bytes for the FILINFO struct of every file on the card.
- * With 128 files, 7.17 kBytes have to be stored in RAM.
- */
-#define MAX_NUMBER_OF_LOGFILES 128
 
 /*!
  * @brief Function pointer definition for the SD initialization hook.
@@ -74,42 +62,6 @@ typedef void (*sd_status_hook_t)(bool ready, FIL *file);
  * This function must be called before any other function in this module can be used!
  */
 void sd_init(sd_status_hook_t sdInitHook);
-
-/*!
- * @brief Get a list of the logfiles stored on the SD card.
- * @param entries Array for the file info of every file. All entries are stored in a static variable.
- * Therefore, the pointer can be accessed directly.
- * @param numberOfEntries Number of files in the entries list. Provide a variable of type uint8_t.
- * @note If there are more than @ref MAX_NUMBER_OF_LOGFILES logfiles on the card, entries will hold @ref MAX_NUMBER_OF_LOGFILES files
- */
-void sd_get_file_list(FILINFO **entries, uint8_t *numberOfEntries);
-
-
-bool sd_open_file_read(char *name);
-
-bool sd_close_file(void);
-
-bool sd_read_file(uint8_t *buffer, size_t btr, size_t *br);
-
-/*!
- * @brief Delete a file on the SD card.
- * @param file Provide the file info struct. The function uses only the fname member of the struct.
- * @return true on success, false on failure
- */
-bool sd_delete_file(FILINFO file);
-
-/*!
- * @brief Request formatting of SD card.
- * This deletes all files on the card!
- * Depending on the size of the card, this can take several minutes.
- * Call sd_format_status() for the current status of the process.
- */
-void sd_format(void);
-
-/*!
- * @brief Request the current status of the SD formatting process.
- */
-uint8_t sd_format_status(void);
 
 /*!
  * @brief Return the initialization status of the SD card.

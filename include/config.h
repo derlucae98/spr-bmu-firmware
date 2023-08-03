@@ -49,8 +49,6 @@
 #define SD_TASK_STACK 500
 #define SD_TASK_PRIO  1
 
-#define ISOTP_TASK_STACK 4200
-#define ISOTP_TASK_PRIO 4
 
 #define PERIPH_SPI_SLOW LPSPI_PRESC_16
 #define PERIPH_SPI_FAST LPSPI_PRESC_1
@@ -76,6 +74,15 @@
 
 #define CAN_VEHIC CAN0
 #define CAN_DIAG  CAN1
+
+enum can_id_vehicle {
+    CAN_ID_xx
+};
+
+enum can_id_diag {
+    CAN_ID_DIAG_REQUEST  = 0x12,
+    CAN_ID_DIAG_RESPONSE = 0x13
+};
 
 
 

@@ -20,15 +20,7 @@
 #include "stacks.h"
 #include "adc.h"
 #include "cal.h"
-#include "isotp_handler.h"
 
-
-
-enum {
-    CAN_ID_ISOTP_UP     = 0x012,
-    CAN_ID_ISOTP_DOWN   = 0x013,
-    CAN_ID_TEST         = 0x014
-};
 
 void init_comm(void);
 
