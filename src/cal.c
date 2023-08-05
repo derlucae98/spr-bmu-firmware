@@ -132,7 +132,7 @@ void handle_cal_request(uint8_t *data, size_t len) {
         case ID_CALIBRATION_STATE: {
             adc_cal_state_t calState = get_cal_state();
             prv_send_response(ID, &calState, param.dataTypeLength);
-            break;
+            return;
             }
 
         case ID_LOAD_DEFAULT_CONFIG:
@@ -220,9 +220,8 @@ static void prv_send_negative_response(uint8_t ID, uint8_t reason) {
 static void prv_send_positive_response(uint8_t ID) {
     can_msg_t msg;
     msg.ID = CAN_ID_DIAG_RESPONSE;
-    msg.DLC = 2;
+    msg.DLC = 1;
     msg.payload[0] = ID;
-    msg.payload[1] = 0;
     can_send(CAN_CAL, &msg);
 }
 
