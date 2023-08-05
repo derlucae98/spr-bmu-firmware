@@ -148,6 +148,7 @@ static void prv_adc_task(void *p) {
     int32_t adcValUbatt = 0;
     int32_t adcValUlink = 0;
     int32_t adcValCurrent = 0;
+    int32_t adcValCurrentValid = 0;
 
     float adcValUbattCorr = 0.0f;
     float adcValUlinkCorr = 0.0f;
@@ -156,9 +157,10 @@ static void prv_adc_task(void *p) {
     float ubattVolt = 0.0f;
     float ulinkVolt = 0.0f;
     float current = 0.0f;
+    float currentValidVoltage = 0.0f;
 
     bool adcError = false;
-    bool currentValid = true;
+    bool currentValid = false;
 
     uint8_t chID;
 
@@ -186,10 +188,9 @@ static void prv_adc_task(void *p) {
             break;
         case SCAN_DIFF_CH4_CH5: //Current
             adcValCurrent = adcVal;
-            //Todo
             break;
         case SCAN_SE_CH4: //Current open wire check
-            //Todo
+            adcValCurrentValid = adcVal;
             break;
         default:
             adcError = true;
@@ -214,12 +215,22 @@ static void prv_adc_task(void *p) {
         ubattVolt = ADC_VOLTAGE_CONVERSION_RATIO * (adcValUbattCorr   * (-1) * prvCal.reference) / 8388608.0f; //*(-1) to compensate the inverting ADC driver
         current   = ADC_CURRENT_CONVERSION_RATIO * (adcValCurrentCorr * prvCal.reference) / 8388608.0f;
 
+        currentValidVoltage = adcValCurrentValid / 8388608.0f; //Voltage at the current input
+
+        if (currentValidVoltage <= CURRENT_INVALID_THRESHOLD) {
+            // if single-ended voltage at the input is below a defined threshold, the current input is invalid
+            // Note: Select the threshold outside of the usable measurement range. Otherwise current peaks will trigger the plausibility check
+            currentValid = false;
+        } else {
+            currentValid = true;
+        }
+
         adc_data_t newAdcData;
         newAdcData.batteryVoltage = ubattVolt;
         newAdcData.dcLinkVoltage = ulinkVolt;
         newAdcData.current = current;
         newAdcData.voltageValid = !adcError;
-        newAdcData.currentValid = currentValid; //Todo: Validity for the current measurement has to be determined with the open wire check
+        newAdcData.currentValid = currentValid;
 
         //The hook will provide the new data to a function, synchronous to the acquisition
         //Asynchronous access is possible using the access functions
