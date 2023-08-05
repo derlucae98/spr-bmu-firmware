@@ -207,7 +207,6 @@ rtc_date_time_t rtc_get_date_time(void) {
 }
 
 uint32_t rtc_get_unix_time(void) {
-    rtc_sync();
     return prvEpoch;
 }
 

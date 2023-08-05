@@ -49,10 +49,11 @@
 #define SD_TASK_STACK 500
 #define SD_TASK_PRIO  1
 
+
 #define PERIPH_SPI_SLOW LPSPI_PRESC_16
 #define PERIPH_SPI_FAST LPSPI_PRESC_1
 
-#define LOGDATA_RAW_SIZE 700 //Size of the base64 encoded string in bytes
+
 
 /*!
  * @def CAL_DATA_EEPROM_PAGE
@@ -70,8 +71,19 @@
 #define ADC_CURRENT_CONVERSION_RATIO 41.6667f //I = Us * k/R; k = current ratio (1000), R = shunt resistance (24R)
 
 
+
 #define CAN_VEHIC CAN0
 #define CAN_DIAG  CAN1
+
+enum can_id_vehicle {
+    CAN_ID_xx
+};
+
+enum can_id_diag {
+    CAN_ID_DIAG_REQUEST  = 0x12,
+    CAN_ID_DIAG_RESPONSE = 0x13,
+    CAN_ID_DIAG_TIME     = 0x14
+};
 
 
 

@@ -22,12 +22,6 @@
 #include "cal.h"
 
 
-
-enum {
-    CAN_ID_CAL_REQUEST  = 0x010,
-    CAN_ID_CAL_RESPONSE = 0x011
-};
-
 void init_comm(void);
 
 

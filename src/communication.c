@@ -305,6 +305,16 @@ static void can_send_task(void *p) {
         msg.DLC = 5;
         can_send(CAN0, &msg);
 
+        if (counter == 0) {
+            uint32_t uptime = uptime_in_100_ms();
+            uint32_t unix = rtc_get_unix_time();
+            msg.ID = CAN_ID_DIAG_TIME;
+            msg.DLC = 8;
+            memcpy(msg.payload, &uptime, sizeof(uptime));
+            memcpy(msg.payload + sizeof(uptime), &unix, sizeof(unix));
+            can_send(CAN_VEHIC, &msg);
+        }
+
         if (counter < MAX_NUM_OF_SLAVES-1) {
             counter++;
         } else {
@@ -331,8 +341,9 @@ static void can_rec_task(void *p) {
                         request_tractive_system(false);
                     }
                     break;
-                case CAN_ID_CAL_REQUEST:
-                    handle_cal_request(&msg);
+
+                case CAN_ID_DIAG_REQUEST:
+                    handle_cal_request(msg.payload, msg.DLC);
                     break;
                 default:
                     break;

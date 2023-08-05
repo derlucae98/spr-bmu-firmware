@@ -8,63 +8,41 @@
 
 #include "cal.h"
 
-#define NUMBER_OF_CONFIG_PARAMS 17
-
 static config_t prvConfig;
 static SemaphoreHandle_t prvConfigMutex = NULL;
 
 
 enum {
-    ID_LOAD_DEFAULT_CONFIG = 0,
-    ID_GLOBAL_BALANCING_ENABLE,
-    ID_BALANCING_THRESHOLD,
-    ID_BALANCING_FEEDBACK,
-    ID_SOC_LOOKUP,
-    ID_AUTOMATIC_SOC_LOOKUP_ENABLE,
-    ID_NUMBER_OF_STACKS,
-    ID_LOGGER_ENABLE,
-    ID_LOGGER_DELETE_OLDEST_FILE,
-    ID_AUTORESET_ENABLE,
-    ID_SET_GET_RTC,
-    ID_CONTROL_CALIBRATION,
-    ID_CALIBRATION_STATE,
-    ID_CALIBRATION_VALUE,
-    ID_FORMAT_SD_CARD,
-    ID_SAVE_NV,
-    ID_FORMAT_SD_CARD_STATUS
+    ID_LOAD_DEFAULT_CONFIG = 0x00,
+    ID_QUERY_CONFIG        = 0x01,
+    ID_UPDATE_CONFIG       = 0x02,
+    ID_SOC_LOOKUP          = 0x10,
+    ID_SET_RTC             = 0x20,
+    ID_CONTROL_CALIBRATION = 0x30,
+    ID_CALIBRATION_STATE   = 0x31,
+    ID_CALIBRATION_VALUE   = 0x32
 };
 
 enum {
-    RW, //Read-Write
     RO, //Read only
     WO  //Write only
 };
 
 typedef struct {
     uint8_t ID;
-    bool NV;
     uint8_t modifier;
     uint8_t dataTypeLength;
 } param_type_t;
 
-static param_type_t prvParamTypes[NUMBER_OF_CONFIG_PARAMS] = {
-        {ID_LOAD_DEFAULT_CONFIG,         false, WO, 0},
-        {ID_GLOBAL_BALANCING_ENABLE,     true,  RW, sizeof(prvConfig.globalBalancingEnable)},
-        {ID_BALANCING_THRESHOLD,         true,  RW, sizeof(prvConfig.balancingThreshold)},
-        {ID_BALANCING_FEEDBACK,          false, RO, sizeof(uint16_t)},
-        {ID_SOC_LOOKUP,                  false, WO, 0},
-        {ID_AUTOMATIC_SOC_LOOKUP_ENABLE, true,  RW, sizeof(prvConfig.automaticSocLookupEnable)},
-        {ID_NUMBER_OF_STACKS,            true,  RW, sizeof(prvConfig.numberOfStacks)},
-        {ID_LOGGER_ENABLE,               true,  RW, sizeof(prvConfig.loggerEnable)},
-        {ID_LOGGER_DELETE_OLDEST_FILE,   true,  RW, sizeof(prvConfig.loggerDeleteOldestFile)},
-        {ID_AUTORESET_ENABLE,            true,  RW, sizeof(prvConfig.autoResetOnPowerCycleEnable)},
-        {ID_SET_GET_RTC,                 false, RW, sizeof(uint32_t)},
-        {ID_CONTROL_CALIBRATION,         false, WO, sizeof(uint8_t)},
-        {ID_CALIBRATION_STATE,           false, RO, sizeof(uint8_t)},
-        {ID_CALIBRATION_VALUE,           false, WO, sizeof(float)},
-        {ID_FORMAT_SD_CARD,              false, WO, 0},
-        {ID_SAVE_NV,                     false, WO, 0},
-        {ID_FORMAT_SD_CARD_STATUS,       false, RO, 1},
+static param_type_t prvParamTypes[] = {
+        {ID_LOAD_DEFAULT_CONFIG,         WO, 0},
+        {ID_QUERY_CONFIG,                RO, 0},
+        {ID_UPDATE_CONFIG,               WO, 7},
+        {ID_SOC_LOOKUP,                  WO, 0},
+        {ID_SET_RTC,                     WO, sizeof(uint32_t)},
+        {ID_CONTROL_CALIBRATION,         WO, 1},
+        {ID_CALIBRATION_STATE,           RO, 1},
+        {ID_CALIBRATION_VALUE,           WO, sizeof(float)}
 };
 
 static config_t prvDefaultConfig = {
@@ -72,22 +50,21 @@ static config_t prvDefaultConfig = {
         40000,
         false,
         MAX_NUM_OF_SLAVES,
-        false,
-        false,
-        true
+        true,
+        0
 };
 
 static bool prv_find_param_type(uint8_t ID, param_type_t *found);
-static void prv_update_param(param_type_t *param, void *value);
-static void prv_get_param(param_type_t *param);
 static void prv_send_negative_response(uint8_t ID, uint8_t reason);
 static void prv_send_positive_response(uint8_t ID);
-static void prv_send_response(uint8_t *data, uint8_t len);
+static void prv_send_response(uint8_t ID, uint8_t *data, size_t len);
 static BaseType_t prv_config_mutex_take(TickType_t blocktime);
 static void prv_load_config(void);
 static bool prv_write_config(void);
 static bool prv_default_config(void);
 static void prv_print_config(void);
+static void prv_send_config(void);
+static void prv_update_config(uint8_t *data);
 
 
 void init_cal(void) {
@@ -104,7 +81,6 @@ config_t* get_config(TickType_t blocktime) {
     }
 }
 
-
 bool copy_config(config_t *dest, TickType_t blocktime) {
     config_t *src = get_config(blocktime);
     if (src != NULL) {
@@ -120,296 +96,113 @@ void release_config(void) {
     xSemaphoreGive(prvConfigMutex);
 }
 
-void handle_cal_request(can_msg_t *msg) {
-
-    uint8_t ID = msg->payload[0];
-    uint8_t len = msg->payload[1];
-    uint8_t modify = ID & 0x80; //Read or modify value requested?
-    param_type_t param;
-
-    if (!prv_find_param_type(ID & 0x7F, &param)) {
-        PRINTF("Error: Requested parameter does not exist!\n");
-        prv_send_negative_response(ID, ERROR_PARAM_DOES_NOT_EXIST); //Requested parameter does not exist
+void handle_cal_request(uint8_t *data, size_t len) {
+    if (len < 1) {
+        //No command sent
         return;
-    } else {
-        if (modify && param.modifier == RO) {
-            PRINTF("Error: Requested the modification of a read only value!\n");
-            prv_send_negative_response(ID, ERROR_CANNOT_MODIFY_RO_PARAMETER); //Requested the modification of a read only value
-            return;
-        }
-        if ((len + 2) != msg->DLC) {
-            PRINTF("Error: DLC does not match the expected number of bytes!\n");
-            prv_send_negative_response(ID, ERROR_DLC_DOES_NOT_MATCH_NUMBER_OF_BYTES); //DLC does not match the expected number of bytes
-            return;
-        }
-        if (param.dataTypeLength != len) {
-            PRINTF("Error: Number of transmitted bytes does not match the length of the datatype!\n");
-            prv_send_negative_response(ID, ERROR_NUMBER_OF_BYTES_DOES_NOT_MATCH_DATATYPE); //Number of transmitted bytes does not match the length of the datatype
-            return;
-        }
-        if (!modify && param.modifier == WO) {
-            PRINTF("Cannot read a write-only parameter!\n");
-            prv_send_negative_response(ID, ERROR_CANNOT_READ_WO_PARAMETER);
-            return;
-        }
-
     }
 
-    if (modify) {
-        //Set value
-        prv_update_param(&param, &msg->payload[2]);
-    } else {
-        //Read value
-        prv_get_param(&param);
-    }
-}
+    uint8_t ID = data[0];
 
-static void prv_update_param(param_type_t *param, void *value) {
-    uint8_t ID = param->ID;
+    param_type_t param;
+    bool ret;
+    ret = prv_find_param_type(ID, &param);
 
-    if (param->NV) {
-        if (get_config(pdMS_TO_TICKS(1000)) == NULL) {
-            PRINTF("Error: Could not lock mutex!\n");
-            prv_send_negative_response(ID, ERROR_INTERNAL_ERROR); //Could not lock mutex
-            return;
-        }
+    if (ret != true) {
+        prv_send_negative_response(ID, CAL_ERROR_PARAM_DOES_NOT_EXIST);
+        return;
     }
 
-    //Only the RW and WO parameters are listed here
+    if (param.modifier == WO && (len - 1) != param.dataTypeLength) {
+        prv_send_negative_response(ID, CAL_ERROR_DLC_MISMATCH);
+        return;
+    }
+
+    if (param.modifier == RO && (len - 1) > 0) {
+        prv_send_negative_response(ID, CAL_ERROR_DLC_MISMATCH);
+        return;
+    }
+
     switch (ID) {
-    case ID_LOAD_DEFAULT_CONFIG:
-        if (prv_default_config() != true) {
-            prv_send_negative_response(ID, ERROR_LOADING_DEFAULT_CONFIG); //Error loading default config
+        case ID_QUERY_CONFIG:
+            prv_send_config();
             return;
-        }
-        break;
-    case ID_GLOBAL_BALANCING_ENABLE:
-        prvConfig.globalBalancingEnable = *((bool*)value);
-        break;
 
-    case ID_BALANCING_THRESHOLD:
-        prvConfig.balancingThreshold = *((uint16_t*)value);
-        break;
-
-    case ID_SOC_LOOKUP:
-        //TODO call soc_lookup();
-        break;
-
-    case ID_AUTOMATIC_SOC_LOOKUP_ENABLE:
-        prvConfig.automaticSocLookupEnable = *((bool*)value);
-        break;
-
-    case ID_NUMBER_OF_STACKS:
-        PRINTF("Number of slaves: %u\n", *((uint8_t*)value));
-        if (*((uint8_t*)value) > MAX_NUM_OF_SLAVES || *((uint8_t*)value) == 0) {
-            release_config();
-            prv_send_negative_response(ID, ERROR_NUMBER_OF_STACKS_OUT_OF_RANGE); //More stacks requested as possible
+        case ID_CALIBRATION_STATE: {
+            adc_cal_state_t calState = get_cal_state();
+            prv_send_response(ID, &calState, param.dataTypeLength);
             return;
-        }
-        prvConfig.numberOfStacks = *((uint8_t*)value);
-        break;
+            }
 
-    case ID_LOGGER_ENABLE:
-        prvConfig.loggerEnable = *((bool*)value);
-        break;
-
-    case ID_LOGGER_DELETE_OLDEST_FILE:
-        prvConfig.loggerDeleteOldestFile = *((bool*)value);
-        break;
-
-    case ID_AUTORESET_ENABLE:
-        prvConfig.autoResetOnPowerCycleEnable = *((bool*)value);
-        break;
-
-    case ID_SET_GET_RTC:
-        if (rtc_set_date_time_from_epoch(*((uint32_t*)value)) != true) {
-            prv_send_negative_response(ID, ERROR_SETTING_TIME); //Error setting time
-            return;
-        }
-        break;
-
-    case ID_CONTROL_CALIBRATION:
-        {
-            uint8_t channel = *((uint8_t*)value);
-            if (channel == 0) {
-                //Stop calibration
-                acknowledge_calibration();
+        case ID_LOAD_DEFAULT_CONFIG:
+            if (prv_default_config() != true) {
+                prv_send_negative_response(ID, ERROR_LOADING_DEFAULT_CONFIG); //Error loading default config
+                return;
             } else {
-                if (channel > 3) {
-                    prv_send_negative_response(ID, ERROR_CALIBRATION_INVALID_CHANNEL); //Invalid channel
+                prv_send_positive_response(ID);
+                SystemSoftwareReset();
+            }
+            break;
+
+        case ID_UPDATE_CONFIG:
+            prv_update_config(&data[1]);
+            SystemSoftwareReset();
+            return;
+
+        case ID_SOC_LOOKUP: {
+                bool ret = true;
+                PRINTF("SOC lookup\n");
+                //TODO call ret = soc_lookup();
+                if (ret != true) {
+                    prv_send_negative_response(ID, CAL_ERROR_INTERNAL_ERROR);
                     return;
-                } else {
-                    start_calibration(channel - 1);
                 }
             }
-        }
-        break;
+            break;
 
-    case ID_CALIBRATION_VALUE:
-        value_applied(*((float*)value));
-        break;
+        case ID_SET_RTC: {
+                uint32_t time;
+                memcpy(&time, data + 1, sizeof(uint32_t));
+                if (rtc_set_date_time_from_epoch(time) != true) {
+                    prv_send_negative_response(ID, ERROR_SETTING_TIME); //Error setting time
+                    return;
+                }
+            }
+            break;
 
-    case ID_FORMAT_SD_CARD:
-        sd_format();
-        if (sd_format_status() == SD_FORMAT_BUSY) {
-            //Busy right after requesting?
-            //Another request is pending!
-            uint8_t resp[3];
-            resp[0] = ID;
-            resp[1] = 0x01; //Number of following bytes
-            resp[2] = CARD_FORMATTING_BUSY;
-            prv_send_response(resp, sizeof(resp));
+        case ID_CONTROL_CALIBRATION: {
+                uint8_t channel = data[1];
+                if (channel == 0) {
+                    //Stop calibration
+                    acknowledge_calibration();
+                } else {
+                    if (channel > 3) {
+                        prv_send_negative_response(ID, ERROR_CALIBRATION_INVALID_CHANNEL); //Invalid channel
+                        return;
+                    } else {
+                        start_calibration(channel - 1);
+                    }
+                }
+            }
+            break;
+
+        case ID_CALIBRATION_VALUE: {
+                float value;
+                memcpy(&value, data + 1, sizeof(float));
+                value_applied(value);
+            }
+            break;
+
+        default:
+            prv_send_negative_response(ID, CAL_ERROR_PARAM_DOES_NOT_EXIST); //Requested parameter does not exist
             return;
-        }
-        while (sd_format_status() == SD_FORMAT_DONE) {
-            //Wait for the SD task to begin with the process
-            vTaskDelay(pdMS_TO_TICKS(10));
-        }
-        if (sd_format_status() == SD_FORMAT_BUSY) {
-            //Busy after some time?
-            //Request is now processed
-            uint8_t resp[3];
-            resp[0] = ID;
-            resp[1] = 0x01; //Number of following bytes
-            resp[2] = CARD_FORMATTING_BUSY;
-            prv_send_response(resp, sizeof(resp));
-            return;
-        }
-        if (sd_format_status() == SD_FORMAT_NO_CARD) {
-            uint8_t resp[3];
-            resp[0] = ID;
-            resp[1] = 0x01; //Number of following bytes
-            resp[2] = ERROR_NO_CARD;
-            prv_send_response(resp, sizeof(resp));
-            return;
-        }
-        break;
-
-    case ID_SAVE_NV:
-        if (prv_write_config() != true) { //Update non-volatile memory if the requested parameter has the non-voltatile flag
-            prv_send_negative_response(ID, ERROR_UPDATING_NV_DATA); //Error while updating NV data
-            return;
-        }
-        break;
-
-    default:
-        prv_send_negative_response(ID, ERROR_INTERNAL_ERROR); //Unknown error
-        return;
-    }
-
-
-    if (param->NV) {
-        release_config();
     }
 
     prv_send_positive_response(ID);
 }
 
-static void prv_get_param(param_type_t *param) {
-    //Only the RW and RO parameters are listed here
-    uint8_t ID = param->ID;
-    uint8_t DLC = 0; //DLC to send
-
-    if (param->NV) {
-        if (get_config(pdMS_TO_TICKS(1000)) == NULL) {
-            PRINTF("Error: Could not lock mutex!\n");
-            prv_send_negative_response(ID, ERROR_INTERNAL_ERROR); //Could not lock mutex
-            return;
-        }
-    }
-
-    DLC = param->dataTypeLength + 2;
-    uint8_t resp[DLC];
-    resp[0] = ID;
-    resp[1] = param->dataTypeLength;
-
-
-    switch (ID) {
-    case ID_GLOBAL_BALANCING_ENABLE:
-        memcpy(&resp[2], &prvConfig.globalBalancingEnable, param->dataTypeLength);
-        break;
-
-    case ID_BALANCING_THRESHOLD:
-        memcpy(&resp[2], &prvConfig.balancingThreshold, param->dataTypeLength);
-        break;
-
-    case ID_BALANCING_FEEDBACK:
-        //TODO: respond with active balancing gates
-        break;
-
-    case ID_AUTOMATIC_SOC_LOOKUP_ENABLE:
-        memcpy(&resp[2], &prvConfig.automaticSocLookupEnable, param->dataTypeLength);
-        break;
-
-    case ID_NUMBER_OF_STACKS:
-        memcpy(&resp[2], &prvConfig.numberOfStacks, param->dataTypeLength);
-        break;
-
-    case ID_LOGGER_ENABLE:
-        memcpy(&resp[2], &prvConfig.loggerEnable, param->dataTypeLength);
-        break;
-
-    case ID_LOGGER_DELETE_OLDEST_FILE:
-        memcpy(&resp[2], &prvConfig.loggerDeleteOldestFile, param->dataTypeLength);
-        break;
-
-    case ID_AUTORESET_ENABLE:
-        memcpy(&resp[2], &prvConfig.autoResetOnPowerCycleEnable, param->dataTypeLength);
-        break;
-
-    case ID_SET_GET_RTC:
-        {
-            uint32_t epoch = rtc_get_unix_time();
-            memcpy(&resp[2], &epoch, param->dataTypeLength);
-        }
-        break;
-
-    case ID_CALIBRATION_STATE:
-        {
-            adc_cal_state_t calState = get_cal_state();
-            memcpy(&resp[2], &calState, param->dataTypeLength);
-        }
-        break;
-
-    case ID_FORMAT_SD_CARD_STATUS:
-        {
-            uint8_t ret = sd_format_status();
-            uint8_t resp[3];
-            switch (ret) {
-            case SD_FORMAT_DONE:
-                resp[2] = CARD_FORMATTING_FINISHED;
-                break;
-            case SD_FORMAT_BUSY:
-                resp[2] = CARD_FORMATTING_BUSY;
-                break;
-            case SD_FORMAT_ERROR:
-                resp[2] = ERROR_CARD_FORMATTING_FAILED;
-                break;
-            case SD_FORMAT_NO_CARD:
-                resp[2] = ERROR_NO_CARD;
-                break;
-            }
-            resp[0] = ID;
-            resp[1] = 0x01; //Number of following bytes
-            prv_send_response(resp, sizeof(resp));
-            return;
-        }
-        break;
-
-    default:
-        prv_send_negative_response(ID, ERROR_INTERNAL_ERROR); //Unknown error
-        return;
-    }
-
-    if (param->NV) {
-        release_config();
-    }
-
-    prv_send_response(resp, DLC);
-}
-
 static bool prv_find_param_type(uint8_t ID, param_type_t *found) {
-    for (uint8_t i = 0; i < NUMBER_OF_CONFIG_PARAMS; i++) {
+    for (uint8_t i = 0; i < (sizeof(prvParamTypes) / sizeof(prvParamTypes[0])); i++) {
         if (prvParamTypes[i].ID == ID) {
             *found = prvParamTypes[i];
             return true;
@@ -420,29 +213,67 @@ static bool prv_find_param_type(uint8_t ID, param_type_t *found) {
 
 static void prv_send_negative_response(uint8_t ID, uint8_t reason) {
     can_msg_t msg;
-    msg.ID = CAN_ID_CAL_RESPONSE;
-    msg.DLC = 3;
-    msg.payload[0] = ID | 0x80;
-    msg.payload[1] = 0x01;
-    msg.payload[2] = reason;
+    msg.ID = CAN_ID_DIAG_RESPONSE;
+    msg.DLC = 2;
+    msg.payload[0] = ID | 0x08;
+    msg.payload[1] = reason;
     can_send(CAN_CAL, &msg);
 }
 
 static void prv_send_positive_response(uint8_t ID) {
     can_msg_t msg;
-    msg.ID = CAN_ID_CAL_RESPONSE;
-    msg.DLC = 2;
+    msg.ID = CAN_ID_DIAG_RESPONSE;
+    msg.DLC = 1;
     msg.payload[0] = ID;
-    msg.payload[1] = 0;
     can_send(CAN_CAL, &msg);
 }
 
-static void prv_send_response(uint8_t *data, uint8_t len) {
+static void prv_send_response(uint8_t ID, uint8_t *data, size_t len) {
+    if (len > 7) {
+        return;
+    }
+
     can_msg_t msg;
-    msg.ID = CAN_ID_CAL_RESPONSE;
-    msg.DLC = len;
-    memcpy(&msg.payload, data, len);
+    msg.ID = CAN_ID_DIAG_RESPONSE;
+    msg.DLC = len + 1;
+    msg.payload[0] = ID;
+    memcpy(msg.payload + 1, data, len);
     can_send(CAN_CAL, &msg);
+}
+
+static void prv_send_config(void) {
+    uint8_t resp[7];
+    memset(resp, 0, sizeof(resp));
+    memcpy(resp + 1, &prvConfig.balancingThreshold, sizeof(uint16_t));
+    resp[3] = ((prvConfig.globalBalancingEnable & 0x01) << 6)
+            | ((prvConfig.automaticSocLookupEnable & 0x01) << 5)
+            | ((prvConfig.autoResetOnPowerCycleEnable & 0x01) << 4)
+            | (prvConfig.numberOfStacks & 0x0F);
+
+    prv_send_response(ID_QUERY_CONFIG, resp, sizeof(resp));
+}
+
+static void prv_update_config(uint8_t *data) {
+    memcpy(&prvConfig.balancingThreshold, data + 1, sizeof(uint16_t));
+    prvConfig.numberOfStacks = data[3] & 0x0F;
+    prvConfig.autoResetOnPowerCycleEnable = (data[3] >> 4) & 0x01;
+    prvConfig.automaticSocLookupEnable = (data[3] >> 5) & 0x01;
+    prvConfig.globalBalancingEnable = (data[3] >> 6) & 0x01;
+
+    uint16_t crc16 = eeprom_get_crc16((uint8_t*)&prvConfig, sizeof(config_t) - sizeof(uint16_t));
+    prvConfig.crc16 = crc16;
+
+    bool ret = prv_write_config();
+    if (ret) {
+        PRINTF("New config: success!\n");
+        prv_print_config();
+        prv_send_positive_response(ID_UPDATE_CONFIG);
+        return;
+    } else {
+        PRINTF("New config: failed!\n");
+        prv_send_negative_response(ID_UPDATE_CONFIG, CAL_ERROR_INTERNAL_ERROR);
+        return;
+    }
 }
 
 static BaseType_t prv_config_mutex_take(TickType_t blocktime) {
@@ -451,23 +282,27 @@ static BaseType_t prv_config_mutex_take(TickType_t blocktime) {
 
 static void prv_load_config(void) {
     PRINTF("Loading config...\n");
-    uint8_t pageBuffer[EEPROM_PAGESIZE];
-    memset(pageBuffer, 0, EEPROM_PAGESIZE);
+    uint8_t pageBuffer[256];
+    config_t config;
+
 
     bool ret;
     ret = eeprom_read(pageBuffer, CONFIG_EEPROM_PAGE, EEPROM_PAGESIZE, pdMS_TO_TICKS(500));
-    if (ret == false) {
+    if (ret != true) {
         PRINTF("Unable to read from EEPROM!\n");
         configASSERT(0);
     }
-    uint16_t crcShould = (pageBuffer[254] << 8) | pageBuffer[255];
+    memcpy(&config, pageBuffer, sizeof(config_t));
 
-    if (!eeprom_check_crc(pageBuffer, sizeof(pageBuffer) - sizeof(uint16_t), crcShould)) {
+    uint16_t crcShould = config.crc16;
+
+    if (!eeprom_check_crc((uint8_t*)&config, sizeof(config_t) - sizeof(uint16_t), crcShould)) {
         PRINTF("CRC error while loading config! Loading default!\n");
         prv_default_config();
+        return;
     }
 
-    memcpy(&prvConfig, &pageBuffer[0], sizeof(config_t));
+    memcpy(&prvConfig, &config, sizeof(config_t));
 }
 
 static bool prv_write_config(void) {
@@ -475,14 +310,11 @@ static bool prv_write_config(void) {
     uint8_t pageBuffer[EEPROM_PAGESIZE];
     memset(pageBuffer, 0xFF, sizeof(pageBuffer));
     memcpy(&pageBuffer[0], &prvConfig, sizeof(config_t));
-    uint16_t crc = eeprom_get_crc16(pageBuffer, sizeof(pageBuffer) - sizeof(uint16_t));
-    pageBuffer[254] = crc >> 8;
-    pageBuffer[255] = crc & 0xFF;
 
     bool ret;
     ret = eeprom_write(pageBuffer, CONFIG_EEPROM_PAGE, sizeof(pageBuffer), pdMS_TO_TICKS(500));
 
-    if (ret == false) {
+    if (ret != true) {
         PRINTF("Unable to write to EEPROM!\n");
         return false;
     }
@@ -502,6 +334,8 @@ static bool prv_write_config(void) {
 static bool prv_default_config(void) {
     PRINTF("Initializing with default config.\n");
     prvConfig = prvDefaultConfig;
+    uint16_t crc16 = eeprom_get_crc16((uint8_t*)&prvConfig, sizeof(config_t) - sizeof(uint16_t));
+    prvConfig.crc16 = crc16;
     return prv_write_config();
 }
 
@@ -513,8 +347,6 @@ static void prv_print_config(void) {
         PRINTF("Balancing threshold: %.4f\n", (float)config->balancingThreshold / 10000.0);
         PRINTF("Automatic SOC lookup enabled: %s\n", config->automaticSocLookupEnable ? "true" : "false");
         PRINTF("Number of stacks: %u\n", config->numberOfStacks);
-        PRINTF("Logger enabled: %s\n", config->loggerEnable ? "true" : "false");
-        PRINTF("Logger delete oldest file: %s\n", config->loggerDeleteOldestFile ? "true" : "false");
         PRINTF("Auto reset enabled: %s\n", config->autoResetOnPowerCycleEnable ? "true" : "false");
         release_config();
     }

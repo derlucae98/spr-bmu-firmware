@@ -16,16 +16,17 @@
 #include "config.h"
 #include "stacks.h"
 #include "adc.h"
-#include "base64.h"
 #include "contactor.h"
-#include "cal.h"
 
+#define LOGDATA_STRING_LENGTH 256 //Change as needed
+
+typedef struct {
+    char data[LOGDATA_STRING_LENGTH];
+} log_data_t;
 
 void logger_init(void);
 void logger_control(bool ready, FIL *file);
-bool logger_is_active(void);
-void logger_request_termination(void);
-bool logger_terminated(void);
 void logger_tick_hook(uint32_t uptime);
+
 
 #endif /* LOGGER_H_ */
