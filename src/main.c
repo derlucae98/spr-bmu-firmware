@@ -95,74 +95,6 @@ static void set_gpio_config(void) {
     set_pin_mux(UART_PORT, UART_TX, 4);
 }
 
-
-
-static void uart_rec(char* s) {
-
-    char *strtokHelp = NULL;
-    const char *delim = " \r\n";
-    char *token = NULL;
-    token = strtok_r(s, delim, &strtokHelp);
-    char *tokens[4];
-    uint8_t counter = 0;
-    while (token != NULL) {
-        size_t len = strlen(token) + 1;
-        tokens[counter] = alloca(len);
-        strcpy(tokens[counter], token);
-        counter++;
-        token = strtok_r(NULL, delim, &strtokHelp);
-    }
-
-    if (strcmp(tokens[0], "ts") == 0) {
-        if (strcmp(tokens[1], "on") == 0) {
-            request_tractive_system(true);
-        } else if (strcmp(tokens[1], "off") == 0) {
-            request_tractive_system(false);
-        }
-    } else if(strcmp(tokens[0], "cal") == 0) {
-        if (strcmp(tokens[1], "ubatt") == 0) {
-            start_calibration(CAL_INPUT_UBATT_VOLT);
-        } else if (strcmp(tokens[1], "ulink") == 0) {
-            start_calibration(CAL_INPUT_ULINK_VOLT);
-        } else if (strcmp(tokens[1], "current") == 0) {
-            start_calibration(CAL_INPUT_CURRENT);
-        } else if (strcmp(tokens[1], "done") == 0) {
-            acknowledge_calibration();
-        }
-    } else if (strcmp(tokens[0], "ack") == 0) {
-        value_applied(atof(tokens[1]));
-    } else if (strcmp(tokens[0], "sync") == 0) {
-        rtc_sync();
-    }
-
-    /* Calibration process:
-     * Send: cal <input>\r\n    <input> = ubatt,ulink,current
-     * Apply 10V to the input (Current calibration currently not possible. No Hardware...)
-     * Send: ack <xx.xxx>\r\n   <xx.xxx> = Exact voltage that has been applied
-     * Apply 600V to the input (In the first test 300V is used)
-     * Send: ack <xxx.xx>\r\n   <xxx.xx> = Exact voltage that has been applied
-     * Send: cal done\r\n       Finish the calibration process
-     */
-
-    unsigned int input[6];
-    if (strcmp(tokens[0], "time") == 0) {
-        if (strcmp(tokens[1], "set") == 0) {
-            sscanf(tokens[2], "%u-%u-%u", &input[0], &input[1], &input[2]);
-            sscanf(tokens[3], "%u:%u:%u", &input[3], &input[4], &input[5]);
-            PRINTF("Setting date and time to %04u-%02u-%02u %02u:%02u:%02u\n", input[0], input[1], input[2], input[3], input[4], input[5]);
-            rtc_date_time_t dateTime;
-            dateTime.year = input[0];
-            dateTime.month = input[1];
-            dateTime.day = input[2];
-            dateTime.hour = input[3];
-            dateTime.minute = input[4];
-            dateTime.second = input[5];
-            rtc_set_date_time(&dateTime);
-        }
-    }
-
-}
-
 void init_task(void *p) {
     (void)p;
 
@@ -234,14 +166,12 @@ int main(void)
     set_gpio_config();
     can_init(CAN0);
     can_init(CAN1);
-    uart_init(true);
-    uart_register_receive_hook(uart_rec);
+    uart_init(false);
     set_pin(AMS_FAULT_PORT, AMS_FAULT_PIN);
 
     spi_init(LPSPI1, LPSPI_PRESC_1, LPSPI_MODE_0);
     spi_init(LPSPI0, LPSPI_PRESC_4, LPSPI_MODE_3);
     spi_init(LPSPI2, PERIPH_SPI_SLOW, LPSPI_MODE_0);
-//    spi_enable_dma(LPSPI1);
 
     xTaskCreate(init_task, "", 1000, NULL, configMAX_PRIORITIES-1, NULL);
 
