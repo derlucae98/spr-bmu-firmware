@@ -81,7 +81,8 @@ enum can_id_vehicle {
 
 enum can_id_diag {
     CAN_ID_DIAG_REQUEST  = 0x12,
-    CAN_ID_DIAG_RESPONSE = 0x13
+    CAN_ID_DIAG_RESPONSE = 0x13,
+    CAN_ID_DIAG_TIME     = 0x14
 };
 
 
