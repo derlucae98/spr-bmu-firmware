@@ -139,6 +139,9 @@ void handle_cal_request(uint8_t *data, size_t len) {
             if (prv_default_config() != true) {
                 prv_send_negative_response(ID, ERROR_LOADING_DEFAULT_CONFIG); //Error loading default config
                 return;
+            } else {
+                prv_send_positive_response(ID);
+                SystemSoftwareReset();
             }
             break;
 
@@ -148,7 +151,8 @@ void handle_cal_request(uint8_t *data, size_t len) {
             return;
 
         case ID_SOC_LOOKUP: {
-                bool ret;
+                bool ret = true;
+                PRINTF("SOC lookup\n");
                 //TODO call ret = soc_lookup();
                 if (ret != true) {
                     prv_send_negative_response(ID, CAL_ERROR_INTERNAL_ERROR);
