@@ -2,9 +2,15 @@
 
 QueueHandle_t can0RxQueueHandle = NULL;
 QueueHandle_t can1RxQueueHandle = NULL;
+static QueueHandle_t prvCan0TxQueueHandle = NULL;
+static QueueHandle_t prvCan1TxQueueHandle = NULL;
 
-static SemaphoreHandle_t _can0Mutex = NULL;
-static SemaphoreHandle_t _can1Mutex = NULL;
+static SemaphoreHandle_t prvCan0Mutex = NULL;
+static SemaphoreHandle_t prvCan1Mutex = NULL;
+
+static void prv_can0_send_task(void *p);
+static void prv_can1_send_task(void *p);
+static bool prv_can_send(CAN_Type *can, can_msg_t *msg);
 
 #define CAN_MB_REC_START               0
 #define CAN_MB_REC                     8
@@ -84,22 +90,45 @@ void can_init(CAN_Type *can) {
     case CAN0_BASE:
         nvic_enable_irq(CAN0_ORed_0_15_MB_IRQn);
         nvic_set_priority(CAN0_ORed_0_15_MB_IRQn, 0xFF);
-        _can0Mutex = xSemaphoreCreateMutex();
-        configASSERT(_can0Mutex);
+        prvCan0Mutex = xSemaphoreCreateMutex();
+        configASSERT(prvCan0Mutex);
 
-        can0RxQueueHandle = xQueueCreate(8, sizeof(can_msg_t));
+        can0RxQueueHandle = xQueueCreate(CAN_RX_Q_ITEMS, sizeof(can_msg_t));
         configASSERT(can0RxQueueHandle);
+        prvCan0TxQueueHandle = xQueueCreate(CAN_TX_Q_ITEMS, sizeof(can_msg_t));
+        configASSERT(prvCan0TxQueueHandle);
+
+        xTaskCreate(prv_can0_send_task, "can0send", 512, NULL, 3, NULL);
         break;
     case CAN1_BASE:
         nvic_enable_irq(CAN1_ORed_0_15_MB_IRQn);
         nvic_set_priority(CAN1_ORed_0_15_MB_IRQn, 0xFF);
 
-        _can1Mutex = xSemaphoreCreateMutex();
-        configASSERT(_can1Mutex);
+        prvCan1Mutex = xSemaphoreCreateMutex();
+        configASSERT(prvCan1Mutex);
 
-        can1RxQueueHandle = xQueueCreate(8, sizeof(can_msg_t));
+        can1RxQueueHandle = xQueueCreate(CAN_RX_Q_ITEMS, sizeof(can_msg_t));
         configASSERT(can1RxQueueHandle);
+        prvCan1TxQueueHandle = xQueueCreate(CAN_TX_Q_ITEMS, sizeof(can_msg_t));
+        configASSERT(prvCan1TxQueueHandle);
+
+        xTaskCreate(prv_can1_send_task, "can1send", 512, NULL, 3, NULL);
         break;
+    }
+}
+
+bool can_enqueue_message(CAN_Type *can, can_msg_t *message, TickType_t blocktime) {
+    configASSERT(can);
+
+    uintptr_t canModule = (uintptr_t)can; //Transform the address stored in the pointer into a number
+
+    switch (canModule) {
+    case CAN0_BASE:
+        return xQueueSendToBack(prvCan0TxQueueHandle, message, blocktime);
+    case CAN1_BASE:
+        return xQueueSendToBack(prvCan1TxQueueHandle, message, blocktime);
+    default:
+        configASSERT(0);
     }
 }
 
@@ -156,7 +185,7 @@ static void handle_irq(CAN_Type *can, BaseType_t *higherPrioTaskWoken) {
     }
 }
 
-bool can_send(CAN_Type *can, can_msg_t *msg) {
+static bool prv_can_send(CAN_Type *can, can_msg_t *msg) {
     configASSERT(can);
 
     uintptr_t canModule = (uintptr_t)can; //Transform the address stored in the pointer into a number
@@ -165,12 +194,12 @@ bool can_send(CAN_Type *can, can_msg_t *msg) {
 
     switch (canModule) {
     case CAN0_BASE:
-        configASSERT(_can0Mutex);
-        gotMutex = xSemaphoreTake(_can0Mutex, pdMS_TO_TICKS(10));
+        configASSERT(prvCan0Mutex);
+        gotMutex = xSemaphoreTake(prvCan0Mutex, pdMS_TO_TICKS(10));
         break;
     case CAN1_BASE:
-        configASSERT(_can1Mutex);
-        gotMutex = xSemaphoreTake(_can1Mutex, pdMS_TO_TICKS(10));
+        configASSERT(prvCan1Mutex);
+        gotMutex = xSemaphoreTake(prvCan1Mutex, pdMS_TO_TICKS(10));
         break;
     default:
         configASSERT(0);
@@ -211,13 +240,33 @@ bool can_send(CAN_Type *can, can_msg_t *msg) {
         //Give the mutex back
         switch (canModule) {
         case CAN0_BASE:
-            xSemaphoreGive(_can0Mutex);
+            xSemaphoreGive(prvCan0Mutex);
             break;
         case CAN1_BASE:
-            xSemaphoreGive(_can1Mutex);
+            xSemaphoreGive(prvCan1Mutex);
             break;
         }
     }
     return freeBufferFound;
+}
+
+static void prv_can0_send_task(void *p) {
+    (void)p;
+    can_msg_t msg;
+    while (1) {
+        if (xQueueReceive(prvCan0TxQueueHandle, &msg, portMAX_DELAY)) {
+            prv_can_send(CAN0, &msg);
+        }
+    }
+}
+
+static void prv_can1_send_task(void *p) {
+    (void)p;
+    can_msg_t msg;
+    while (1) {
+        if (xQueueReceive(prvCan1TxQueueHandle, &msg, portMAX_DELAY)) {
+            prv_can_send(CAN1, &msg);
+        }
+    }
 }
 

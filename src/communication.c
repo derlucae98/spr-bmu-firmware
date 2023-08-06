@@ -154,7 +154,7 @@ static void can_send_task(void *p) {
         msg.payload[5] = ((canData.avgCellVolt & 0x1FFF) << 7) | ((canData.avgCellVoltValid & 0x01) << 6) | ((canData.minSoc & 0x3FF) >> 4);
         msg.payload[6] = ((canData.minSoc & 0x3FF) << 4) | ((canData.minSocValid & 0x01) << 3) | ((canData.maxSoc & 0x3FF) >> 7);
         msg.payload[7] = ((canData.maxSoc & 0x3FF) << 1) | ((canData.maxSocValid & 0x01));
-        can_send(CAN0, &msg);
+        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
 
         //BMS_Info_2
         msg.ID = 0x002;
@@ -166,7 +166,7 @@ static void can_send_task(void *p) {
         msg.payload[4] = (canData.current >> 8);
         msg.payload[5] = (canData.current & 0xFF);
         msg.payload[6] = (canData.currentValid & 0x01) << 7;
-        can_send(CAN0, &msg);
+        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
 
         //BMS_Info_3
         msg.ID = 0x003;
@@ -180,7 +180,7 @@ static void can_send_task(void *p) {
         msg.payload[5] = ((canData.minTemp & 0x3FF) << 7) | ((canData.minTempValid & 0x01) << 6) | ((canData.maxTemp >> 4) & 0x3F);
         msg.payload[6] = ((canData.maxTemp & 0x3FF) << 4) | ((canData.maxTempValid & 0x01) << 3) | ((canData.avgTemp & 0x3FF) >> 7);
         msg.payload[7] = ((canData.avgTemp & 0x3FF) << 1) | (canData.avgTempValid & 0x01);
-        can_send(CAN0, &msg);
+        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
 
         //Send BMS temperature 1 message every 10 ms
         msg.ID = 0x004;
@@ -194,7 +194,7 @@ static void can_send_task(void *p) {
         msg.payload[6] = (canData.temperature[counter][3] << 6) | ((canData.temperatureStatus[counter][3] & 0x03) << 4) | ((canData.temperature[counter][4] >> 6) & 0x0F);
         msg.payload[7] = (canData.temperature[counter][4] << 2) | (canData.temperatureStatus[counter][4] & 0x03);
         //Send message
-        can_send(CAN0, &msg);
+        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
 
         //Send BMS temperature 2 message every 10 ms
         msg.ID = 0x005;
@@ -208,7 +208,7 @@ static void can_send_task(void *p) {
         msg.payload[6] = 0;
         msg.payload[7] = 0;
         //Send message
-        can_send(CAN0, &msg);
+        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
 
         //Send BMS temperature 3 message every 10 ms
         msg.ID = 0x006;
@@ -222,7 +222,7 @@ static void can_send_task(void *p) {
         msg.payload[6] = 0;
         msg.payload[7] = 0;
         //Send message
-        can_send(CAN0, &msg);
+        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
 
         //Send BMS cell voltage 1 message every 10 ms
         msg.ID = 0x007;
@@ -235,7 +235,7 @@ static void can_send_task(void *p) {
         msg.payload[5] = canData.cellVoltage[counter][2] >> 5;
         msg.payload[6] = ((canData.cellVoltage[counter][2] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][3] & 0x3);
         //Send message
-        can_send(CAN0, &msg);
+        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
 
         //Send BMS cell voltage 2 message every 10 ms
         msg.ID = 0x008;
@@ -248,7 +248,7 @@ static void can_send_task(void *p) {
         msg.payload[5] = canData.cellVoltage[counter][5] >> 5;
         msg.payload[6] = ((canData.cellVoltage[counter][5] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][6] & 0x3);
         //Send message
-        can_send(CAN0, &msg);
+        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
 
         //Send BMS cell voltage 3 message every 10 ms
         msg.ID = 0x009;
@@ -261,7 +261,7 @@ static void can_send_task(void *p) {
         msg.payload[5] = canData.cellVoltage[counter][8] >> 5;
         msg.payload[6] = ((canData.cellVoltage[counter][8] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][9] & 0x3);
         //Send message
-        can_send(CAN0, &msg);
+        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
 
         //Send BMS cell voltage 4 message every 10 ms
         msg.ID = 0x00A;
@@ -274,7 +274,7 @@ static void can_send_task(void *p) {
         msg.payload[5] = canData.cellVoltage[counter][11] >> 5;
         msg.payload[6] = ((canData.cellVoltage[counter][11] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][12] & 0x3);
         //Send message
-        can_send(CAN0, &msg);
+        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
 
         //Send Unique ID every 10 ms
         msg.ID = 0x00B;
@@ -285,7 +285,7 @@ static void can_send_task(void *p) {
         msg.payload[3] = canData.UID[counter] >> 8;
         msg.payload[4] = canData.UID[counter] & 0xFF;
         //Send message
-        can_send(CAN0, &msg);
+        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
 
         msg.ID = 0x00E;
         msg.payload[0] = counter;
@@ -294,7 +294,7 @@ static void can_send_task(void *p) {
                 | ((balance[counter][5] & 0x01) << 1) | ((balance[counter][4] & 0x01));
         msg.payload[2] = ((balance[counter][3] & 0x01) << 7) | ((balance[counter][2] & 0x01) << 6) | ((balance[counter][1] & 0x01) << 5) | ((balance[counter][0] & 0x01) << 4);
         msg.DLC = 3;
-        can_send(CAN0, &msg);
+        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
 
         msg.ID = 0x00F;
         msg.payload[0] = canData.minSoc >> 8;
@@ -303,7 +303,7 @@ static void can_send_task(void *p) {
         msg.payload[3] = canData.maxTemp & 0xFF;
         msg.payload[4] = canData.tsState;
         msg.DLC = 5;
-        can_send(CAN0, &msg);
+        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
 
         if (counter == 0) {
             uint32_t uptime = uptime_in_100_ms();
@@ -312,7 +312,7 @@ static void can_send_task(void *p) {
             msg.DLC = 8;
             memcpy(msg.payload, &uptime, sizeof(uptime));
             memcpy(msg.payload + sizeof(uptime), &unix, sizeof(unix));
-            can_send(CAN_VEHIC, &msg);
+            can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
         }
 
         if (counter < MAX_NUM_OF_SLAVES-1) {

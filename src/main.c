@@ -153,7 +153,7 @@ void init_task(void *p) {
         msg.DLC = 2;
         msg.payload[0] = (resetReason >> 8) & 0xFF;
         msg.payload[1] = resetReason & 0xFF;
-        can_send(CAN_VEHIC, &msg);
+        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
 
         vTaskDelete(NULL);
     }

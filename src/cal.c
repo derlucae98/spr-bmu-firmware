@@ -217,7 +217,7 @@ static void prv_send_negative_response(uint8_t ID, uint8_t reason) {
     msg.DLC = 2;
     msg.payload[0] = ID | 0x08;
     msg.payload[1] = reason;
-    can_send(CAN_CAL, &msg);
+    can_enqueue_message(CAN_CAL, &msg, pdMS_TO_TICKS(100));
 }
 
 static void prv_send_positive_response(uint8_t ID) {
@@ -225,7 +225,7 @@ static void prv_send_positive_response(uint8_t ID) {
     msg.ID = CAN_ID_DIAG_RESPONSE;
     msg.DLC = 1;
     msg.payload[0] = ID;
-    can_send(CAN_CAL, &msg);
+    can_enqueue_message(CAN_CAL, &msg, pdMS_TO_TICKS(100));
 }
 
 static void prv_send_response(uint8_t ID, uint8_t *data, size_t len) {
@@ -238,7 +238,7 @@ static void prv_send_response(uint8_t ID, uint8_t *data, size_t len) {
     msg.DLC = len + 1;
     msg.payload[0] = ID;
     memcpy(msg.payload + 1, data, len);
-    can_send(CAN_CAL, &msg);
+    can_enqueue_message(CAN_CAL, &msg, pdMS_TO_TICKS(100));
 }
 
 static void prv_send_config(void) {
