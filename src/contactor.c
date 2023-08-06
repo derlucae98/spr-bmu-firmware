@@ -55,6 +55,8 @@ static bool prvAmsPowerStageDisabled = false;
 static bool prvImdPowerStageDisabled = false;
 static bool prvSdcOpen = false;
 
+static uint8_t prvNumberOfStacks = 12;
+
 typedef enum {
     EVENT_NONE,
     EVENT_TS_ACTIVATE,
@@ -177,6 +179,12 @@ static void prv_error(void) {
 }
 
 void init_contactor(void) {
+    config_t *config = get_config(portMAX_DELAY);
+    if (config != NULL) {
+        prvNumberOfStacks = config->numberOfStacks;
+        release_config();
+    }
+
     prvStateMachine.current = CONTACTOR_STATE_STANDBY;
     xTaskCreate(prv_contactor_control_task, "contactor", CONTACTOR_TASK_STACK, NULL, CONTACTOR_TASK_PRIO, NULL);
     xTaskCreate(prv_system_state_task, "sysstate", SYSTEM_STATE_TASK_STACK, NULL, SYSTEM_STATE_TASK_PRIO, NULL);
@@ -293,14 +301,14 @@ static void prv_contactor_control_task(void *p) {
 
         /* DC-Link voltage lower than 80% of the minimum battery voltage and contactors are active?
          * -> DC-Link voltage measurement broken wire */
-        if (prvStateMachine.current == CONTACTOR_STATE_OPERATE && adcData.dcLinkVoltage < (0.8f * MIN_BATTERY_VOLTAGE)) {
+        if (prvStateMachine.current == CONTACTOR_STATE_OPERATE && adcData.dcLinkVoltage < (0.8f * MIN_STACK_VOLTAGE * prvNumberOfStacks)) {
             prvEvent = EVENT_ERROR;
             prvStateMachineError |= ERROR_IMPLAUSIBLE_DC_LINK_VOLTAGE;
         }
 
         /* Battery voltage lower than 80% of the minimum battery voltage and contactors are active?
          * -> Battery voltage measurement broken wire OR battery depleted OR main fuse blown :/ */
-        if (prvStateMachine.current == CONTACTOR_STATE_OPERATE && adcData.batteryVoltage < (0.8f * MIN_BATTERY_VOLTAGE)) {
+        if (prvStateMachine.current == CONTACTOR_STATE_OPERATE && adcData.batteryVoltage < (0.8f * MIN_STACK_VOLTAGE * prvNumberOfStacks)) {
             prvEvent = EVENT_ERROR;
             prvStateMachineError |= ERROR_IMPLAUSIBLE_BATTERY_VOLTAGE;
         }

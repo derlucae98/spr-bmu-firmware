@@ -18,7 +18,7 @@
 
 
 #define TOTAL_NUMBER_OF_CELLS 144
-#define MIN_BATTERY_VOLTAGE 20 /*(CELL_UNDERVOLTAGE * TOTAL_NUMBER_OF_CELLS)*/
+#define MIN_STACK_VOLTAGE (CELL_UNDERVOLTAGE * 12) // 12 cells per stack; Multiply with the number of stacks to get the min battery voltage
 #define PRECHARGE_TIMEOUT 50 //Seconds * 10; 5 Seconds
 
 
