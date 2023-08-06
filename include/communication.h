@@ -8,7 +8,7 @@
 #ifndef COMMUNICATION_H_
 #define COMMUNICATION_H_
 
-
+#include <stdlib.h>
 #include "S32K14x.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -23,6 +23,7 @@
 
 
 void init_comm(void);
+uint32_t get_reset_reason(void);
 
 
 

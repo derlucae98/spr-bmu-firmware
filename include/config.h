@@ -79,10 +79,23 @@ enum can_id_vehicle {
     CAN_ID_xx
 };
 
-enum can_id_diag {
-    CAN_ID_DIAG_REQUEST  = 0x12,
-    CAN_ID_DIAG_RESPONSE = 0x13,
-    CAN_ID_DIAG_TIME     = 0x14
+enum can_id {
+    CAN_ID_TS_REQUEST         = 0x000,
+    CAN_ID_STARTUP            = 0x001,
+    CAN_ID_INFO               = 0x002,
+    CAN_ID_STATS_1            = 0x003,
+    CAN_ID_STATS_2            = 0x004,
+    CAN_ID_UIP                = 0x005,
+    CAN_ID_CELL_VOLTAGE_1     = 0x006,
+    CAN_ID_CELL_VOLTAGE_2     = 0x007,
+    CAN_ID_CELL_VOLTAGE_3     = 0x008,
+    CAN_ID_CELL_VOLTAGE_4     = 0x009,
+    CAN_ID_CELL_TEMPERATURE   = 0x00A,
+    CAN_ID_BALANCING_FEEDBACK = 0x00B,
+    CAN_ID_UNIQUE_ID          = 0x00C,
+    CAN_ID_TIME               = 0x00D,
+    CAN_ID_DIAG_REQUEST       = 0x00E,
+    CAN_ID_DIAG_RESPONSE      = 0x00F
 };
 
 

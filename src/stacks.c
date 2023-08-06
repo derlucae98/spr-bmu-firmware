@@ -38,6 +38,7 @@ static bool prvBalanceEnable = false;
 static uint16_t prvBalanceThreshold;
 static TaskHandle_t prvBalanceTaskHandle = NULL;
 static bool prvCharging = false;
+static stacks_data_t prvStacksDataLocal;
 
 
 static BaseType_t prv_balancingGatesMutex_take(TickType_t blocktime);
@@ -78,6 +79,7 @@ void init_stacks(void) {
     prvBalancingGatesMutex = xSemaphoreCreateMutex();
     configASSERT(prvBalancingGatesMutex);
     memset(prvBalancingGates, 0, sizeof(prvBalancingGates));
+    memset(&prvStacksDataLocal, 0, sizeof(stacks_data_t));
 
     uint8_t numberOfStacks = MAX_NUM_OF_SLAVES;
     config_t* config  = get_config(pdMS_TO_TICKS(500));
@@ -94,7 +96,7 @@ void init_stacks(void) {
     ltc6811_get_uid(UID);
     stacks_data_t *stacksData = get_stacks_data(portMAX_DELAY);
     if (stacksData != NULL) {
-        memcpy(stacksData->UID, UID, sizeof(UID));
+        memcpy(prvStacksDataLocal.UID, UID, sizeof(uint32_t) * numberOfStacks);
         release_stacks_data();
     }
 
@@ -109,8 +111,6 @@ void init_stacks(void) {
 void stacks_worker_task(void *p) {
     (void)p;
 
-    stacks_data_t stacksDataLocal;
-    memset(&stacksDataLocal, 0, sizeof(stacks_data_t));
     static uint8_t pecVoltage[MAX_NUM_OF_SLAVES][MAX_NUM_OF_CELLS];
     TickType_t xLastWakeTime = xTaskGetTickCount();
     const TickType_t xPeriod = pdMS_TO_TICKS(75);
@@ -121,15 +121,15 @@ void stacks_worker_task(void *p) {
 
         ltc6811_wake_daisy_chain();
         ltc6811_set_balancing_gates(prvBalancingGates);
-        ltc6811_get_voltage(stacksDataLocal.cellVoltage, pecVoltage);
+        ltc6811_get_voltage(prvStacksDataLocal.cellVoltage, pecVoltage);
 
         switch (cycle) {
         case 0:
-            ltc6811_get_temperatures_in_degC(stacksDataLocal.temperature, stacksDataLocal.temperatureStatus, 0, 3);
+            ltc6811_get_temperatures_in_degC(prvStacksDataLocal.temperature, prvStacksDataLocal.temperatureStatus, 0, 3);
             cycle = 1;
             break;
         case 1:
-            ltc6811_open_wire_check(stacksDataLocal.cellVoltageStatus);
+            ltc6811_open_wire_check(prvStacksDataLocal.cellVoltageStatus);
             cycle = 0;
             break;
         }
@@ -144,13 +144,13 @@ void stacks_worker_task(void *p) {
             // Validity check for temperature sensors
 
             for (size_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
-                if (stacksDataLocal.temperatureStatus[slave][tempsens] == PECERROR) {
+                if (prvStacksDataLocal.temperatureStatus[slave][tempsens] == PECERROR) {
                     continue;
                 }
-                if (stacksDataLocal.temperature[slave][tempsens] > MAXCELLTEMP) {
-                    stacksDataLocal.temperatureStatus[slave][tempsens] = VALUEOUTOFRANGE;
-                } else if (stacksDataLocal.temperature[slave][tempsens] < 10) {
-                     stacksDataLocal.temperatureStatus[slave][tempsens] = OPENCELLWIRE;
+                if (prvStacksDataLocal.temperature[slave][tempsens] > MAXCELLTEMP) {
+                    prvStacksDataLocal.temperatureStatus[slave][tempsens] = VALUEOUTOFRANGE;
+                } else if (prvStacksDataLocal.temperature[slave][tempsens] < 10) {
+                    prvStacksDataLocal.temperatureStatus[slave][tempsens] = OPENCELLWIRE;
                 }
             }
 
@@ -158,37 +158,37 @@ void stacks_worker_task(void *p) {
             for (size_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
                 // PEC error: highest prio
                 if (pecVoltage[slave][cell] == PECERROR) {
-                    stacksDataLocal.cellVoltageStatus[slave][cell + 1] = PECERROR;
+                    prvStacksDataLocal.cellVoltageStatus[slave][cell + 1] = PECERROR;
                     continue;
                 }
                 // Open sensor wire: Prio 2
-                if (stacksDataLocal.cellVoltageStatus[slave][cell + 1] == OPENCELLWIRE) {
+                if (prvStacksDataLocal.cellVoltageStatus[slave][cell + 1] == OPENCELLWIRE) {
                     continue;
                 }
                 // Value out of range: Prio 3
-                if ((stacksDataLocal.cellVoltage[slave][cell] > CELL_OVERVOLTAGE) ||
-                    (stacksDataLocal.cellVoltage[slave][cell] < CELL_UNDERVOLTAGE)) {
-                        stacksDataLocal.cellVoltageStatus[slave][cell + 1] = VALUEOUTOFRANGE;
+                if ((prvStacksDataLocal.cellVoltage[slave][cell] > CELL_OVERVOLTAGE) ||
+                    (prvStacksDataLocal.cellVoltage[slave][cell] < CELL_UNDERVOLTAGE)) {
+                    prvStacksDataLocal.cellVoltageStatus[slave][cell + 1] = VALUEOUTOFRANGE;
                 }
 
             }
         }
 
-        bool cellVoltValid = prv_check_voltage_validity(stacksDataLocal.cellVoltageStatus, NUMBEROFSLAVES);
-        stacksDataLocal.minCellVolt = prv_min_cell_voltage(stacksDataLocal.cellVoltage, NUMBEROFSLAVES);
-        stacksDataLocal.maxCellVolt = prv_max_cell_voltage(stacksDataLocal.cellVoltage, NUMBEROFSLAVES);
-        stacksDataLocal.avgCellVolt = prv_avg_cell_voltage(stacksDataLocal.cellVoltage, NUMBEROFSLAVES);
-        stacksDataLocal.voltageValid = cellVoltValid;
+        bool cellVoltValid = prv_check_voltage_validity(prvStacksDataLocal.cellVoltageStatus, NUMBEROFSLAVES);
+        prvStacksDataLocal.minCellVolt = prv_min_cell_voltage(prvStacksDataLocal.cellVoltage, NUMBEROFSLAVES);
+        prvStacksDataLocal.maxCellVolt = prv_max_cell_voltage(prvStacksDataLocal.cellVoltage, NUMBEROFSLAVES);
+        prvStacksDataLocal.avgCellVolt = prv_avg_cell_voltage(prvStacksDataLocal.cellVoltage, NUMBEROFSLAVES);
+        prvStacksDataLocal.voltageValid = cellVoltValid;
 
-        bool cellTemperatureValid = prv_check_temperature_validity(stacksDataLocal.temperatureStatus, NUMBEROFSLAVES);
-        stacksDataLocal.minTemperature = prv_min_cell_temperature(stacksDataLocal.temperature, NUMBEROFSLAVES);
-        stacksDataLocal.maxTemperature = prv_max_cell_temperature(stacksDataLocal.temperature, NUMBEROFSLAVES);
-        stacksDataLocal.avgTemperature = prv_avg_cell_temperature(stacksDataLocal.temperature, NUMBEROFSLAVES);
-        stacksDataLocal.temperatureValid = cellTemperatureValid;
+        bool cellTemperatureValid = prv_check_temperature_validity(prvStacksDataLocal.temperatureStatus, NUMBEROFSLAVES);
+        prvStacksDataLocal.minTemperature = prv_min_cell_temperature(prvStacksDataLocal.temperature, NUMBEROFSLAVES);
+        prvStacksDataLocal.maxTemperature = prv_max_cell_temperature(prvStacksDataLocal.temperature, NUMBEROFSLAVES);
+        prvStacksDataLocal.avgTemperature = prv_avg_cell_temperature(prvStacksDataLocal.temperature, NUMBEROFSLAVES);
+        prvStacksDataLocal.temperatureValid = cellTemperatureValid;
 
         stacks_data_t *stacksData = get_stacks_data(portMAX_DELAY);
         if (stacksData != NULL) {
-            memcpy(stacksData, &stacksDataLocal, sizeof(stacks_data_t));
+            memcpy(stacksData, &prvStacksDataLocal, sizeof(stacks_data_t));
             release_stacks_data();
         }
 

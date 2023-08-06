@@ -12,48 +12,52 @@ static void can_rec_task(void *p);
 
 
 typedef struct {
+    //Info
+    uint16_t isolationResistance;
+    bool isolationResistanceValid;
+    uint32_t errorCode;
+    uint8_t tsState;
+
+    //Stats1
+    uint16_t minCellVolt;
+    uint16_t maxCellVolt;
+    uint16_t avgCellVolt;
+    bool voltageValid;
+
+    //Stats2
+    uint16_t minSoc;
+    uint16_t maxSoc;
+    bool socValid;
+    uint16_t dcLinkVoltage;
+    bool dcLinkVoltageValid;
+    uint8_t minTemp;
+    uint8_t maxTemp;
+    uint8_t avgTemp;
+    bool tempValid;
+
+    //UIP
+    uint16_t batteryVoltage;
+    bool batteryVoltageValid;
+    int16_t current;
+    bool currentValid;
+    uint16_t batteryPower;
+    bool batteryPowerValid;
+
+    //Unique ID
     uint32_t UID[MAX_NUM_OF_SLAVES];
+
+    //Cell voltage / temperature
     uint16_t cellVoltage[MAX_NUM_OF_SLAVES][MAX_NUM_OF_CELLS];
     uint8_t cellVoltageStatus[MAX_NUM_OF_SLAVES][MAX_NUM_OF_CELLS+1];
     uint16_t temperature[MAX_NUM_OF_SLAVES][MAX_NUM_OF_TEMPSENS];
     uint8_t temperatureStatus[MAX_NUM_OF_SLAVES][MAX_NUM_OF_TEMPSENS];
 
-    //BMS_Info_1
-    uint16_t minCellVolt;
-    bool minCellVoltValid;
-    uint16_t maxCellVolt;
-    bool maxCellVoltValid;
-    uint16_t avgCellVolt;
-    bool avgCellVoltValid;
-    uint16_t minSoc;
-    bool minSocValid;
-    uint16_t maxSoc;
-    bool maxSocValid;
+    //Balancing feedback
+    uint8_t balance[MAX_NUM_OF_SLAVES][MAX_NUM_OF_CELLS];
 
-    //BMS_Info_2
-    uint16_t batteryVoltage;
-    bool batteryVoltageValid;
-    uint16_t dcLinkVoltage;
-    bool dcLinkVoltageValid;
-    int16_t current;
-    bool currentValid;
-
-    //BMS_Info_3
-    uint16_t isolationResistance;
-    bool isolationResistanceValid;
-    bool shutdownStatus;
-    uint8_t tsState;
-    bool amsResetStatus;
-    bool amsStatus;
-    bool imdResetStatus;
-    bool imdStatus;
-    uint8_t errorCode;
-    uint16_t minTemp;
-    bool minTempValid;
-    uint16_t maxTemp;
-    bool maxTempValid;
-    uint16_t avgTemp;
-    bool avgTempValid;
+    //Time
+    uint32_t uptime;
+    uint32_t sysTime;
 } can_data_t;
 
 void init_comm(void) {
@@ -66,48 +70,50 @@ static void can_send_task(void *p) {
     TickType_t xLastWakeTime;
     const TickType_t xPeriod = pdMS_TO_TICKS(10);
     xLastWakeTime = xTaskGetTickCount();
-    uint8_t counter = 0;
+
+    uint8_t slaveCounter = 0;
+    uint8_t counter100ms = 0;
     can_msg_t msg;
     can_data_t canData;
+
     memset(&canData, 0, sizeof(can_data_t));
-    uint8_t balance[MAX_NUM_OF_SLAVES][MAX_NUM_OF_CELLS];
-    memset(balance, 0, sizeof(balance));
+
+    //Send reset reason on startup over CAN
+    uint32_t resetReason = get_reset_reason();
+    msg.ID = CAN_ID_STARTUP;
+    msg.DLC = 4;
+    memcpy(msg.payload, &resetReason, 4);
+    can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
+    can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
 
     while (1) {
 
         stacks_data_t* stacksData = get_stacks_data(portMAX_DELAY);
         if (stacksData != NULL) {
-            memcpy(canData.UID, stacksData->UID, sizeof(stacksData->UID));
+            memcpy(canData.UID, stacksData->UID, sizeof(canData.UID));
             memcpy(canData.cellVoltage, stacksData->cellVoltage, sizeof(canData.cellVoltage));
             memcpy(canData.cellVoltageStatus, stacksData->cellVoltageStatus, sizeof(canData.cellVoltageStatus));
             memcpy(canData.temperature, stacksData->temperature, sizeof(canData.temperature));
             memcpy(canData.temperatureStatus, stacksData->temperatureStatus, sizeof(canData.temperatureStatus));
 
             canData.minCellVolt = stacksData->minCellVolt;
-            canData.minCellVoltValid = stacksData->voltageValid;
             canData.maxCellVolt = stacksData->maxCellVolt;
-            canData.maxCellVoltValid = stacksData->voltageValid;
             canData.avgCellVolt = stacksData->avgCellVolt;
-            canData.avgCellVoltValid = stacksData->voltageValid;
+            canData.voltageValid = stacksData->voltageValid;
 
-            canData.minTemp = stacksData->minTemperature;
-            canData.minTempValid = stacksData->temperatureValid;
-            canData.maxTemp = stacksData->maxTemperature;
-            canData.maxTempValid = stacksData->temperatureValid;
-            canData.avgTemp = stacksData->avgTemperature;
-            canData.avgTempValid = stacksData->temperatureValid;
+            canData.minTemp = stacksData->minTemperature / 5;
+            canData.maxTemp = stacksData->maxTemperature / 5;
+            canData.avgTemp = stacksData->avgTemperature / 5;
+            canData.tempValid = stacksData->temperatureValid;
+
+            for (size_t stack = 0; stack < MAX_NUM_OF_SLAVES; stack++) {
+                for (size_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
+                    canData.temperature[stack][tempsens] /= 5;
+                }
+            }
 
             release_stacks_data();
         }
-
-        for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
-            for (size_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
-                canData.cellVoltage[slave][cell] /= 10; //chop off the 100 uV digit TODO: Remove with new CAN protocol
-            }
-        }
-        canData.minCellVolt /= 10;
-        canData.maxCellVolt /= 10;
-        canData.avgCellVolt /= 10;
 
         adc_data_t *adcData = get_adc_data(portMAX_DELAY);
         if (adcData != NULL) {
@@ -120,207 +126,181 @@ static void can_send_task(void *p) {
             release_adc_data();
         }
 
-
+        canData.batteryPower = abs(canData.batteryVoltage * canData.current);
+        canData.batteryPowerValid = canData.batteryVoltageValid && canData.currentValid;
 
         canData.isolationResistance = 0; //TODO isolation resistance CAN
         canData.isolationResistanceValid = false; //TODO isolation resistance CAN validity
-        canData.shutdownStatus = 0;
-        canData.tsState = 0;
-        canData.amsResetStatus = 0;
-        canData.amsStatus = 0;
-        canData.imdResetStatus = 0;
-        canData.imdStatus = 0;
-        canData.errorCode = 0;
+        canData.errorCode = get_contactor_error();
+        canData.tsState = get_contactor_SM_state();
 
-
-
+        //TODO: Implement SOC module
         canData.minSoc = 0;
         canData.maxSoc = 0;
-        canData.minSocValid = 0;
-        canData.maxSocValid = 0;
+        canData.socValid = 0;
 
-        if (counter == 0) {
-            get_balancing_status(balance);
-        }
-
-        //BMS_Info_1
-        msg.ID = 0x001;
-        msg.DLC = 8;
-        msg.payload[0] = canData.minCellVolt >> 5;
-        msg.payload[1] = ((canData.minCellVolt & 0x1F) << 3) | ((canData.minCellVoltValid & 0x01) << 2) | ((canData.maxCellVolt & 0x1FFF) >> 11);
-        msg.payload[2] = (canData.maxCellVolt & 0x7FF) >> 3;
-        msg.payload[3] = ((canData.maxCellVolt & 0x07) << 5) | ((canData.maxCellVoltValid & 0x01) << 4) | ((canData.avgCellVolt & 0x1FFF) >> 9);
-        msg.payload[4] = ((canData.avgCellVolt & 0x1FFF) >> 1);
-        msg.payload[5] = ((canData.avgCellVolt & 0x1FFF) << 7) | ((canData.avgCellVoltValid & 0x01) << 6) | ((canData.minSoc & 0x3FF) >> 4);
-        msg.payload[6] = ((canData.minSoc & 0x3FF) << 4) | ((canData.minSocValid & 0x01) << 3) | ((canData.maxSoc & 0x3FF) >> 7);
-        msg.payload[7] = ((canData.maxSoc & 0x3FF) << 1) | ((canData.maxSocValid & 0x01));
-        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
-
-        //BMS_Info_2
-        msg.ID = 0x002;
-        msg.DLC = 7;
-        msg.payload[0] = ((canData.batteryVoltage) >> 5);
-        msg.payload[1] = ((canData.batteryVoltage) << 3) | ((canData.batteryVoltageValid & 0x01) << 2);
-        msg.payload[2] = ((canData.dcLinkVoltage & 0x1FFF) >> 5);
-        msg.payload[3] = ((canData.dcLinkVoltage & 0x1FFF) << 3) | ((canData.dcLinkVoltageValid & 0x01) << 2);
-        msg.payload[4] = (canData.current >> 8);
-        msg.payload[5] = (canData.current & 0xFF);
-        msg.payload[6] = (canData.currentValid & 0x01) << 7;
-        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
-
-        //BMS_Info_3
-        msg.ID = 0x003;
-        msg.DLC = 8;
-        msg.payload[0] = (canData.isolationResistance & 0x7FFF) >> 8;
-        msg.payload[1] = ((canData.isolationResistance & 0x7FFF) << 1) | ((canData.isolationResistanceValid & 0x01));
-        msg.payload[2] = ((canData.shutdownStatus & 0x01) << 7) | ((canData.tsState & 0x03) << 5) | ((canData.amsResetStatus & 0x01) << 4)
-                        | ((canData.amsStatus & 0x01) << 3) | ((canData.imdResetStatus & 0x01) << 2) | ((canData.imdStatus & 0x01) << 1);
-        msg.payload[3] = ((canData.errorCode & 0x7F) << 1) | ((canData.minTemp & 0x3FF) >> 9);
-        msg.payload[4] = (canData.minTemp & 0x3FF) >> 1;
-        msg.payload[5] = ((canData.minTemp & 0x3FF) << 7) | ((canData.minTempValid & 0x01) << 6) | ((canData.maxTemp >> 4) & 0x3F);
-        msg.payload[6] = ((canData.maxTemp & 0x3FF) << 4) | ((canData.maxTempValid & 0x01) << 3) | ((canData.avgTemp & 0x3FF) >> 7);
-        msg.payload[7] = ((canData.avgTemp & 0x3FF) << 1) | (canData.avgTempValid & 0x01);
-        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
-
-        //Send BMS temperature 1 message every 10 ms
-        msg.ID = 0x004;
-        msg.DLC = 8;
-        msg.payload[0] = (counter << 4) | ((canData.temperature[counter][0] >> 6) & 0x0F);
-        msg.payload[1] = (canData.temperature[counter][0] << 2) | (canData.temperatureStatus[counter][0] & 0x03);
-        msg.payload[2] = (canData.temperature[counter][1] >> 2);
-        msg.payload[3] = (canData.temperature[counter][1] << 6) | ((canData.temperatureStatus[counter][1] & 0x03) << 4) | ((canData.temperature[counter][2] >> 6) & 0x0F);
-        msg.payload[4] = (canData.temperature[counter][2] << 2) | (canData.temperatureStatus[counter][2] & 0x03);
-        msg.payload[5] = (canData.temperature[counter][3] >> 2);
-        msg.payload[6] = (canData.temperature[counter][3] << 6) | ((canData.temperatureStatus[counter][3] & 0x03) << 4) | ((canData.temperature[counter][4] >> 6) & 0x0F);
-        msg.payload[7] = (canData.temperature[counter][4] << 2) | (canData.temperatureStatus[counter][4] & 0x03);
-        //Send message
-        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
-
-        //Send BMS temperature 2 message every 10 ms
-        msg.ID = 0x005;
-        msg.DLC = 8;
-        msg.payload[0] = (counter << 4) | ((canData.temperature[counter][5] >> 6) & 0x0F);
-        msg.payload[1] = (canData.temperature[counter][5] << 2) | (canData.temperatureStatus[counter][5] & 0x03);
-        msg.payload[2] = 0;
-        msg.payload[3] = 0;
-        msg.payload[4] = 0;
-        msg.payload[5] = 0;
-        msg.payload[6] = 0;
-        msg.payload[7] = 0;
-        //Send message
-        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
-
-        //Send BMS temperature 3 message every 10 ms
-        msg.ID = 0x006;
-        msg.DLC = 8;
-        msg.payload[0] = (counter << 4);
-        msg.payload[1] = 0;
-        msg.payload[2] = 0;
-        msg.payload[3] = 0;
-        msg.payload[4] = 0;
-        msg.payload[5] = 0;
-        msg.payload[6] = 0;
-        msg.payload[7] = 0;
-        //Send message
-        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
-
-        //Send BMS cell voltage 1 message every 10 ms
-        msg.ID = 0x007;
-        msg.DLC = 7;
-        msg.payload[0] = (counter << 4) | (canData.cellVoltageStatus[counter][0] & 0x3);
-        msg.payload[1] = canData.cellVoltage[counter][0] >> 5;
-        msg.payload[2] = ((canData.cellVoltage[counter][0] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][1] & 0x3);
-        msg.payload[3] = canData.cellVoltage[counter][1] >> 5;
-        msg.payload[4] = ((canData.cellVoltage[counter][1] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][2] & 0x3);
-        msg.payload[5] = canData.cellVoltage[counter][2] >> 5;
-        msg.payload[6] = ((canData.cellVoltage[counter][2] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][3] & 0x3);
-        //Send message
-        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
-
-        //Send BMS cell voltage 2 message every 10 ms
-        msg.ID = 0x008;
-        msg.DLC = 7;
-        msg.payload[0] = counter << 4;
-        msg.payload[1] = canData.cellVoltage[counter][3] >> 5;
-        msg.payload[2] = ((canData.cellVoltage[counter][3] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][4] & 0x3);
-        msg.payload[3] = canData.cellVoltage[counter][4] >> 5;
-        msg.payload[4] = ((canData.cellVoltage[counter][4] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][5] & 0x3);
-        msg.payload[5] = canData.cellVoltage[counter][5] >> 5;
-        msg.payload[6] = ((canData.cellVoltage[counter][5] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][6] & 0x3);
-        //Send message
-        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
-
-        //Send BMS cell voltage 3 message every 10 ms
-        msg.ID = 0x009;
-        msg.DLC = 7;
-        msg.payload[0] = counter << 4;
-        msg.payload[1] = canData.cellVoltage[counter][6] >> 5;
-        msg.payload[2] = ((canData.cellVoltage[counter][6] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][7] & 0x3);
-        msg.payload[3] = canData.cellVoltage[counter][7] >> 5;
-        msg.payload[4] = ((canData.cellVoltage[counter][7] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][8] & 0x3);
-        msg.payload[5] = canData.cellVoltage[counter][8] >> 5;
-        msg.payload[6] = ((canData.cellVoltage[counter][8] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][9] & 0x3);
-        //Send message
-        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
-
-        //Send BMS cell voltage 4 message every 10 ms
-        msg.ID = 0x00A;
-        msg.DLC = 7;
-        msg.payload[0] = counter << 4;
-        msg.payload[1] = canData.cellVoltage[counter][9] >> 5;
-        msg.payload[2] = ((canData.cellVoltage[counter][9] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][10] & 0x3);
-        msg.payload[3] = canData.cellVoltage[counter][10] >> 5;
-        msg.payload[4] = ((canData.cellVoltage[counter][10] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][11] & 0x3);
-        msg.payload[5] = canData.cellVoltage[counter][11] >> 5;
-        msg.payload[6] = ((canData.cellVoltage[counter][11] & 0x1F) << 3) | (canData.cellVoltageStatus[counter][12] & 0x3);
-        //Send message
-        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
-
-        //Send Unique ID every 10 ms
-        msg.ID = 0x00B;
-        msg.DLC = 5;
-        msg.payload[0] = counter << 4;
-        msg.payload[1] = canData.UID[counter] >> 24;
-        msg.payload[2] = canData.UID[counter] >> 16;
-        msg.payload[3] = canData.UID[counter] >> 8;
-        msg.payload[4] = canData.UID[counter] & 0xFF;
-        //Send message
-        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
-
-        msg.ID = 0x00E;
-        msg.payload[0] = counter;
-        msg.payload[1] = ((balance[counter][11] & 0x01) << 7) | ((balance[counter][10] & 0x01) << 6) | ((balance[counter][9] & 0x01) << 5)
-                | ((balance[counter][8] & 0x01) << 4) | ((balance[counter][7] & 0x01) << 3) | ((balance[counter][6] & 0x01) << 2)
-                | ((balance[counter][5] & 0x01) << 1) | ((balance[counter][4] & 0x01));
-        msg.payload[2] = ((balance[counter][3] & 0x01) << 7) | ((balance[counter][2] & 0x01) << 6) | ((balance[counter][1] & 0x01) << 5) | ((balance[counter][0] & 0x01) << 4);
-        msg.DLC = 3;
-        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
-
-        msg.ID = 0x00F;
-        msg.payload[0] = canData.minSoc >> 8;
-        msg.payload[1] = canData.minSoc & 0xFF;
-        msg.payload[2] = canData.maxTemp >> 8;
-        msg.payload[3] = canData.maxTemp & 0xFF;
-        msg.payload[4] = canData.tsState;
-        msg.DLC = 5;
-        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
-
-        if (counter == 0) {
-            uint32_t uptime = uptime_in_100_ms();
-            uint32_t unix = rtc_get_unix_time();
-            msg.ID = CAN_ID_DIAG_TIME;
+        if (counter100ms == 0) {
+            canData.uptime = uptime_in_100_ms();
+            canData.sysTime = rtc_get_unix_time();
+            msg.ID = CAN_ID_TIME;
             msg.DLC = 8;
-            memcpy(msg.payload, &uptime, sizeof(uptime));
-            memcpy(msg.payload + sizeof(uptime), &unix, sizeof(unix));
+            memcpy(msg.payload, &canData.uptime, sizeof(canData.uptime));
+            memcpy(msg.payload + sizeof(canData.uptime), &canData.sysTime, sizeof(canData.sysTime));
             can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
+            can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
         }
 
-        if (counter < MAX_NUM_OF_SLAVES-1) {
-            counter++;
-        } else {
-            counter = 0;
+        if (slaveCounter == 0) {
+            get_balancing_status(canData.balance);
         }
 
+        msg.ID = CAN_ID_INFO;
+        msg.DLC = 7;
+        msg.payload[0] = (canData.errorCode >> 24) & 0xFF;
+        msg.payload[1] = (canData.errorCode >> 16) & 0xFF;
+        msg.payload[2] = (canData.errorCode >>  8) & 0xFF;
+        msg.payload[3] = canData.errorCode & 0xFF;
+        msg.payload[4] = (canData.isolationResistance >> 8) & 0xFF;
+        msg.payload[5] = canData.isolationResistance & 0xFF;
+        msg.payload[6] = ((canData.isolationResistanceValid & 0x01) << 7) | (canData.tsState & 0x0F);
+        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
+        can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
+
+        msg.ID = CAN_ID_STATS_1;
+        msg.DLC = 7;
+        msg.payload[0] = canData.voltageValid & 0x01;
+        msg.payload[1] = (canData.minCellVolt >> 8) & 0xFF;
+        msg.payload[2] = canData.minCellVolt & 0xFF;
+        msg.payload[3] = (canData.maxCellVolt >> 8) & 0xFF;
+        msg.payload[4] = canData.maxCellVolt & 0xFF;
+        msg.payload[5] = (canData.avgCellVolt >> 8) & 0xFF;
+        msg.payload[6] = canData.avgCellVolt & 0xFF;
+        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
+        can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
+
+        msg.ID = CAN_ID_STATS_2;
+        msg.DLC = 8;
+        msg.payload[0] = ((canData.dcLinkVoltageValid & 0x01) << 2) | ((canData.socValid & 0x01) << 1) | (canData.tempValid & 0x01);
+        msg.payload[1] = canData.minTemp;
+        msg.payload[2] = canData.maxTemp;
+        msg.payload[3] = canData.avgTemp;
+        msg.payload[4] = canData.minSoc;
+        msg.payload[5] = canData.maxSoc;
+        msg.payload[6] = (canData.dcLinkVoltage >> 8) & 0xFF;
+        msg.payload[7] = canData.dcLinkVoltage & 0xFF;
+        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
+        can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
+
+        msg.ID = CAN_ID_UIP;
+        msg.DLC = 7;
+        msg.payload[0] = ((canData.batteryPowerValid & 0x01) << 2) | ((canData.currentValid & 0x01) << 1) | (canData.voltageValid & 0x01);
+        msg.payload[1] = (canData.batteryVoltage >> 8) & 0xFF;
+        msg.payload[2] = canData.batteryVoltage & 0xFF;
+        msg.payload[3] = (canData.current >> 8) & 0xFF;
+        msg.payload[4] = canData.current & 0xFF;
+        msg.payload[5] = (canData.batteryPower >> 8) & 0xFF;
+        msg.payload[6] = canData.batteryPower & 0xFF;
+        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
+        can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
+
+        msg.ID = CAN_ID_CELL_VOLTAGE_1;
+        msg.DLC = 8;
+        msg.payload[0] = ((slaveCounter & 0x0F) << 4) | (canData.cellVoltageStatus[slaveCounter][0] & 0x01);
+        msg.payload[1] = ((canData.cellVoltageStatus[slaveCounter][3] & 0x03) << 4)
+                       | ((canData.cellVoltageStatus[slaveCounter][2] & 0x03) << 2)
+                       | (canData.cellVoltageStatus[slaveCounter][1] & 0x03);
+        msg.payload[2] = (canData.cellVoltage[slaveCounter][0] >> 8) & 0xFF;
+        msg.payload[3] = canData.cellVoltage[slaveCounter][0] & 0xFF;
+        msg.payload[4] = (canData.cellVoltage[slaveCounter][1] >> 8) & 0xFF;
+        msg.payload[5] = canData.cellVoltage[slaveCounter][1] & 0xFF;
+        msg.payload[6] = (canData.cellVoltage[slaveCounter][2] >> 8) & 0xFF;
+        msg.payload[7] = canData.cellVoltage[slaveCounter][2] & 0xFF;
+        can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
+
+        msg.ID = CAN_ID_CELL_VOLTAGE_2;
+        msg.DLC = 8;
+        msg.payload[0] = ((slaveCounter & 0x0F) << 4);
+        msg.payload[1] = ((canData.cellVoltageStatus[slaveCounter][6] & 0x03) << 4)
+                       | ((canData.cellVoltageStatus[slaveCounter][5] & 0x03) << 2)
+                       | (canData.cellVoltageStatus[slaveCounter][4] & 0x03);
+        msg.payload[2] = (canData.cellVoltage[slaveCounter][3] >> 8) & 0xFF;
+        msg.payload[3] = canData.cellVoltage[slaveCounter][3] & 0xFF;
+        msg.payload[4] = (canData.cellVoltage[slaveCounter][4] >> 8) & 0xFF;
+        msg.payload[5] = canData.cellVoltage[slaveCounter][4] & 0xFF;
+        msg.payload[6] = (canData.cellVoltage[slaveCounter][5] >> 8) & 0xFF;
+        msg.payload[7] = canData.cellVoltage[slaveCounter][5] & 0xFF;
+        can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
+
+        msg.ID = CAN_ID_CELL_VOLTAGE_3;
+        msg.DLC = 8;
+        msg.payload[0] = ((slaveCounter & 0x0F) << 4);
+        msg.payload[1] = ((canData.cellVoltageStatus[slaveCounter][9] & 0x03) << 4)
+                       | ((canData.cellVoltageStatus[slaveCounter][8] & 0x03) << 2)
+                       | (canData.cellVoltageStatus[slaveCounter][7] & 0x03);
+        msg.payload[2] = (canData.cellVoltage[slaveCounter][6] >> 8) & 0xFF;
+        msg.payload[3] = canData.cellVoltage[slaveCounter][6] & 0xFF;
+        msg.payload[4] = (canData.cellVoltage[slaveCounter][7] >> 8) & 0xFF;
+        msg.payload[5] = canData.cellVoltage[slaveCounter][7] & 0xFF;
+        msg.payload[6] = (canData.cellVoltage[slaveCounter][8] >> 8) & 0xFF;
+        msg.payload[7] = canData.cellVoltage[slaveCounter][8] & 0xFF;
+        can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
+
+        msg.ID = CAN_ID_CELL_VOLTAGE_4;
+        msg.DLC = 8;
+        msg.payload[0] = ((slaveCounter & 0x0F) << 4);
+        msg.payload[1] = ((canData.cellVoltageStatus[slaveCounter][12] & 0x03) << 4)
+                       | ((canData.cellVoltageStatus[slaveCounter][11] & 0x03) << 2)
+                       | (canData.cellVoltageStatus[slaveCounter][10] & 0x03);
+        msg.payload[2] = (canData.cellVoltage[slaveCounter][9] >> 8) & 0xFF;
+        msg.payload[3] = canData.cellVoltage[slaveCounter][9] & 0xFF;
+        msg.payload[4] = (canData.cellVoltage[slaveCounter][10] >> 8) & 0xFF;
+        msg.payload[5] = canData.cellVoltage[slaveCounter][10] & 0xFF;
+        msg.payload[6] = (canData.cellVoltage[slaveCounter][11] >> 8) & 0xFF;
+        msg.payload[7] = canData.cellVoltage[slaveCounter][11] & 0xFF;
+        can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
+
+        msg.ID = CAN_ID_CELL_TEMPERATURE;
+        msg.DLC = 8;
+        msg.payload[0] = ((slaveCounter & 0x0F) << 4) | ((canData.temperatureStatus[slaveCounter][5] & 0x03) << 2)
+                       | (canData.temperatureStatus[slaveCounter][4] & 0x03);
+        msg.payload[1] = ((canData.temperatureStatus[slaveCounter][3] & 0x03) << 6) | ((canData.temperatureStatus[slaveCounter][2] & 0x03) << 4)
+                       | ((canData.temperatureStatus[slaveCounter][1] & 0x03) << 2) | (canData.temperatureStatus[slaveCounter][0] & 0x03);
+        msg.payload[2] = canData.temperature[slaveCounter][0];
+        msg.payload[3] = canData.temperature[slaveCounter][1];
+        msg.payload[4] = canData.temperature[slaveCounter][2];
+        msg.payload[5] = canData.temperature[slaveCounter][3];
+        msg.payload[6] = canData.temperature[slaveCounter][4];
+        msg.payload[7] = canData.temperature[slaveCounter][5];
+        can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
+
+        msg.ID = CAN_ID_BALANCING_FEEDBACK;
+        msg.DLC = 2;
+        msg.payload[0] = ((slaveCounter & 0x0F) << 4) | ((canData.balance[slaveCounter][11] & 0x01) << 3)
+                       | ((canData.balance[slaveCounter][10] & 0x01) << 2) | ((canData.balance[slaveCounter][9] & 0x01) << 1)
+                       | (canData.balance[slaveCounter][8] & 0x01);
+        msg.payload[1] = ((canData.balance[slaveCounter][7] & 0x01) << 7) | ((canData.balance[slaveCounter][6] & 0x01) << 6)
+                       | ((canData.balance[slaveCounter][5] & 0x01) << 5) | ((canData.balance[slaveCounter][4] & 0x01) << 4)
+                       | ((canData.balance[slaveCounter][3] & 0x01) << 3) | ((canData.balance[slaveCounter][2] & 0x01) << 2)
+                       | ((canData.balance[slaveCounter][1] & 0x01) << 1) | (canData.balance[slaveCounter][0] & 0x01);
+        can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
+
+        msg.ID = CAN_ID_UNIQUE_ID;
+        msg.DLC = 5;
+        msg.payload[0] = ((slaveCounter & 0x0F) << 4);
+        msg.payload[1] = (canData.UID[slaveCounter] >> 24) & 0xFF;
+        msg.payload[2] = (canData.UID[slaveCounter] >> 16) & 0xFF;
+        msg.payload[3] = (canData.UID[slaveCounter] >> 8) & 0xFF;
+        msg.payload[4] = canData.UID[slaveCounter] & 0xFF;
+        can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
+
+
+        if (++counter100ms >= 10) {
+            counter100ms = 0;
+        }
+
+        if (++slaveCounter >= MAX_NUM_OF_SLAVES) {
+            slaveCounter = 0;
+        }
 
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
@@ -334,7 +314,7 @@ static void can_rec_task(void *p) {
         if (xQueueReceive(BMU_Q_HANDLE, &msg, portMAX_DELAY)) {
 
             switch (msg.ID) {
-                case 0:
+                case CAN_ID_TS_REQUEST:
                     if (msg.DLC == 1 && msg.payload[0] == 0xFF) {
                         request_tractive_system(true);
                     } else {
@@ -350,6 +330,36 @@ static void can_rec_task(void *p) {
             }
         }
     }
+}
+
+uint32_t get_reset_reason(void) {
+    uint32_t resetReason = RCM->SRS;
+    if (resetReason & 0x0002) {
+        PRINTF("Reset due to brown-out\n");
+    } else if (resetReason & 0x0004) {
+        PRINTF("Reset due to loss of clock\n");
+    } else if (resetReason & 0x0008) {
+        PRINTF("Reset due to loss of lock\n");
+    } else if (resetReason & 0x0010) {
+        PRINTF("Reset due to CMU loss of clock\n");
+    } else if (resetReason & 0x0020) {
+        PRINTF("Reset due to watchdog\n");
+    } else if (resetReason & 0x0040) {
+        PRINTF("Reset due to reset pin\n");
+    } else if (resetReason & 0x0080) {
+        PRINTF("Reset due to power cycle\n");
+    } else if (resetReason & 0x0100) {
+        PRINTF("Reset due to JTAG\n");
+    } else if (resetReason & 0x0200) {
+        PRINTF("Reset due to core lockup\n");
+    } else if (resetReason & 0x0400) {
+        PRINTF("Reset due to software\n");
+    } else if (resetReason & 0x0800) {
+        PRINTF("Reset due to host debugger\n");
+    } else if (resetReason & 0x2000) {
+        PRINTF("Reset due to stop ack error\n");
+    }
+    return resetReason;
 }
 
 
