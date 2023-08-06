@@ -8,7 +8,8 @@
 #include "communication.h"
 
 static void can_send_task(void *p);
-static void can_rec_task(void *p);
+static void can_rec_diag_task(void *p);
+static void can_rec_vehic_task(void *p);
 
 
 typedef struct {
@@ -62,7 +63,8 @@ typedef struct {
 
 void init_comm(void) {
     xTaskCreate(can_send_task, "CAN", 1500, NULL, 3, NULL);
-    xTaskCreate(can_rec_task, "CAN rec", 1500, NULL, 3, NULL);
+    xTaskCreate(can_rec_diag_task, "CAN rec", 1500, NULL, 3, NULL);
+    xTaskCreate(can_rec_vehic_task, "CAN rec", 1500, NULL, 3, NULL);
 }
 
 static void can_send_task(void *p) {
@@ -306,13 +308,31 @@ static void can_send_task(void *p) {
     }
 }
 
-static void can_rec_task(void *p) {
+static void can_rec_vehic_task(void *p) {
     (void) p;
     can_msg_t msg;
     while (1) {
-        configASSERT(BMU_Q_HANDLE);
-        if (xQueueReceive(BMU_Q_HANDLE, &msg, portMAX_DELAY)) {
+        if (xQueueReceive(CAN_VEHIC_RX_Q, &msg, portMAX_DELAY)) {
+            switch (msg.ID) {
+                case CAN_ID_TS_REQUEST:
+                    if (msg.DLC == 1 && msg.payload[0] == 0xFF) {
+                        request_tractive_system(true);
+                    } else {
+                        request_tractive_system(false);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+}
 
+static void can_rec_diag_task(void *p) {
+    (void) p;
+    can_msg_t msg;
+    while (1) {
+        if (xQueueReceive(CAN_DIAG_RX_Q, &msg, portMAX_DELAY)) {
             switch (msg.ID) {
                 case CAN_ID_TS_REQUEST:
                     if (msg.DLC == 1 && msg.payload[0] == 0xFF) {

@@ -301,14 +301,14 @@ static void prv_contactor_control_task(void *p) {
 
         /* DC-Link voltage lower than 80% of the minimum battery voltage and contactors are active?
          * -> DC-Link voltage measurement broken wire */
-        if (prvStateMachine.current == CONTACTOR_STATE_OPERATE && adcData.dcLinkVoltage < (0.8f * MIN_STACK_VOLTAGE * prvNumberOfStacks)) {
+        if (prvStateMachine.current == CONTACTOR_STATE_OPERATE && adcData.dcLinkVoltage < (0.8f * (MIN_STACK_VOLTAGE / 10000) * prvNumberOfStacks)) {
             prvEvent = EVENT_ERROR;
             prvStateMachineError |= ERROR_IMPLAUSIBLE_DC_LINK_VOLTAGE;
         }
 
         /* Battery voltage lower than 80% of the minimum battery voltage and contactors are active?
          * -> Battery voltage measurement broken wire OR battery depleted OR main fuse blown :/ */
-        if (prvStateMachine.current == CONTACTOR_STATE_OPERATE && adcData.batteryVoltage < (0.8f * MIN_STACK_VOLTAGE * prvNumberOfStacks)) {
+        if (prvStateMachine.current == CONTACTOR_STATE_OPERATE && adcData.batteryVoltage < (0.8f * (MIN_STACK_VOLTAGE / 10000) * prvNumberOfStacks)) {
             prvEvent = EVENT_ERROR;
             prvStateMachineError |= ERROR_IMPLAUSIBLE_BATTERY_VOLTAGE;
         }

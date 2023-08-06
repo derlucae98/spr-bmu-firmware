@@ -74,6 +74,8 @@
 
 #define CAN_VEHIC CAN0
 #define CAN_DIAG  CAN1
+#define CAN_VEHIC_RX_Q can0RxQueueHandle
+#define CAN_DIAG_RX_Q can1RxQueueHandle
 
 enum can_id_vehicle {
     CAN_ID_xx
@@ -98,9 +100,6 @@ enum can_id {
     CAN_ID_DIAG_RESPONSE      = 0x00F
 };
 
-
-
-#define BMU_Q_HANDLE can0RxQueueHandle
 
 // ## I/O ##
 
