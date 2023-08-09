@@ -39,6 +39,8 @@ static void prv_error(void);
 static void prv_open_shutdown_circuit(void);
 static void prv_close_shutdown_circuit(void);
 
+
+
 static bool prvTsActive = false;
 static uint8_t prvTsRequestTimeout = 0;
 static uint8_t prvPrechargeTimeout = 0;
@@ -46,14 +48,24 @@ static contactor_SM_state_t prvStateMachineState = CONTACTOR_STATE_STANDBY;
 static uint32_t prvStateMachineError = ERROR_NO_ERROR;
 static contactor_state_t prvContactorState;
 
-static bool prvAmsFault = false;
-static bool prvImdFault = false;
-static bool prvVoltageFault = false;
-static bool prvCurrentFault = false;
-static bool prvCurrentOutOfRange = false;
-static bool prvAmsPowerStageDisabled = false;
-static bool prvImdPowerStageDisabled = false;
-static bool prvSdcOpen = false;
+typedef struct {
+    bool imdFault : 1;
+    bool voltageFault  : 1;
+    bool currentFault : 1;
+    bool currentOutOfRange : 1;
+    bool amsPowerStageDisabled : 1;
+    bool imdPowerStageDisabled : 1;
+    bool sdcOpen : 1;
+    bool airImplausible : 1;
+    bool amsCellOutOfRange : 1;
+    bool amsCellOpenWire : 1;
+    bool amsTemperatureOutOfRange : 1;
+    bool amsTemperatureOpenWire : 1;
+    bool amsDaisychainError : 1;
+} fault_types_t;
+
+static fault_types_t prvFaultTypes;
+
 
 static uint8_t prvNumberOfStacks = 12;
 static bool prvVoltagePlausibilityCheckEnable = true;
@@ -176,7 +188,7 @@ static void prv_operate(void) {
 static void prv_error(void) {
     prv_open_all_contactors();
     PRINTF("State error\n");
-    PRINTF("Reason %2x\n", prvStateMachineError);
+    PRINTF("Reason 0x%4X\n", prvStateMachineError);
 }
 
 void init_contactor(void) {
@@ -188,6 +200,8 @@ void init_contactor(void) {
     }
 
     prvStateMachine.current = CONTACTOR_STATE_STANDBY;
+    memset(&prvFaultTypes, 0, sizeof(fault_types_t));
+
     xTaskCreate(prv_contactor_control_task, "contactor", CONTACTOR_TASK_STACK, NULL, CONTACTOR_TASK_PRIO, NULL);
     xTaskCreate(prv_system_state_task, "sysstate", SYSTEM_STATE_TASK_STACK, NULL, SYSTEM_STATE_TASK_PRIO, NULL);
 }
@@ -201,54 +215,23 @@ static void prv_contactor_control_task(void *p) {
     init_wdt();
 
     while (1) {
+
         refresh_wdt();
 
-        //Get intended and actual AIR states
-        prvContactorState.negAIR_intent      = get_pin(AIR_NEG_INTENT_PORT, AIR_NEG_INTENT_PIN);
-        prvContactorState.negAIR_actual      = get_pin(AIR_NEG_STATE_PORT,  AIR_NEG_STATE_PIN);
-        prvContactorState.posAIR_intent      = get_pin(AIR_POS_INTENT_PORT, AIR_POS_INTENT_PIN);
-        prvContactorState.posAIR_actual      = get_pin(AIR_POS_STATE_PORT,  AIR_POS_STATE_PIN);
-        prvContactorState.pre_intent         = get_pin(AIR_PRE_INTENT_PORT, AIR_PRE_INTENT_PIN);
-        prvContactorState.pre_actual         = get_pin(AIR_PRE_STATE_PORT,  AIR_PRE_STATE_PIN);
-
-        prvContactorState.negAIR_isPlausible = prvContactorState.negAIR_intent == prvContactorState.negAIR_actual;
-        prvContactorState.posAIR_isPlausible = prvContactorState.posAIR_intent == prvContactorState.posAIR_actual;
-        prvContactorState.pre_isPlausible    = prvContactorState.pre_intent    == prvContactorState.pre_actual;
-
-        //Poll external status pins
-        prvAmsPowerStageDisabled = get_pin(AMS_RES_STAT_PORT, AMS_RES_STAT_PIN);
-        prvImdPowerStageDisabled = get_pin(IMD_RES_STAT_PORT, IMD_RES_STAT_PIN);
-        prvImdFault              = !get_pin(IMD_STAT_PORT, IMD_STAT_PIN);
-        prvSdcOpen               = !get_pin(SC_STATUS_PORT, SC_STATUS_PIN);
-
-        //AIR plausibility combined
-        bool airPlausible = prvContactorState.negAIR_isPlausible && prvContactorState.posAIR_isPlausible && prvContactorState.pre_isPlausible;
 
         //Get battery and DC-Link voltage
         adc_data_t adcData;
         bool cpyret = copy_adc_data(&adcData, pdMS_TO_TICKS(200));
 
         if (cpyret == false) {
-            prv_open_all_contactors();
-            configASSERT(0);
+           prv_open_all_contactors();
+           configASSERT(0);
         }
-
-        /*
-         * System is healthy if
-         * 1) AMS and IMD are not in error state,
-         * 2) AMS and IMD power stages are enabled to close the shutdown circuit,
-         * 3) Rest of the shut down circuit is OK
-         */
-        bool systemIsHealthy = true;
-        systemIsHealthy &= !prvAmsFault;
-        systemIsHealthy &= !prvImdFault;
-        systemIsHealthy &= !prvAmsPowerStageDisabled;
-        systemIsHealthy &= !prvImdPowerStageDisabled;
-        systemIsHealthy &= !prvSdcOpen;
 
         bool voltageEqual = false;
 
-
+        /* Initialize event */
+        prvEvent = EVENT_NONE;
         prvStateMachineState = prvStateMachine.current;
 
         /* Pre-charge sequence:
@@ -267,8 +250,7 @@ static void prv_contactor_control_task(void *p) {
             prvTsActive = false;
         }
 
-        /* Initialize event */
-        prvEvent = EVENT_NONE;
+
 
         /* Waiting for pre-charge and voltages are equal?
          * -> Pre-charge was successful */
@@ -301,6 +283,25 @@ static void prv_contactor_control_task(void *p) {
             prvEvent = EVENT_TS_DEACTIVATE;
         }
 
+        /* Current sensor invalid? */
+        if (prvFaultTypes.currentFault) {
+            prvEvent = EVENT_ERROR;
+            prvStateMachineError |= ERROR_IMPLAUSIBLE_CURRENT;
+        }
+
+        /* Current out of range for too long? */
+        if (prvFaultTypes.currentOutOfRange) {
+            prvEvent = EVENT_ERROR;
+            prvStateMachineError |= ERROR_CURRENT_OUT_OF_RANGE;
+        }
+
+        /* HV voltage measurement invalid? */
+        if (prvFaultTypes.voltageFault) {
+            prvEvent = EVENT_ERROR;
+            prvStateMachineError |= ERROR_IMPLAUSIBLE_BATTERY_VOLTAGE;
+            prvStateMachineError |= ERROR_IMPLAUSIBLE_DC_LINK_VOLTAGE;
+        }
+
         if (prvVoltagePlausibilityCheckEnable) {
             /* DC-Link voltage lower than 80% of the minimum battery voltage and contactors are active?
              * -> DC-Link voltage measurement broken wire */
@@ -321,42 +322,66 @@ static void prv_contactor_control_task(void *p) {
          * -> This is considered as error reset. */
         if (prvStateMachine.current == CONTACTOR_STATE_ERROR && !prvTsActive) {
             prvEvent = EVENT_ERROR_CLEARED;
-            prvStateMachineError = ERROR_NO_ERROR;
         }
 
-        /* AMS or IMD report a fault?
-         * -> Deactivate AIRs and report the current error states */
-        if (!systemIsHealthy) {
+        if (prvFaultTypes.amsCellOutOfRange) {
             prvEvent = EVENT_ERROR;
+            prvStateMachineError |= ERROR_AMS_FAULT | ERROR_AMS_CELL_VOLTAGE_OUT_OF_RANGE;
+        }
 
-            //Why is the system not healthy? Report the faults bit-wise
-            if (prvAmsFault) {
-                prvStateMachineError |= ERROR_AMS_FAULT;
-            }
+        if (prvFaultTypes.amsCellOpenWire) {
+            prvEvent = EVENT_ERROR;
+            prvStateMachineError |= ERROR_AMS_FAULT | ERROR_AMS_CELL_OPEN_WIRE;
+        }
 
-            if (prvImdFault) {
-                prvStateMachineError |= ERROR_IMD_FAULT;
-            }
+        if (prvFaultTypes.amsTemperatureOutOfRange) {
+            prvEvent = EVENT_ERROR;
+            prvStateMachineError |= ERROR_AMS_FAULT | ERROR_AMS_CELL_TEMPERATURE_OUT_OF_RANGE;
+        }
 
-            if (prvAmsPowerStageDisabled) {
-                prvStateMachineError |= ERROR_AMS_POWERSTAGE_DISABLED;
-            }
+        if (prvFaultTypes.amsTemperatureOpenWire) {
+            prvEvent = EVENT_ERROR;
+            prvStateMachineError |= ERROR_AMS_FAULT | ERROR_AMS_TEMPERATURE_OPEN_WIRE;
+        }
 
-            if (prvImdPowerStageDisabled) {
-                prvStateMachineError |= ERROR_IMD_POWERSTAGE_DISABLED;
-            }
+        if (prvFaultTypes.amsDaisychainError) {
+            prvEvent = EVENT_ERROR;
+            prvStateMachineError |= ERROR_AMS_FAULT | ERROR_AMS_DAISYCHAIN_ERROR;
+        }
 
-            if (prvSdcOpen) {
-                prvStateMachineError |= ERROR_SDC_OPEN;
-            }
+        /* Insulation fault */
+        if (prvFaultTypes.imdFault) {
+            prvEvent = EVENT_ERROR;
+            prvStateMachineError |= ERROR_IMD_FAULT;
+        }
+
+        /* AMS powerstage disabled */
+        if (prvFaultTypes.amsPowerStageDisabled) {
+            prvEvent = EVENT_ERROR;
+            prvStateMachineError |= ERROR_AMS_POWERSTAGE_DISABLED;
+        }
+
+        /* IMD powerstage disabled */
+        if (prvFaultTypes.imdPowerStageDisabled) {
+            prvEvent = EVENT_ERROR;
+            prvStateMachineError |= ERROR_IMD_POWERSTAGE_DISABLED;
+        }
+
+        /* SDC open (AMS, IMD or other) */
+        if (prvFaultTypes.sdcOpen) {
+            prvEvent = EVENT_ERROR;
+            prvStateMachineError |= ERROR_SDC_OPEN;
         }
 
         /* AIR states are not plausible?
          * -> AIR might be stuck or state detection might be broken */
-        if (!airPlausible) {
+        if (prvFaultTypes.airImplausible) {
             prvEvent = EVENT_ERROR;
             prvStateMachineError |= ERROR_IMPLAUSIBLE_CONTACTOR;
         }
+
+        memset(&prvFaultTypes, 0, sizeof(fault_types_t));
+
 
         for (size_t i = 0; i < sizeof(prvStateArray) / sizeof(prvStateArray[0]); i++) {
            if (prvStateArray[i].current == prvStateMachine.current) {
@@ -373,17 +398,19 @@ static void prv_contactor_control_task(void *p) {
 static void prv_system_state_task(void *p) {
     (void)p;
     TickType_t xLastWakeTime = xTaskGetTickCount();
-    const TickType_t xPeriod = pdMS_TO_TICKS(100);
+    const TickType_t xPeriod = pdMS_TO_TICKS(50);
 
     while (1) {
 
         static bool blinkEnable;
-        blinkEnable = !blinkEnable;
+
 
         static bool oneSecondElapsed = false;
         static uint8_t oneSecondCounter = 0;
 
-        if (oneSecondCounter < 10) {
+        static uint8_t hundredMsCounter = 0;
+
+        if (oneSecondCounter < (1000 / xPeriod)) {
             oneSecondCounter++;
             oneSecondElapsed = false;
         } else {
@@ -391,22 +418,96 @@ static void prv_system_state_task(void *p) {
             oneSecondElapsed = true;
         }
 
-        stacks_data_t* stacksData = get_stacks_data(portMAX_DELAY);
-        if (stacksData != NULL) {
-            prvAmsFault = !stacksData->voltageValid;
-            prvAmsFault |= !stacksData->temperatureValid;
-            release_stacks_data();
+        if (hundredMsCounter < (100 / xPeriod)) {
+            hundredMsCounter++;
+        } else {
+            hundredMsCounter = 0;
+            blinkEnable = !blinkEnable;
         }
+
+        bool amsFault = false;
+
+        stacks_data_t stacksData;
+        copy_stacks_data(&stacksData, portMAX_DELAY);
+
+        for (size_t stack = 0; stack < prvNumberOfStacks; stack++) {
+            for (size_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
+                if (stacksData.cellVoltageStatus[stack][cell] == PECERROR) {
+                    prvFaultTypes.amsDaisychainError |= true;
+                    amsFault |= true;
+                }
+                if (stacksData.cellVoltageStatus[stack][cell] == VALUEOUTOFRANGE) {
+                    prvFaultTypes.amsCellOutOfRange |= true;
+                    amsFault |= true;
+                }
+                if (stacksData.cellVoltageStatus[stack][cell] == OPENCELLWIRE) {
+                    prvFaultTypes.amsCellOpenWire |= true;
+                    amsFault |= true;
+                }
+            }
+            for (size_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
+                if (stacksData.temperatureStatus[stack][tempsens] == PECERROR) {
+                    prvFaultTypes.amsDaisychainError |= true;
+                    amsFault |= true;
+                }
+                if (stacksData.temperatureStatus[stack][tempsens] == VALUEOUTOFRANGE) {
+                    prvFaultTypes.amsTemperatureOutOfRange |= true;
+                    amsFault |= true;
+                }
+                if (stacksData.temperatureStatus[stack][tempsens] == OPENCELLWIRE) {
+                    prvFaultTypes.amsTemperatureOpenWire |= true;
+                    amsFault |= true;
+                }
+            }
+        }
+
+        float current = 0.0f;
+        static uint8_t currentTimeout = 0;
 
         adc_data_t *adcData = get_adc_data(portMAX_DELAY);
         if (adcData != NULL) {
-            prvCurrentFault        = !adcData->currentValid;
-            prvVoltageFault        = !adcData->voltageValid;
-            prvCurrentOutOfRange   = false; //TODO implement a reasonable check taking the time and value into account. A short spike is not a problem, more than 5s of overload is
+            prvFaultTypes.currentFault = !adcData->currentValid;
+            prvFaultTypes.voltageFault = !adcData->voltageValid;
+            current = adcData->current;
             release_adc_data();
         }
 
-        if (prvAmsFault) {
+        if (!prvFaultTypes.currentFault && current > MAX_CURRENT) {
+            currentTimeout++;
+        } else {
+            currentTimeout = 0;
+        }
+
+        if (currentTimeout >= MAX_CURRENT_TIME / xPeriod) {
+            prvFaultTypes.currentOutOfRange = true;
+        } else {
+            prvFaultTypes.currentOutOfRange = false;
+        }
+
+        amsFault |= prvFaultTypes.currentFault | prvFaultTypes.voltageFault | prvFaultTypes.currentOutOfRange;
+
+        //Get intended and actual AIR states
+        prvContactorState.negAIR_intent      = get_pin(AIR_NEG_INTENT_PORT, AIR_NEG_INTENT_PIN);
+        prvContactorState.negAIR_actual      = get_pin(AIR_NEG_STATE_PORT,  AIR_NEG_STATE_PIN);
+        prvContactorState.posAIR_intent      = get_pin(AIR_POS_INTENT_PORT, AIR_POS_INTENT_PIN);
+        prvContactorState.posAIR_actual      = get_pin(AIR_POS_STATE_PORT,  AIR_POS_STATE_PIN);
+        prvContactorState.pre_intent         = get_pin(AIR_PRE_INTENT_PORT, AIR_PRE_INTENT_PIN);
+        prvContactorState.pre_actual         = get_pin(AIR_PRE_STATE_PORT,  AIR_PRE_STATE_PIN);
+
+        prvContactorState.negAIR_isPlausible = prvContactorState.negAIR_intent == prvContactorState.negAIR_actual;
+        prvContactorState.posAIR_isPlausible = prvContactorState.posAIR_intent == prvContactorState.posAIR_actual;
+        prvContactorState.pre_isPlausible    = prvContactorState.pre_intent    == prvContactorState.pre_actual;
+        prvFaultTypes.airImplausible = !(prvContactorState.negAIR_isPlausible && prvContactorState.posAIR_isPlausible && prvContactorState.pre_isPlausible);
+
+        vTaskDelay(pdMS_TO_TICKS(5));
+
+        //Poll external status pins
+        prvFaultTypes.amsPowerStageDisabled = get_pin(AMS_RES_STAT_PORT, AMS_RES_STAT_PIN);
+        prvFaultTypes.imdPowerStageDisabled = get_pin(IMD_RES_STAT_PORT, IMD_RES_STAT_PIN);
+        prvFaultTypes.imdFault              = !get_pin(IMD_STAT_PORT, IMD_STAT_PIN);
+        prvFaultTypes.sdcOpen               = !get_pin(SC_STATUS_PORT, SC_STATUS_PIN);
+
+        if (amsFault) {
             //AMS opens the shutdown circuit in case of critical values
             prv_open_shutdown_circuit();
             set_pin(LED_AMS_FAULT_PORT, LED_AMS_FAULT_PIN);
@@ -415,7 +516,7 @@ static void prv_system_state_task(void *p) {
             //If error clears, we close the shutdown circuit again
             prv_close_shutdown_circuit();
             clear_pin(LED_AMS_FAULT_PORT, LED_AMS_FAULT_PIN);
-            if (!prvAmsPowerStageDisabled) {
+            if (!prvFaultTypes.amsPowerStageDisabled) {
                 //LED is constantly on, if AMS error has been manually cleared
                 set_pin(LED_AMS_OK_PORT, LED_AMS_OK_PIN);
             } else {
@@ -428,13 +529,13 @@ static void prv_system_state_task(void *p) {
             }
         }
 
-        if (prvImdFault) {
+        if (prvFaultTypes.imdFault) {
             set_pin(LED_IMD_FAULT_PORT, LED_IMD_FAULT_PIN);
             clear_pin(LED_IMD_OK_PORT, LED_IMD_OK_PIN);
         } else {
             clear_pin(LED_IMD_FAULT_PORT, LED_IMD_FAULT_PIN);
 
-            if (!prvImdPowerStageDisabled) {
+            if (!prvFaultTypes.imdPowerStageDisabled) {
                 //LED is constantly on, if IMD error has been manually cleared
                 set_pin(LED_IMD_OK_PORT, LED_IMD_OK_PIN);
             } else {
@@ -459,7 +560,6 @@ static void prv_system_state_task(void *p) {
                 toggle_pin(LED_WARNING_PORT, LED_WARNING_PIN);
             }
         }
-
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
 }

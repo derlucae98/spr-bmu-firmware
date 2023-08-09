@@ -57,18 +57,23 @@ typedef enum {
  * Datatype for the possible errors, which put the state machine into @ref CONTACTOR_STATE_ERROR state.
  */
 typedef enum {
-    ERROR_NO_ERROR                    = 0x0,    //!< No error. State machine is not in @ref CONTACTOR_STATE_ERROR state
-    ERROR_IMD_FAULT                   = 0x1,    //!< IMD reports a critical isolation resistance. @ref ERROR_SDC_OPEN and @ref ERROR_IMD_POWERSTAGE_DISABLED will be set if this bit is set
-    ERROR_AMS_FAULT                   = 0x2,    //!< AMS has critical values. @ref ERROR_SDC_OPEN and @ref ERROR_AMS_POWERSTAGE_DISABLED will be set if this bit is set
-    ERROR_IMPLAUSIBLE_CONTACTOR       = 0x4,    //!< Contactor states are implausible
-    ERROR_IMPLAUSIBLE_DC_LINK_VOLTAGE = 0x8,    //!< DC-Link voltage measurement is implausible. Fault in the wiring?
-    ERROR_IMPLAUSIBLE_BATTERY_VOLTAGE = 0x10,   //!< Battery voltage measurement is implausible. Fault in the wiring?
-    ERROR_IMPLAUSIBLE_CURRENT         = 0x20,   //!< Current sensor report implausible values. Fault in the wiring?
-    ERROR_CURRENT_OUT_OF_RANGE        = 0x40,   //!< Current sensor reports values, which are out of the allowed range
-    ERROR_PRE_CHARGE_TIMEOUT          = 0x80,   //!< Pre-charge timed out. Short circuit at the output?
-    ERROR_SDC_OPEN                    = 0x100,  //!< Shutdown circuit is open
-    ERROR_AMS_POWERSTAGE_DISABLED     = 0x200,  //!< AMS has an error and opened the shutdown circuit. The power stage remains disabled until the error is manually reset
-    ERROR_IMD_POWERSTAGE_DISABLED     = 0x400   //!< IMD has an error and opened the shutdown circuit. The power stage remains disabled until the error is manually reset
+    ERROR_NO_ERROR                          = 0x0,    //!< No error. State machine is not in @ref CONTACTOR_STATE_ERROR state
+    ERROR_IMD_FAULT                         = 0x1,    //!< IMD reports a critical isolation resistance. @ref ERROR_SDC_OPEN and @ref ERROR_IMD_POWERSTAGE_DISABLED will be set if this bit is set
+    ERROR_AMS_FAULT                         = 0x2,    //!< AMS has critical values. @ref ERROR_SDC_OPEN and @ref ERROR_AMS_POWERSTAGE_DISABLED will be set if this bit is set
+    ERROR_IMPLAUSIBLE_CONTACTOR             = 0x4,    //!< Contactor states are implausible
+    ERROR_IMPLAUSIBLE_DC_LINK_VOLTAGE       = 0x8,    //!< DC-Link voltage measurement is implausible. Fault in the wiring?
+    ERROR_IMPLAUSIBLE_BATTERY_VOLTAGE       = 0x10,   //!< Battery voltage measurement is implausible. Fault in the wiring?
+    ERROR_IMPLAUSIBLE_CURRENT               = 0x20,   //!< Current sensor report implausible values. Fault in the wiring?
+    ERROR_CURRENT_OUT_OF_RANGE              = 0x40,   //!< Current sensor reports values, which are out of the allowed range
+    ERROR_PRE_CHARGE_TIMEOUT                = 0x80,   //!< Pre-charge timed out. Short circuit at the output?
+    ERROR_SDC_OPEN                          = 0x100,  //!< Shutdown circuit is open
+    ERROR_AMS_POWERSTAGE_DISABLED           = 0x200,  //!< AMS has an error and opened the shutdown circuit. The power stage remains disabled until the error is manually reset
+    ERROR_IMD_POWERSTAGE_DISABLED           = 0x400,  //!< IMD has an error and opened the shutdown circuit. The power stage remains disabled until the error is manually reset
+    ERROR_AMS_CELL_VOLTAGE_OUT_OF_RANGE     = 0x800,  //!< One or more cell voltages are out of range
+    ERROR_AMS_CELL_TEMPERATURE_OUT_OF_RANGE = 0x1000, //!< One or more cell temperatures are is out of range
+    ERROR_AMS_CELL_OPEN_WIRE                = 0x2000, //!< One or more cell sense wires are broken / fuses blown
+    ERROR_AMS_TEMPERATURE_OPEN_WIRE         = 0x4000, //!< One or more temperature sensors are broken
+    ERROR_AMS_DAISYCHAIN_ERROR              = 0x8000  //!< PEC error in the daisychain
 } contactor_error_t;
 
 /*!
