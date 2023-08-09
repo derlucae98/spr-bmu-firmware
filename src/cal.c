@@ -51,6 +51,7 @@ static config_t prvDefaultConfig = {
         false,
         MAX_NUM_OF_SLAVES,
         true,
+        true,
         0
 };
 
@@ -249,6 +250,7 @@ static void prv_send_config(void) {
             | ((prvConfig.automaticSocLookupEnable & 0x01) << 5)
             | ((prvConfig.autoResetOnPowerCycleEnable & 0x01) << 4)
             | (prvConfig.numberOfStacks & 0x0F);
+    resp[4] = (prvConfig.voltagePlausibilityCheckEnable & 0x01) << 7;
 
     prv_send_response(ID_QUERY_CONFIG, resp, sizeof(resp));
 }
@@ -259,6 +261,7 @@ static void prv_update_config(uint8_t *data) {
     prvConfig.autoResetOnPowerCycleEnable = (data[3] >> 4) & 0x01;
     prvConfig.automaticSocLookupEnable = (data[3] >> 5) & 0x01;
     prvConfig.globalBalancingEnable = (data[3] >> 6) & 0x01;
+    prvConfig.voltagePlausibilityCheckEnable = (data[4] >> 7) & 0x01;
 
     uint16_t crc16 = eeprom_get_crc16((uint8_t*)&prvConfig, sizeof(config_t) - sizeof(uint16_t));
     prvConfig.crc16 = crc16;
@@ -348,6 +351,7 @@ static void prv_print_config(void) {
         PRINTF("Automatic SOC lookup enabled: %s\n", config->automaticSocLookupEnable ? "true" : "false");
         PRINTF("Number of stacks: %u\n", config->numberOfStacks);
         PRINTF("Auto reset enabled: %s\n", config->autoResetOnPowerCycleEnable ? "true" : "false");
+        PRINTF("Voltage measurement plausibility check enabled: %s\n", config->voltagePlausibilityCheckEnable ? "true" : "false");
         release_config();
     }
 }

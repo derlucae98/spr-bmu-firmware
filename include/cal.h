@@ -27,6 +27,7 @@ typedef struct{
     bool automaticSocLookupEnable;
     uint8_t numberOfStacks;
     bool autoResetOnPowerCycleEnable;
+    bool voltagePlausibilityCheckEnable;
     uint16_t crc16;
 } config_t;
 
