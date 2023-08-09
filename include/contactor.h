@@ -59,7 +59,7 @@ typedef enum {
 typedef enum {
     ERROR_NO_ERROR                          = 0x0,    //!< No error. State machine is not in @ref CONTACTOR_STATE_ERROR state
     ERROR_IMD_FAULT                         = 0x1,    //!< IMD reports a critical isolation resistance. @ref ERROR_SDC_OPEN and @ref ERROR_IMD_POWERSTAGE_DISABLED will be set if this bit is set
-    ERROR_AMS_FAULT                         = 0x2,    //!< AMS has critical values. @ref ERROR_SDC_OPEN and @ref ERROR_AMS_POWERSTAGE_DISABLED will be set if this bit is set
+    ERROR_AMS_FAULT                         = 0x2,
     ERROR_IMPLAUSIBLE_CONTACTOR             = 0x4,    //!< Contactor states are implausible
     ERROR_IMPLAUSIBLE_DC_LINK_VOLTAGE       = 0x8,    //!< DC-Link voltage measurement is implausible. Fault in the wiring?
     ERROR_IMPLAUSIBLE_BATTERY_VOLTAGE       = 0x10,   //!< Battery voltage measurement is implausible. Fault in the wiring?
