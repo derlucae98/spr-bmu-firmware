@@ -308,21 +308,19 @@ static void prv_contactor_control_task(void *p) {
 }
 
 static void prv_check_for_errors(void) {
+    prvStateMachineError = ERROR_NO_ERROR;
+
     if (prvVoltagePlausibilityCheckEnable) {
          /* DC-Link voltage lower than 80% of the minimum battery voltage and contactors are active?
           * -> DC-Link voltage measurement broken wire */
          if (prvStateMachine.current == CONTACTOR_STATE_OPERATE && prvAdcData.dcLinkVoltage < (0.8f * (MIN_STACK_VOLTAGE / 10000) * prvNumberOfStacks)) {
              prvStateMachineError |= ERROR_IMPLAUSIBLE_DC_LINK_VOLTAGE;
-         } else {
-             prvStateMachineError &= ~ERROR_IMPLAUSIBLE_DC_LINK_VOLTAGE;
          }
 
          /* Battery voltage lower than 80% of the minimum battery voltage and contactors are active?
           * -> Battery voltage measurement broken wire OR battery depleted OR main fuse blown :/ */
          if (prvStateMachine.current == CONTACTOR_STATE_OPERATE && prvAdcData.batteryVoltage < (0.8f * (MIN_STACK_VOLTAGE / 10000) * prvNumberOfStacks)) {
              prvStateMachineError |= ERROR_IMPLAUSIBLE_BATTERY_VOLTAGE;
-         } else {
-             prvStateMachineError &= ~ERROR_IMPLAUSIBLE_BATTERY_VOLTAGE;
          }
      }
 
@@ -330,104 +328,73 @@ static void prv_check_for_errors(void) {
       * -> Possibly a short-circuit at the TSAC output */
      if (prvStateMachine.current == CONTACTOR_STATE_PRE_CHARGE && prvPrechargeTimeout >= PRECHARGE_TIMEOUT) {
          prvStateMachineError |= ERROR_PRE_CHARGE_TIMEOUT;
-     } else {
-         prvStateMachineError &= ~ERROR_PRE_CHARGE_TIMEOUT;
      }
 
      /* Current sensor invalid? */
      if (prvFaultTypes.currentFault) {
          prvStateMachineError |= ERROR_IMPLAUSIBLE_CURRENT;
-     } else {
-         prvStateMachineError &= ~ERROR_IMPLAUSIBLE_CURRENT;
      }
 
      /* Current out of range for too long? */
      if (prvFaultTypes.currentOutOfRange) {
          prvStateMachineError |= ERROR_CURRENT_OUT_OF_RANGE;
-     } else {
-         prvStateMachineError &= ~ERROR_CURRENT_OUT_OF_RANGE;
      }
 
      /* HV voltage measurement invalid? */
      if (prvFaultTypes.voltageFault) {
          prvStateMachineError |= ERROR_IMPLAUSIBLE_BATTERY_VOLTAGE;
          prvStateMachineError |= ERROR_IMPLAUSIBLE_DC_LINK_VOLTAGE;
-     } else {
-         prvStateMachineError &= ~ERROR_IMPLAUSIBLE_BATTERY_VOLTAGE;
-         prvStateMachineError &= ~ERROR_IMPLAUSIBLE_DC_LINK_VOLTAGE;
      }
 
      if (prvFaultTypes.amsCellOutOfRange) {
          prvStateMachineError |= ERROR_AMS_CELL_VOLTAGE_OUT_OF_RANGE;
-     } else {
-         prvStateMachineError &= ~ERROR_AMS_CELL_VOLTAGE_OUT_OF_RANGE;
      }
 
      if (prvFaultTypes.amsCellOpenWire) {
          prvStateMachineError |= ERROR_AMS_CELL_OPEN_WIRE;
-     } else {
-         prvStateMachineError &= ~ERROR_AMS_CELL_OPEN_WIRE;
      }
 
      if (prvFaultTypes.amsTemperatureOutOfRange) {
          prvStateMachineError |= ERROR_AMS_CELL_TEMPERATURE_OUT_OF_RANGE;
-     } else {
-         prvStateMachineError &= ~ERROR_AMS_CELL_TEMPERATURE_OUT_OF_RANGE;
      }
 
      if (prvFaultTypes.amsTemperatureOpenWire) {
          prvStateMachineError |= ERROR_AMS_TEMPERATURE_OPEN_WIRE;
-     } else {
-         prvStateMachineError &= ~ERROR_AMS_TEMPERATURE_OPEN_WIRE;
      }
 
      if (prvFaultTypes.amsDaisychainError) {
          prvStateMachineError |= ERROR_AMS_DAISYCHAIN_ERROR;
-     } else {
-         prvStateMachineError &= ~ERROR_AMS_DAISYCHAIN_ERROR;
      }
 
      /* Insulation fault */
      if (prvFaultTypes.imdFault) {
          prvStateMachineError |= ERROR_IMD_FAULT;
-     } else {
-         prvStateMachineError &= ~ERROR_IMD_FAULT;
      }
 
      /* AMS powerstage disabled */
      if (prvFaultTypes.amsPowerStageDisabled) {
          prvStateMachineError |= ERROR_AMS_POWERSTAGE_DISABLED;
-     } else {
-         prvStateMachineError &= ~ERROR_AMS_POWERSTAGE_DISABLED;
      }
 
      /* IMD powerstage disabled */
      if (prvFaultTypes.imdPowerStageDisabled) {
          prvStateMachineError |= ERROR_IMD_POWERSTAGE_DISABLED;
-     } else {
-         prvStateMachineError &= ~ERROR_IMD_POWERSTAGE_DISABLED;
      }
 
      /* SDC open (AMS, IMD or other) */
      if (prvFaultTypes.sdcOpen) {
          prvStateMachineError |= ERROR_SDC_OPEN;
-     } else {
-         prvStateMachineError &= ~ERROR_SDC_OPEN;
      }
 
      /* AIR states are not plausible?
       * -> AIR might be stuck or state detection might be broken */
      if (prvFaultTypes.airImplausible) {
          prvStateMachineError |= ERROR_IMPLAUSIBLE_CONTACTOR;
-     } else {
-         prvStateMachineError &= ~ERROR_IMPLAUSIBLE_CONTACTOR;
      }
 
      /* General AMS fault (See individual fault bits for clarification) */
      if (prvFaultTypes.amsFault) {
          prvStateMachineError |= ERROR_AMS_FAULT;
-     } else {
-         prvStateMachineError &= ~ERROR_AMS_FAULT;
      }
 }
 
