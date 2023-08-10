@@ -65,6 +65,9 @@ typedef struct {
     bool amsTemperatureOutOfRange : 1;
     bool amsTemperatureOpenWire : 1;
     bool amsDaisychainError : 1;
+    bool batteryVoltageImplausible : 1;
+    bool dcLinkVoltageImplausible : 1;
+    bool preChargeTimeout : 1;
 } fault_types_t;
 
 static fault_types_t prvFaultTypes;
@@ -190,6 +193,7 @@ static void prv_operate(void) {
 
 static void prv_error(void) {
     prv_open_all_contactors();
+    prvPrechargeTimeout = 0;
     PRINTF("State error\n");
     PRINTF("Reason 0x%4X\n", prvStateMachineError);
 }
@@ -250,6 +254,12 @@ static void prv_contactor_control_task(void *p) {
             prvPrechargeTimeout++;
         }
 
+        /* Pre-charge timed out?
+         * -> Possibly a short-circuit at the TSAC output */
+        if (prvPrechargeTimeout >= PRECHARGE_TIMEOUT) {
+            prvFaultTypes.preChargeTimeout = true;
+        }
+
         /* TS request is automatically withdrawn if the CAN message is absent for more than 500 ms */
         if (++prvTsRequestTimeout >= 5) {
             prvTsActive = false;
@@ -294,7 +304,6 @@ static void prv_contactor_control_task(void *p) {
             prvEvent = EVENT_ERROR;
         }
 
-
         for (size_t i = 0; i < sizeof(prvStateArray) / sizeof(prvStateArray[0]); i++) {
            if (prvStateArray[i].current == prvStateMachine.current) {
                 if ((prvStateArray[i].event == prvEvent)) {
@@ -310,92 +319,84 @@ static void prv_contactor_control_task(void *p) {
 static void prv_check_for_errors(void) {
     prvStateMachineError = ERROR_NO_ERROR;
 
-    if (prvVoltagePlausibilityCheckEnable) {
-         /* DC-Link voltage lower than 80% of the minimum battery voltage and contactors are active?
-          * -> DC-Link voltage measurement broken wire */
-         if (prvStateMachine.current == CONTACTOR_STATE_OPERATE && prvAdcData.dcLinkVoltage < (0.8f * (MIN_STACK_VOLTAGE / 10000) * prvNumberOfStacks)) {
-             prvStateMachineError |= ERROR_IMPLAUSIBLE_DC_LINK_VOLTAGE;
-         }
+    if (prvFaultTypes.preChargeTimeout) {
+        prvStateMachineError |= ERROR_PRE_CHARGE_TIMEOUT;
+    }
 
-         /* Battery voltage lower than 80% of the minimum battery voltage and contactors are active?
-          * -> Battery voltage measurement broken wire OR battery depleted OR main fuse blown :/ */
-         if (prvStateMachine.current == CONTACTOR_STATE_OPERATE && prvAdcData.batteryVoltage < (0.8f * (MIN_STACK_VOLTAGE / 10000) * prvNumberOfStacks)) {
-             prvStateMachineError |= ERROR_IMPLAUSIBLE_BATTERY_VOLTAGE;
-         }
-     }
+    /* Current sensor invalid? */
+    if (prvFaultTypes.currentFault) {
+        prvStateMachineError |= ERROR_IMPLAUSIBLE_CURRENT;
+    }
 
-     /* Pre-charge timed out?
-      * -> Possibly a short-circuit at the TSAC output */
-     if (prvStateMachine.current == CONTACTOR_STATE_PRE_CHARGE && prvPrechargeTimeout >= PRECHARGE_TIMEOUT) {
-         prvStateMachineError |= ERROR_PRE_CHARGE_TIMEOUT;
-     }
+    /* Current out of range for too long? */
+    if (prvFaultTypes.currentOutOfRange) {
+        prvStateMachineError |= ERROR_CURRENT_OUT_OF_RANGE;
+    }
 
-     /* Current sensor invalid? */
-     if (prvFaultTypes.currentFault) {
-         prvStateMachineError |= ERROR_IMPLAUSIBLE_CURRENT;
-     }
+    /* HV voltage measurement invalid? */
+    if (prvFaultTypes.voltageFault) {
+        prvStateMachineError |= ERROR_IMPLAUSIBLE_BATTERY_VOLTAGE;
+        prvStateMachineError |= ERROR_IMPLAUSIBLE_DC_LINK_VOLTAGE;
+    }
 
-     /* Current out of range for too long? */
-     if (prvFaultTypes.currentOutOfRange) {
-         prvStateMachineError |= ERROR_CURRENT_OUT_OF_RANGE;
-     }
+    if (prvFaultTypes.amsCellOutOfRange) {
+        prvStateMachineError |= ERROR_AMS_CELL_VOLTAGE_OUT_OF_RANGE;
+    }
 
-     /* HV voltage measurement invalid? */
-     if (prvFaultTypes.voltageFault) {
-         prvStateMachineError |= ERROR_IMPLAUSIBLE_BATTERY_VOLTAGE;
-         prvStateMachineError |= ERROR_IMPLAUSIBLE_DC_LINK_VOLTAGE;
-     }
+    if (prvFaultTypes.amsCellOpenWire) {
+        prvStateMachineError |= ERROR_AMS_CELL_OPEN_WIRE;
+    }
 
-     if (prvFaultTypes.amsCellOutOfRange) {
-         prvStateMachineError |= ERROR_AMS_CELL_VOLTAGE_OUT_OF_RANGE;
-     }
+    if (prvFaultTypes.amsTemperatureOutOfRange) {
+        prvStateMachineError |= ERROR_AMS_CELL_TEMPERATURE_OUT_OF_RANGE;
+    }
 
-     if (prvFaultTypes.amsCellOpenWire) {
-         prvStateMachineError |= ERROR_AMS_CELL_OPEN_WIRE;
-     }
+    if (prvFaultTypes.amsTemperatureOpenWire) {
+        prvStateMachineError |= ERROR_AMS_TEMPERATURE_OPEN_WIRE;
+    }
 
-     if (prvFaultTypes.amsTemperatureOutOfRange) {
-         prvStateMachineError |= ERROR_AMS_CELL_TEMPERATURE_OUT_OF_RANGE;
-     }
+    if (prvFaultTypes.amsDaisychainError) {
+        prvStateMachineError |= ERROR_AMS_DAISYCHAIN_ERROR;
+    }
 
-     if (prvFaultTypes.amsTemperatureOpenWire) {
-         prvStateMachineError |= ERROR_AMS_TEMPERATURE_OPEN_WIRE;
-     }
+    /* Insulation fault */
+    if (prvFaultTypes.imdFault) {
+        prvStateMachineError |= ERROR_IMD_FAULT;
+    }
 
-     if (prvFaultTypes.amsDaisychainError) {
-         prvStateMachineError |= ERROR_AMS_DAISYCHAIN_ERROR;
-     }
+    /* AMS powerstage disabled */
+    if (prvFaultTypes.amsPowerStageDisabled) {
+        prvStateMachineError |= ERROR_AMS_POWERSTAGE_DISABLED;
+    }
 
-     /* Insulation fault */
-     if (prvFaultTypes.imdFault) {
-         prvStateMachineError |= ERROR_IMD_FAULT;
-     }
+    /* IMD powerstage disabled */
+    if (prvFaultTypes.imdPowerStageDisabled) {
+        prvStateMachineError |= ERROR_IMD_POWERSTAGE_DISABLED;
+    }
 
-     /* AMS powerstage disabled */
-     if (prvFaultTypes.amsPowerStageDisabled) {
-         prvStateMachineError |= ERROR_AMS_POWERSTAGE_DISABLED;
-     }
+    /* SDC open (AMS, IMD or other) */
+    if (prvFaultTypes.sdcOpen) {
+        prvStateMachineError |= ERROR_SDC_OPEN;
+    }
 
-     /* IMD powerstage disabled */
-     if (prvFaultTypes.imdPowerStageDisabled) {
-         prvStateMachineError |= ERROR_IMD_POWERSTAGE_DISABLED;
-     }
+    /* AIR states are not plausible?
+    * -> AIR might be stuck or state detection might be broken */
+    if (prvFaultTypes.airImplausible) {
+        prvStateMachineError |= ERROR_IMPLAUSIBLE_CONTACTOR;
+    }
 
-     /* SDC open (AMS, IMD or other) */
-     if (prvFaultTypes.sdcOpen) {
-         prvStateMachineError |= ERROR_SDC_OPEN;
-     }
+    if (prvFaultTypes.batteryVoltageImplausible) {
+        prvStateMachineError |= ERROR_IMPLAUSIBLE_BATTERY_VOLTAGE;
+    }
 
-     /* AIR states are not plausible?
-      * -> AIR might be stuck or state detection might be broken */
-     if (prvFaultTypes.airImplausible) {
-         prvStateMachineError |= ERROR_IMPLAUSIBLE_CONTACTOR;
-     }
+    if (prvFaultTypes.dcLinkVoltageImplausible) {
+        prvStateMachineError |= ERROR_IMPLAUSIBLE_DC_LINK_VOLTAGE;
+    }
 
-     /* General AMS fault (See individual fault bits for clarification) */
-     if (prvFaultTypes.amsFault) {
-         prvStateMachineError |= ERROR_AMS_FAULT;
-     }
+    /* General AMS fault (See individual fault bits for clarification) */
+    if (prvFaultTypes.amsFault) {
+        prvStateMachineError |= ERROR_AMS_FAULT;
+    }
 }
 
 static void prv_evaluate_system(void) {
@@ -490,6 +491,22 @@ static void prv_evaluate_system(void) {
 
     prvFaultTypes.amsFault |= prvFaultTypes.airImplausible;
 
+    if (prvVoltagePlausibilityCheckEnable) {
+        /* DC-Link voltage lower than 80% of the minimum battery voltage and contactors are active?
+        * -> DC-Link voltage measurement broken wire */
+        if (prvStateMachine.current == CONTACTOR_STATE_OPERATE && prvAdcData.dcLinkVoltage < (0.8f * (MIN_STACK_VOLTAGE / 10000) * prvNumberOfStacks)) {
+            prvFaultTypes.dcLinkVoltageImplausible = true;
+        }
+
+        /* Battery voltage lower than 80% of the minimum battery voltage and contactors are active?
+        * -> Battery voltage measurement broken wire OR battery depleted OR main fuse blown :/ */
+        if (prvStateMachine.current == CONTACTOR_STATE_OPERATE && prvAdcData.batteryVoltage < (0.8f * (MIN_STACK_VOLTAGE / 10000) * prvNumberOfStacks)) {
+            prvFaultTypes.batteryVoltageImplausible = true;
+        }
+    }
+
+    prvFaultTypes.amsFault |= prvFaultTypes.dcLinkVoltageImplausible || prvFaultTypes.batteryVoltageImplausible;
+
 
     //Poll external status pins
     prvFaultTypes.amsPowerStageDisabled = get_pin(AMS_RES_STAT_PORT, AMS_RES_STAT_PIN);
@@ -539,7 +556,7 @@ static void prv_evaluate_system(void) {
     }
 
     //Warning LED: Slow blinking: No errors, fast blinking: Error
-    if (prvStateMachineError != ERROR_NO_ERROR) {
+    if (prvStateMachineState == CONTACTOR_STATE_ERROR) {
         if (blinkEnable) {
             set_pin(LED_WARNING_PORT, LED_WARNING_PIN);
         } else {
