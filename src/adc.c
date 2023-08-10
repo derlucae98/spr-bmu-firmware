@@ -160,11 +160,13 @@ static void prv_adc_task(void *p) {
     float currentValidVoltage = 0.0f;
 
     bool adcError = false;
-    bool currentValid = false;
+    bool currentInvalid = false;
 
     uint8_t chID;
 
     while (1) {
+
+        currentInvalid = false;
 
         /* Sample period ~ 3ms for each value
            Each value is updated every 12ms
@@ -220,9 +222,11 @@ static void prv_adc_task(void *p) {
         if (currentValidVoltage <= CURRENT_INVALID_THRESHOLD) {
             // if single-ended voltage at the input is below a defined threshold, the current input is invalid
             // Note: Select the threshold outside of the usable measurement range. Otherwise current peaks will trigger the plausibility check
-            currentValid = false;
-        } else {
-            currentValid = true;
+            currentInvalid |= true;
+        }
+
+        if (current > CURRENT_RANGE) {
+            currentInvalid |= true;
         }
 
         adc_data_t newAdcData;
@@ -230,7 +234,7 @@ static void prv_adc_task(void *p) {
         newAdcData.dcLinkVoltage = ulinkVolt;
         newAdcData.current = current;
         newAdcData.voltageValid = !adcError;
-        newAdcData.currentValid = currentValid;
+        newAdcData.currentValid = !currentInvalid;
 
         //The hook will provide the new data to a function, synchronous to the acquisition
         //Asynchronous access is possible using the access functions

@@ -21,6 +21,7 @@
 #define MIN_STACK_VOLTAGE (CELL_UNDERVOLTAGE * 12) // 12 cells per stack; Multiply with the number of stacks to get the min battery voltage
 #define PRECHARGE_TIMEOUT 50 //Seconds * 10; 5 Seconds
 #define MAX_CURRENT 150.0f //150A for 5 seconds
+#define CURRENT_RANGE 200.0f
 #define MAX_CURRENT_TIME 50 //100ms timebase
 
 #define SOC_TASK_STACK 512
