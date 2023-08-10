@@ -195,7 +195,7 @@ static void can_send_task(void *p) {
 
         msg.ID = CAN_ID_UIP;
         msg.DLC = 7;
-        msg.payload[0] = ((canData.batteryPowerValid & 0x01) << 2) | ((canData.currentValid & 0x01) << 1) | (canData.voltageValid & 0x01);
+        msg.payload[0] = ((canData.batteryPowerValid & 0x01) << 2) | ((canData.currentValid & 0x01) << 1) | (canData.batteryVoltageValid & 0x01);
         msg.payload[1] = (canData.batteryVoltage >> 8) & 0xFF;
         msg.payload[2] = canData.batteryVoltage & 0xFF;
         msg.payload[3] = (canData.current >> 8) & 0xFF;
