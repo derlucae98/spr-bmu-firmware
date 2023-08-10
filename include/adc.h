@@ -39,6 +39,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "uart.h"
 #include "adc_cal.h"
 #include <stdbool.h>
+#include <math.h>
 
 /*!
  * @struct adc_data_t

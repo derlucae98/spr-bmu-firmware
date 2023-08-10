@@ -41,8 +41,6 @@ static void prv_get_adc_calibration(void);
 static TaskHandle_t prvAdcTaskHandle = NULL;
 static adc_new_data_hook_t prv_adc_new_data_hook = NULL;
 
-static void prv_adc_print_data(void *p);
-
 static BaseType_t prv_adc_mutex_take(TickType_t blocktime) {
     return xSemaphoreTake(prvAdcDataMutex, blocktime);
 }
@@ -107,7 +105,6 @@ bool init_adc(adc_new_data_hook_t adc_new_data_hook) {
     }
 
     xTaskCreate(prv_adc_task, "adc", ADC_TASK_STACK, NULL, ADC_TASK_PRIO, &prvAdcTaskHandle);
-//    xTaskCreate(prv_adc_print_data, "", 500, NULL, 2, NULL);
     attach_interrupt(IRQ_ADC_PORT, IRQ_ADC_PIN, IRQ_EDGE_FALLING, prv_adc_irq_callback);
     return true;
 }
@@ -225,7 +222,7 @@ static void prv_adc_task(void *p) {
             currentInvalid |= true;
         }
 
-        if (current > CURRENT_RANGE) {
+        if (fabs(current) > CURRENT_RANGE) {
             currentInvalid |= true;
         }
 
@@ -253,18 +250,3 @@ static void prv_adc_task(void *p) {
     }
 }
 
-static void prv_adc_print_data(void *p) {
-    (void) p;
-
-    TickType_t period = pdMS_TO_TICKS(200);
-    TickType_t lastWake = xTaskGetTickCount();
-    while (1) {
-        adc_data_t adcData;
-        memset(&adcData, 0, sizeof(adc_data_t));
-        copy_adc_data(&adcData, portMAX_DELAY);
-        PRINTF("U_Batt: %.1f\n", adcData.batteryVoltage);
-        PRINTF("U_Link: %.1f\n", adcData.dcLinkVoltage);
-        PRINTF("Current: %.2f\n", adcData.current);
-        vTaskDelayUntil(&lastWake, period);
-    }
-}
