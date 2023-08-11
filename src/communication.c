@@ -348,11 +348,9 @@ static void can_rec_diag_task(void *p) {
                     if (msg.payload[0] & 0x01) {
                         prvDiagTsControl = true;
                         xTimerStart(prvTsRequestTimeout, portMAX_DELAY);
-                        PRINTF("TS control requested!\n");
                     } else {
                         prvDiagTsControl = false;
                         xTimerStop(prvTsRequestTimeout, portMAX_DELAY);
-                        PRINTF("TS control withdrawn!\n");
                         request_tractive_system(false);
                     }
 
@@ -410,7 +408,6 @@ static void prv_timer_callback(TimerHandle_t timer) {
     (void) timer;
     request_tractive_system(false);
     prvDiagTsControl = false;
-    PRINTF("TS control request timeout!\n");
 }
 
 
