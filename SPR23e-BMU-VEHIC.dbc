@@ -45,8 +45,8 @@ VAL_TABLE_ SlaveMultiplex 11 "Slave 12" 10 "Slave 11" 9 "Slave 10" 8 "Slave 9" 7
 BO_ 1 Startup: 4 Vector__XXX
  SG_ Reset_Reason : 7|32@0+ (1,0) [0|0] "" Vector__XXX
 
-BO_ 0 TS_request: 2 Vector__XXX
- SG_ TS_request : 15|8@0+ (1,0) [0|255] "" Vector__XXX
+BO_ 0 TS_request: 1 Vector__XXX
+ SG_ TS_request : 7|8@0+ (1,0) [0|255] "" Vector__XXX
 
 BO_ 13 Time: 8 Vector__XXX
  SG_ Uptime : 0|32@1+ (0.1,0) [0|429496729.5] "s" Vector__XXX
