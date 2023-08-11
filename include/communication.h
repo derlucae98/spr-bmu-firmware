@@ -14,6 +14,7 @@
 #include "task.h"
 #include "semphr.h"
 #include "queue.h"
+#include "timers.h"
 #include "contactor.h"
 #include "config.h"
 #include "can.h"

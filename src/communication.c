@@ -10,7 +10,10 @@
 static void can_send_task(void *p);
 static void can_rec_diag_task(void *p);
 static void can_rec_vehic_task(void *p);
+static void prv_timer_callback(TimerHandle_t timer);
 
+static bool prvDiagTsControl = false;
+static TimerHandle_t prvTsRequestTimeout = NULL;
 
 typedef struct {
     //Info
@@ -65,6 +68,7 @@ void init_comm(void) {
     xTaskCreate(can_send_task, "CAN", 1500, NULL, 3, NULL);
     xTaskCreate(can_rec_diag_task, "CAN rec", 1500, NULL, 3, NULL);
     xTaskCreate(can_rec_vehic_task, "CAN rec", 1500, NULL, 3, NULL);
+    prvTsRequestTimeout = xTimerCreate("tstimeout", pdMS_TO_TICKS(500), pdFALSE, NULL, prv_timer_callback);
 }
 
 static void can_send_task(void *p) {
@@ -316,7 +320,9 @@ static void can_rec_vehic_task(void *p) {
             switch (msg.ID) {
                 case CAN_ID_TS_REQUEST:
                     if (msg.DLC == 1 && msg.payload[0] == 0xFF) {
-                        request_tractive_system(true);
+                        if (!prvDiagTsControl) {
+                            request_tractive_system(true);
+                        }
                     } else {
                         request_tractive_system(false);
                     }
@@ -335,11 +341,29 @@ static void can_rec_diag_task(void *p) {
         if (xQueueReceive(CAN_DIAG_RX_Q, &msg, portMAX_DELAY)) {
             switch (msg.ID) {
                 case CAN_ID_TS_REQUEST:
-                    if (msg.DLC == 1 && msg.payload[0] == 0xFF) {
-                        request_tractive_system(true);
+                    if (msg.DLC != 2) {
+                        continue;
+                    }
+
+                    if (msg.payload[0] & 0x01) {
+                        prvDiagTsControl = true;
+                        xTimerStart(prvTsRequestTimeout, portMAX_DELAY);
+                        PRINTF("TS control requested!\n");
                     } else {
+                        prvDiagTsControl = false;
+                        xTimerStop(prvTsRequestTimeout, portMAX_DELAY);
+                        PRINTF("TS control withdrawn!\n");
                         request_tractive_system(false);
                     }
+
+                    if (prvDiagTsControl) {
+                        if (msg.payload[1] == 0xFF) {
+                            request_tractive_system(true);
+                        } else {
+                            request_tractive_system(false);
+                        }
+                    }
+
                     break;
 
                 case CAN_ID_DIAG_REQUEST:
@@ -380,6 +404,13 @@ uint32_t get_reset_reason(void) {
         PRINTF("Reset due to stop ack error\n");
     }
     return resetReason;
+}
+
+static void prv_timer_callback(TimerHandle_t timer) {
+    (void) timer;
+    request_tractive_system(false);
+    prvDiagTsControl = false;
+    PRINTF("TS control request timeout!\n");
 }
 
 
