@@ -297,10 +297,7 @@ static void prv_contactor_control_task(void *p) {
 
         prv_check_for_errors();
 
-        uint8_t cmp[sizeof(fault_types_t)];
-        memset(cmp, 0, sizeof(cmp));
-
-        if (memcmp(&prvFaultTypes, cmp, sizeof(fault_types_t)) != 0) {
+        if (prvStateMachineError) {
             prvEvent = EVENT_ERROR;
         }
 
