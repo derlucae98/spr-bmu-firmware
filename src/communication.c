@@ -376,6 +376,10 @@ static void can_rec_diag_task(void *p) {
 
 uint32_t get_reset_reason(void) {
     uint32_t resetReason = RCM->SRS;
+    return resetReason;
+}
+
+void print_reset_reason(uint32_t resetReason) {
     if (resetReason & 0x0002) {
         PRINTF("Reset due to brown-out\n");
     } else if (resetReason & 0x0004) {
@@ -401,7 +405,6 @@ uint32_t get_reset_reason(void) {
     } else if (resetReason & 0x2000) {
         PRINTF("Reset due to stop ack error\n");
     }
-    return resetReason;
 }
 
 static void prv_timer_callback(TimerHandle_t timer) {

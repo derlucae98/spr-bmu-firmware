@@ -11,17 +11,33 @@
 #include "semphr.h"
 #include "queue.h"
 #include "sd.h"
-
+#include <stdlib.h>
 #include "rtc.h"
 #include "config.h"
 #include "stacks.h"
 #include "adc.h"
 #include "contactor.h"
 
-#define LOGDATA_STRING_LENGTH 256 //Change as needed
+// placeholder!!
+typedef struct {
+    float minSoc;
+    float maxSoc;
+    float avgSoc;
+    bool valid;
+} soc_stats_t;
+
 
 typedef struct {
-    char data[LOGDATA_STRING_LENGTH];
+    uint32_t timestamp;
+    uint32_t relativeTime;
+    adc_data_t adcData;
+    stacks_data_t stacksData;
+    contactor_error_t stateMachineError;
+    contactor_SM_state_t tsState;
+    uint32_t resetReason;
+    soc_stats_t soc;
+    uint16_t isoResistance;
+    bool isoResistanceValid;
 } log_data_t;
 
 void logger_init(void);
