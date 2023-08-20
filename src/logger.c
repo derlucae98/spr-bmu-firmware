@@ -143,7 +143,7 @@ static void prv_write_header(void) {
         "Temp status 25;Temp status 26;Temp status 27;Temp status 28;Temp status 29;Temp status 30;Temp status 31;Temp status 32;Temp status 33;Temp status 34;Temp status 35;Temp status 36;"
         "Temp status 37;Temp status 38;Temp status 39;Temp status 40;Temp status 41;Temp status 42;Temp status 43;Temp status 44;Temp status 45;Temp status 46;Temp status 47;Temp status 48;"
         "Temp status 49;Temp status 50;Temp status 51;Temp status 52;Temp status 53;Temp status 54;Temp status 55;Temp status 56;Temp status 57;Temp status 58;Temp status 59;Temp status 60;"
-        "Temp status 61;Temp status 62;Temp status 63;Temp status 64;Temp status 65;Temp status 66;Temp status 67;Temp status 68;Temp status 69;Temp status 70;Temp status 71;Temp status 72";
+        "Temp status 61;Temp status 62;Temp status 63;Temp status 64;Temp status 65;Temp status 66;Temp status 67;Temp status 68;Temp status 69;Temp status 70;Temp status 71;Temp status 72\r\n";
 
 
 
