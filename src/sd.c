@@ -52,7 +52,7 @@ static bool prv_create_file(void) {
     char* timestamp = rtc_get_timestamp();
     char path[24];
 
-    snprintf(path, 24, "%s.log", timestamp);
+    snprintf(path, 24, "%s.csv", timestamp);
 
     uint8_t timeout = 100;
     do {
