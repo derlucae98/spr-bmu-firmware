@@ -116,7 +116,7 @@ void init_task(void *p) {
         init_comm();
         init_stacks();
         init_rtc(logger_tick_hook);
-        sd_init(logger_control);
+        sd_init(logger_set_file);
         logger_init();
 
 

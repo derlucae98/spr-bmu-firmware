@@ -11,6 +11,7 @@
 static config_t prvConfig;
 static SemaphoreHandle_t prvConfigMutex = NULL;
 
+extern void logger_control(bool active);
 
 enum {
     ID_LOAD_DEFAULT_CONFIG = 0x00,
@@ -256,6 +257,8 @@ static void prv_send_config(void) {
 }
 
 static void prv_update_config(uint8_t *data) {
+    logger_control(false); //Deactivate logger
+    vTaskDelay(pdMS_TO_TICKS(2000)); //Wait for logger to finish
     memcpy(&prvConfig.balancingThreshold, data + 1, sizeof(uint16_t));
     prvConfig.numberOfStacks = data[3] & 0x0F;
     prvConfig.autoResetOnPowerCycleEnable = (data[3] >> 4) & 0x01;
@@ -271,12 +274,11 @@ static void prv_update_config(uint8_t *data) {
         PRINTF("New config: success!\n");
         prv_print_config();
         prv_send_positive_response(ID_UPDATE_CONFIG);
-        return;
     } else {
         PRINTF("New config: failed!\n");
         prv_send_negative_response(ID_UPDATE_CONFIG, CAL_ERROR_INTERNAL_ERROR);
-        return;
     }
+    logger_control(true); //Reactivate logger
 }
 
 static BaseType_t prv_config_mutex_take(TickType_t blocktime) {

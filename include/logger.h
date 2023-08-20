@@ -41,7 +41,9 @@ typedef struct {
 } log_data_t;
 
 void logger_init(void);
-void logger_control(bool ready, FIL *file);
+
+void logger_set_file(bool cardStatus, FIL *file);
+void logger_control(bool active);
 void logger_tick_hook(uint32_t uptime);
 
 

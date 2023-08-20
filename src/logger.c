@@ -13,6 +13,7 @@ static bool prvSdInitialized = false;
 #define NUMBER_OF_Q_ITEMS 10
 static FIL *prvFile = NULL;
 static bool prvHeaderWritten = false;
+static bool prvLoggerActive = true;
 
 char *itoa(int value, char *str, int base); //Fix warning "implicit declaration of function 'itoa'". Works without though
 
@@ -23,9 +24,13 @@ void logger_init(void) {
     xTaskCreate(prv_logger_write_task, "logwrite", 5500, NULL, 2, &prvLoggerWriteHandle);
 }
 
-void logger_control(bool ready, FIL *file) {
-    prvSdInitialized = ready;
+void logger_set_file(bool cardStatus, FIL *file) {
+    prvSdInitialized = cardStatus;
     prvFile = file;
+}
+
+void logger_control(bool active) {
+    prvLoggerActive = active;
 }
 
 void logger_tick_hook(uint32_t uptime) {
@@ -52,7 +57,7 @@ void prv_logger_prepare_task(void *p) {
                 prvHeaderWritten = true;
             }
 
-            if (prvSdInitialized) {
+            if (prvSdInitialized && prvLoggerActive) {
                 copy_stacks_data(&loggingData.stacksData, pdMS_TO_TICKS(20));
                 copy_adc_data(&loggingData.adcData, pdMS_TO_TICKS(20));
                 loggingData.stateMachineError = get_contactor_error();
