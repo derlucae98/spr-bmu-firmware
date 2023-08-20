@@ -125,7 +125,7 @@ static void prv_write_header(void) {
         "Temp 49;Temp 50;Temp 51;Temp 52;Temp 53;Temp 54;Temp 55;Temp 56;Temp 57;Temp 58;Temp 59;Temp 60;"
         "Temp 61;Temp 62;Temp 63;Temp 64;Temp 65;Temp 66;Temp 67;Temp 68;Temp 69;Temp 70;Temp 71;Temp 72;"
         "Min Cell Voltage;Max Cell Voltage;Avg Cell Voltage;Cell Voltage valid;Min Temperature;Max Temperature;Avg Temperature;"
-        "Temperature valid;TS state;error code;reset reason;Min SOC;Max SOC;SOC valid;isolation resistance;isolation resistance valid"
+        "Temperature valid;TS state;error code;reset reason;Min SOC;Max SOC;SOC valid;isolation resistance;isolation resistance valid;"
         "Cell status 1;Cell status 2;Cell status 3;Cell status 4;Cell status 5;Cell status 6;Cell status 7;Cell status 8;Cell status 9;Cell status 10;Cell status 11;Cell status 12;"
         "Cell status 13;Cell status 14;Cell status 15;Cell status 16;Cell status 17;Cell status 18;Cell status 19;Cell status 20;Cell status 21;Cell status 22;Cell status 23;Cell status 24;"
         "Cell status 25;Cell status 26;Cell status 27;Cell status 28;Cell status 29;Cell status 30;Cell status 31;Cell status 32;Cell status 33;Cell status 34;Cell status 35;Cell status 36;"
