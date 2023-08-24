@@ -18,6 +18,7 @@
 #include "adc.h"
 #include "contactor.h"
 #include "soc.h"
+#include "peripheral.h"
 
 typedef struct {
     uint32_t timestamp;

@@ -35,6 +35,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "gpio.h"
 #include "config.h"
 #include "spi.h"
+#include "peripheral.h"
 
 #define EEPROM_SPI LPSPI2
 #define EEPROM_PAGESIZE 256

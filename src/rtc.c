@@ -181,11 +181,11 @@ bool rtc_sync(void) {
     memset(time, 0xFF, sizeof(time));
     time[0] = COMMAND_READ(CLOCK_SECONDS);
 
-    if (spi_mutex_take(RTC_SPI, pdMS_TO_TICKS(100))) {
+    if (get_peripheral_mutex(pdMS_TO_TICKS(2000))) {
         prv_assert_cs();
         spi_move_array(RTC_SPI, time, sizeof(time));
         prv_deassert_cs();
-        spi_mutex_give(RTC_SPI);
+        release_peripheral_mutex();
 
         prvRtcDateTime.second = SECTODEC(time[1]);
         prvRtcDateTime.minute = MINTODEC(time[2]);
@@ -195,6 +195,7 @@ bool rtc_sync(void) {
         prvRtcDateTime.year   = YEARTODEC(time[7]) + 2000;
         prvEpoch = prv_make_unix_time();
     } else {
+        PRINTF("RTC sync: Peripheral mutex lock failed: %s\n", pcTaskGetName(NULL));
         return false;
     }
 
@@ -202,7 +203,6 @@ bool rtc_sync(void) {
 }
 
 rtc_date_time_t rtc_get_date_time(void) {
-    rtc_sync();
     return prvRtcDateTime;
 }
 
@@ -225,12 +225,13 @@ bool rtc_set_date_time(rtc_date_time_t *dateTime) {
     buffer[6] = DECTOMON(dateTime->month);
     buffer[7] = DECTOYEAR((dateTime->year - 2000));
 
-    if (spi_mutex_take(RTC_SPI, pdMS_TO_TICKS(1000))) {
+    if (get_peripheral_mutex(pdMS_TO_TICKS(2000))) {
         prv_assert_cs();
         spi_move_array(RTC_SPI, buffer, sizeof(buffer));
         prv_deassert_cs();
-        spi_mutex_give(RTC_SPI);
+        release_peripheral_mutex();
     } else {
+        PRINTF("RTC set date time: Peripheral mutex lock failed\n");
         return false;
     }
 
@@ -295,6 +296,14 @@ static void prv_rtc_clkout_handler(BaseType_t *higherPrioTaskWoken) {
 
 static void prv_timer_callback(TimerHandle_t timer) {
     (void) timer;
+    static uint8_t syncTimer = 0;
+
+    if (syncTimer++ >= 100) {
+        //Sync local time with RTC every 10s
+        rtc_sync();
+        syncTimer = 0;
+    }
+
     prvUptime++;
     if (prvTickHook != NULL) {
         (prvTickHook)(prvUptime); //Invoke callback function

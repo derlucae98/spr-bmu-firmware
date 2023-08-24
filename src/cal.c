@@ -257,8 +257,8 @@ static void prv_send_config(void) {
 }
 
 static void prv_update_config(uint8_t *data) {
-    logger_control(false); //Deactivate logger
-    vTaskDelay(pdMS_TO_TICKS(2000)); //Wait for logger to finish
+//    logger_control(false); //Deactivate logger
+//    vTaskDelay(pdMS_TO_TICKS(2000)); //Wait for logger to finish
     memcpy(&prvConfig.balancingThreshold, data + 1, sizeof(uint16_t));
     prvConfig.numberOfStacks = data[3] & 0x0F;
     prvConfig.autoResetOnPowerCycleEnable = (data[3] >> 4) & 0x01;
@@ -292,7 +292,7 @@ static void prv_load_config(void) {
 
 
     bool ret;
-    ret = eeprom_read(pageBuffer, CONFIG_EEPROM_PAGE, EEPROM_PAGESIZE, pdMS_TO_TICKS(500));
+    ret = eeprom_read(pageBuffer, CONFIG_EEPROM_PAGE, EEPROM_PAGESIZE, pdMS_TO_TICKS(2000));
     if (ret != true) {
         PRINTF("Unable to read from EEPROM!\n");
         configASSERT(0);
@@ -317,7 +317,7 @@ static bool prv_write_config(void) {
     memcpy(&pageBuffer[0], &prvConfig, sizeof(config_t));
 
     bool ret;
-    ret = eeprom_write(pageBuffer, CONFIG_EEPROM_PAGE, sizeof(pageBuffer), pdMS_TO_TICKS(500));
+    ret = eeprom_write(pageBuffer, CONFIG_EEPROM_PAGE, sizeof(pageBuffer), pdMS_TO_TICKS(2000));
 
     if (ret != true) {
         PRINTF("Unable to write to EEPROM!\n");

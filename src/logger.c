@@ -15,6 +15,7 @@ static FIL *prvFile = NULL;
 static bool prvHeaderWritten = false;
 static bool prvLoggerActive = true;
 
+
 char *itoa(int value, char *str, int base); //Fix warning "implicit declaration of function 'itoa'". Works without though
 
 void logger_init(void) {
@@ -87,7 +88,6 @@ void prv_logger_write_task(void *p) {
             buf[items] = element;
             items++;
             if (items >= NUMBER_OF_Q_ITEMS) {
-                PRINTF("Writing data to file...\n");
                 volatile TickType_t start = xTaskGetTickCount();
                 for (size_t i = 0; i < NUMBER_OF_Q_ITEMS; i++) {
                     index += prv_raw_to_csv(&buf[i], &buffer[index]);
@@ -96,11 +96,18 @@ void prv_logger_write_task(void *p) {
                 items = 0;
 
                 UINT bw;
-                f_write(prvFile, (void*)&buffer, sizeof(buffer), &bw);
-                f_sync(prvFile);
-
-                volatile TickType_t end = xTaskGetTickCount();
-                PRINTF("Logger: %lu bytes written! Took %lu ms\n", bw, end - start);
+                if (get_peripheral_mutex(pdMS_TO_TICKS(1000))) {
+                    DSTATUS stat = f_write(prvFile, (void*)&buffer, sizeof(buffer), &bw);
+                    f_sync(prvFile);
+                    volatile TickType_t end = xTaskGetTickCount();
+                    if (stat != 0) {
+                        PRINTF("Logger: failed to log\n");
+                        //PRINTF("Logger: %lu bytes written! Took %lu ms\n", bw, end - start);
+                    }
+                    release_peripheral_mutex();
+                } else {
+                    PRINTF("Peripheral mutex lock failed!\n");
+                }
             }
         }
     }
@@ -152,11 +159,16 @@ static void prv_write_header(void) {
 
 
 
-    UINT bw;
-    PRINTF("Writing header...\n");
-    DSTATUS stat = f_write(prvFile, header, strlen(header), &bw);
-    f_sync(prvFile);
-    PRINTF("Done! %u, %u bytes written!\n", stat, bw);
+    if (get_peripheral_mutex(pdMS_TO_TICKS(1000))) {
+        UINT bw;
+        PRINTF("Writing header...\n");
+        DSTATUS stat = f_write(prvFile, header, strlen(header), &bw);
+        f_sync(prvFile);
+        PRINTF("Done! %u, %u bytes written!\n", stat, bw);
+        release_peripheral_mutex();
+    } else {
+        PRINTF("Peripheral mutex lock failed!\n");
+    }
 }
 
 static uint16_t prv_raw_to_csv(log_data_t *input, char *output) {

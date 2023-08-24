@@ -67,7 +67,7 @@ void prv_eeprom_mutex_give(void) {
 
 bool eeprom_write(uint8_t *data, size_t startAddress, size_t len, BaseType_t blocktime) {
     if (prv_eeprom_mutex_take(blocktime)) {
-        if (spi_mutex_take(EEPROM_SPI, blocktime)) {
+        if (get_peripheral_mutex(blocktime)) {
             uint8_t cmd[4];
             cmd[0] = CMD_WRITE;
             cmd[1] = (startAddress >> 16) & 0xFF;
@@ -79,7 +79,7 @@ bool eeprom_write(uint8_t *data, size_t startAddress, size_t len, BaseType_t blo
             spi_send_array(EEPROM_SPI, cmd, 4);
             spi_send_array(EEPROM_SPI, data, len);
             prv_deassert_cs();
-            spi_mutex_give(EEPROM_SPI);
+            release_peripheral_mutex();
             prv_eeprom_mutex_give();
             return true;
         } else {
@@ -93,7 +93,7 @@ bool eeprom_write(uint8_t *data, size_t startAddress, size_t len, BaseType_t blo
 
 bool eeprom_read(uint8_t *data, size_t startAddress, size_t len, BaseType_t blocktime) {
     if (prv_eeprom_mutex_take(blocktime)) {
-        if (spi_mutex_take(EEPROM_SPI, blocktime)) {
+        if (get_peripheral_mutex(blocktime)) {
             uint8_t cmd[4];
             cmd[0] = CMD_READ;
             cmd[1] = (startAddress >> 16) & 0xFF;
@@ -103,7 +103,7 @@ bool eeprom_read(uint8_t *data, size_t startAddress, size_t len, BaseType_t bloc
             spi_send_array(EEPROM_SPI, cmd, 4);
             spi_move_array(EEPROM_SPI, data, len);
             prv_deassert_cs();
-            spi_mutex_give(EEPROM_SPI);
+            release_peripheral_mutex();
             prv_eeprom_mutex_give();
             return true;
         } else {
@@ -117,13 +117,13 @@ bool eeprom_read(uint8_t *data, size_t startAddress, size_t len, BaseType_t bloc
 
 bool eeprom_busy(BaseType_t blocktime) {
     if (prv_eeprom_mutex_take(blocktime)) {
-        if (spi_mutex_take(EEPROM_SPI, blocktime)) {
+        if (get_peripheral_mutex(blocktime)) {
             uint8_t cmd[2];
             cmd[0] = CMD_LPWP;
             prv_assert_cs();
             spi_move_array(EEPROM_SPI, cmd, 2);
             prv_deassert_cs();
-            spi_mutex_give(EEPROM_SPI);
+            release_peripheral_mutex();
             prv_eeprom_mutex_give();
 
             return cmd[1] & SR_BUSY;

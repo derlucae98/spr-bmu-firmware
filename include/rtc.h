@@ -41,6 +41,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "gpio.h"
 #include "interrupts.h"
 #include "uart.h"
+#include "peripheral.h"
 
 /*!
  * @def RTC_SPI
