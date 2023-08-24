@@ -24,7 +24,7 @@
 #define CURRENT_RANGE 200.0f
 #define MAX_CURRENT_TIME 50 //100ms timebase
 
-#define SOC_TASK_STACK 512
+#define SOC_TASK_STACK 1000
 #define SOC_TASK_PRIO  2
 
 #define UART_RECV_TASK_STACK 512

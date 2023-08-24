@@ -17,9 +17,9 @@
 #include "logger.h"
 #include "communication.h"
 #include "cal.h"
+#include "soc.h"
 
 
-#include <alloca.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -111,7 +111,8 @@ void init_task(void *p) {
             release_config();
         }
 
-        init_adc(NULL);
+        init_soc();
+        init_adc(soc_coulomb_count);
         init_contactor();
         init_comm();
         init_stacks();

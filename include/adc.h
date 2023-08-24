@@ -42,6 +42,12 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <math.h>
 
 /*!
+ * @def ADC_SAMPLE_PERIOD
+ * Sample period for all ADC values in ms
+ */
+#define ADC_SAMPLE_PERIOD 12
+
+/*!
  * @struct adc_data_t
  * Datatype for the ADC values.
  * The DC-Link voltage, battery voltage, and current are provided as floating-point values.

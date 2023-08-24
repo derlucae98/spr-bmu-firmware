@@ -17,15 +17,7 @@
 #include "stacks.h"
 #include "adc.h"
 #include "contactor.h"
-
-// placeholder!!
-typedef struct {
-    float minSoc;
-    float maxSoc;
-    float avgSoc;
-    bool valid;
-} soc_stats_t;
-
+#include "soc.h"
 
 typedef struct {
     uint32_t timestamp;

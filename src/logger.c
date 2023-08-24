@@ -20,8 +20,8 @@ char *itoa(int value, char *str, int base); //Fix warning "implicit declaration 
 void logger_init(void) {
     prvLoggingQ = xQueueCreate(NUMBER_OF_Q_ITEMS, sizeof(log_data_t));
     configASSERT(prvLoggingQ);
-    xTaskCreate(prv_logger_prepare_task, "logprep", 470, NULL, 2, &prvLoggerPrepareHandle);
-    xTaskCreate(prv_logger_write_task, "logwrite", 5500, NULL, 2, &prvLoggerWriteHandle);
+    xTaskCreate(prv_logger_prepare_task, "logprep", 470, NULL, 3, &prvLoggerPrepareHandle);
+    xTaskCreate(prv_logger_write_task, "logwrite", 5500, NULL, 3, &prvLoggerWriteHandle);
 }
 
 void logger_set_file(bool cardStatus, FIL *file) {
