@@ -7,7 +7,6 @@
 
 #ifndef SOC_H_
 #define SOC_H_
-
 #include <stdbool.h>
 #include "config.h"
 #include "FreeRTOS.h"

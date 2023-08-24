@@ -65,8 +65,6 @@ static void prv_ltc_deassert(void) {
 static uint16_t prv_max_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks);
 static uint16_t prv_min_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks);
 static uint16_t prv_avg_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8_t stacks);
-static bool prv_check_voltage_validity(uint8_t voltageStatus[][MAX_NUM_OF_CELLS+1], uint8_t stacks);
-static bool prv_check_temperature_validity(uint8_t temperatureStatus[][MAX_NUM_OF_TEMPSENS], uint8_t stacks);
 static uint16_t prv_max_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8_t stacks);
 static uint16_t prv_min_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8_t stacks);
 static uint16_t prv_avg_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPSENS], uint8_t stacks);
@@ -174,13 +172,13 @@ void stacks_worker_task(void *p) {
             }
         }
 
-        bool cellVoltValid = prv_check_voltage_validity(prvStacksDataLocal.cellVoltageStatus, NUMBEROFSLAVES);
+        bool cellVoltValid = check_voltage_validity(prvStacksDataLocal.cellVoltageStatus, NUMBEROFSLAVES);
         prvStacksDataLocal.minCellVolt = prv_min_cell_voltage(prvStacksDataLocal.cellVoltage, NUMBEROFSLAVES);
         prvStacksDataLocal.maxCellVolt = prv_max_cell_voltage(prvStacksDataLocal.cellVoltage, NUMBEROFSLAVES);
         prvStacksDataLocal.avgCellVolt = prv_avg_cell_voltage(prvStacksDataLocal.cellVoltage, NUMBEROFSLAVES);
         prvStacksDataLocal.voltageValid = cellVoltValid;
 
-        bool cellTemperatureValid = prv_check_temperature_validity(prvStacksDataLocal.temperatureStatus, NUMBEROFSLAVES);
+        bool cellTemperatureValid = check_temperature_validity(prvStacksDataLocal.temperatureStatus, NUMBEROFSLAVES);
         prvStacksDataLocal.minTemperature = prv_min_cell_temperature(prvStacksDataLocal.temperature, NUMBEROFSLAVES);
         prvStacksDataLocal.maxTemperature = prv_max_cell_temperature(prvStacksDataLocal.temperature, NUMBEROFSLAVES);
         prvStacksDataLocal.avgTemperature = prv_avg_cell_temperature(prvStacksDataLocal.temperature, NUMBEROFSLAVES);
@@ -226,9 +224,12 @@ void balancing_task(void *p) {
 
             if (!valid) {
                 PRINTF("Balancing stopped due to invalid values!\n");
+                continue;
             }
 
-            if (delta > 50 && valid && avgCellVoltage >= prvBalanceThreshold) {
+            bool balancingEnable = system_is_charging();
+
+            if (delta > 50 && valid && avgCellVoltage >= prvBalanceThreshold && balancingEnable) {
                 //Balance only, if difference is greater than 5 mV
                 for (size_t stack = 0; stack < NUMBEROFSLAVES; stack++) {
                     for (size_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
@@ -340,7 +341,7 @@ static uint16_t prv_avg_cell_voltage(uint16_t voltage[][MAX_NUM_OF_CELLS], uint8
     return (uint16_t)(volt / (MAX_NUM_OF_CELLS * stacks));
 }
 
-static bool prv_check_voltage_validity(uint8_t voltageStatus[][MAX_NUM_OF_CELLS+1], uint8_t stacks) {
+bool check_voltage_validity(uint8_t voltageStatus[][MAX_NUM_OF_CELLS+1], uint8_t stacks) {
     bool critical = false;
     for (uint8_t stack = 0; stack < stacks; stack++) {
         for (uint8_t cell = 0; cell < MAX_NUM_OF_CELLS+1; cell++) {
@@ -352,7 +353,7 @@ static bool prv_check_voltage_validity(uint8_t voltageStatus[][MAX_NUM_OF_CELLS+
     return !critical;
 }
 
-static bool prv_check_temperature_validity(uint8_t temperatureStatus[][MAX_NUM_OF_TEMPSENS], uint8_t stacks) {
+bool check_temperature_validity(uint8_t temperatureStatus[][MAX_NUM_OF_TEMPSENS], uint8_t stacks) {
     bool critical = false;
     for (uint8_t stack = 0; stack < stacks; stack++) {
         for (uint8_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {

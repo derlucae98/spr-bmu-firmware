@@ -14,6 +14,7 @@ static void prv_timer_callback(TimerHandle_t timer);
 
 static bool prvDiagTsControl = false;
 static TimerHandle_t prvTsRequestTimeout = NULL;
+static bool prvIsCharging = false;
 
 typedef struct {
     //Info
@@ -140,10 +141,10 @@ static void can_send_task(void *p) {
         canData.errorCode = get_contactor_error();
         canData.tsState = get_contactor_SM_state();
 
-        //TODO: Implement SOC module
-        canData.minSoc = 0;
-        canData.maxSoc = 0;
-        canData.socValid = 0;
+        soc_stats_t socStats = get_soc_stats();
+        canData.minSoc = (uint16_t)(socStats.minSoc + 0.5f);
+        canData.maxSoc = (uint16_t)(socStats.maxSoc + 0.5f);
+        canData.socValid = socStats.valid;
 
         if (counter100ms == 0) {
             canData.uptime = uptime_in_100_ms();
@@ -169,7 +170,7 @@ static void can_send_task(void *p) {
         msg.payload[4] = (canData.isolationResistance >> 8) & 0xFF;
         msg.payload[5] = canData.isolationResistance & 0xFF;
         msg.payload[6] = ((canData.isolationResistanceValid & 0x01) << 7) | (canData.tsState & 0x0F);
-        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
+//        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
         can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
 
         msg.ID = CAN_ID_STATS_1;
@@ -181,8 +182,25 @@ static void can_send_task(void *p) {
         msg.payload[4] = canData.maxCellVolt & 0xFF;
         msg.payload[5] = (canData.avgCellVolt >> 8) & 0xFF;
         msg.payload[6] = canData.avgCellVolt & 0xFF;
-        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
         can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
+
+        //Legacy protocol for validation in SPR22e accumulator
+        //BMS_Info_1
+        canData.minCellVolt /= 10;
+        canData.maxCellVolt /= 10;
+        canData.avgCellVolt /= 10;
+
+        msg.ID = 0x001;
+        msg.DLC = 8;
+        msg.payload[0] = canData.minCellVolt >> 5;
+        msg.payload[1] = ((canData.minCellVolt & 0x1F) << 3) | ((canData.voltageValid & 0x01) << 2) | ((canData.maxCellVolt & 0x1FFF) >> 11);
+        msg.payload[2] = (canData.maxCellVolt & 0x7FF) >> 3;
+        msg.payload[3] = ((canData.maxCellVolt & 0x07) << 5) | ((canData.voltageValid & 0x01) << 4) | ((canData.avgCellVolt & 0x1FFF) >> 9);
+        msg.payload[4] = ((canData.avgCellVolt & 0x1FFF) >> 1);
+        msg.payload[5] = ((canData.avgCellVolt & 0x1FFF) << 7) | ((canData.voltageValid & 0x01) << 6) | ((canData.minSoc & 0x3FF) >> 4);
+        msg.payload[6] = ((canData.minSoc & 0x3FF) << 4) | ((canData.socValid & 0x01) << 3) | ((canData.maxSoc & 0x3FF) >> 7);
+        msg.payload[7] = ((canData.maxSoc & 0x3FF) << 1) | ((canData.socValid & 0x01));
+        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
 
         msg.ID = CAN_ID_STATS_2;
         msg.DLC = 8;
@@ -194,8 +212,22 @@ static void can_send_task(void *p) {
         msg.payload[5] = canData.maxSoc;
         msg.payload[6] = (canData.dcLinkVoltage >> 8) & 0xFF;
         msg.payload[7] = canData.dcLinkVoltage & 0xFF;
-        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
+//        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
         can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
+
+        //BMS_Info_3
+        msg.ID = 0x003;
+        msg.DLC = 8;
+        msg.payload[0] = (canData.isolationResistance & 0x7FFF) >> 8;
+        msg.payload[1] = ((canData.isolationResistance & 0x7FFF) << 1) | ((canData.isolationResistanceValid & 0x01));
+        msg.payload[2] = ((canData.tsState & 0x03) << 5);
+        msg.payload[3] = ((canData.minTemp * 5 & 0x3FF) >> 9);
+        msg.payload[4] = (canData.minTemp * 5 & 0x3FF) >> 1;
+        msg.payload[5] = ((canData.minTemp * 5 & 0x3FF) << 7) | ((canData.tempValid & 0x01) << 6) | ((canData.maxTemp * 5 >> 4) & 0x3F);
+        msg.payload[6] = ((canData.maxTemp * 5 & 0x3FF) << 4) | ((canData.tempValid & 0x01) << 3) | ((canData.avgTemp * 5& 0x3FF) >> 7);
+        msg.payload[7] = ((canData.avgTemp * 5& 0x3FF) << 1) | (canData.tempValid & 0x01);
+        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
+
 
         msg.ID = CAN_ID_UIP;
         msg.DLC = 7;
@@ -206,8 +238,21 @@ static void can_send_task(void *p) {
         msg.payload[4] = canData.current & 0xFF;
         msg.payload[5] = (canData.batteryPower >> 8) & 0xFF;
         msg.payload[6] = canData.batteryPower & 0xFF;
-        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
+//        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
         can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
+
+        //BMS_Info_2
+        msg.ID = 0x002;
+        msg.DLC = 7;
+        msg.payload[0] = ((canData.batteryVoltage) >> 5);
+        msg.payload[1] = ((canData.batteryVoltage) << 3) | ((canData.batteryVoltageValid & 0x01) << 2);
+        msg.payload[2] = ((canData.dcLinkVoltage & 0x1FFF) >> 5);
+        msg.payload[3] = ((canData.dcLinkVoltage & 0x1FFF) << 3) | ((canData.dcLinkVoltageValid & 0x01) << 2);
+        msg.payload[4] = (canData.current >> 8);
+        msg.payload[5] = (canData.current & 0xFF);
+        msg.payload[6] = (canData.currentValid & 0x01) << 7;
+        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
+
 
         msg.ID = CAN_ID_CELL_VOLTAGE_1;
         msg.DLC = 8;
@@ -322,9 +367,11 @@ static void can_rec_vehic_task(void *p) {
                     if (msg.DLC == 1 && msg.payload[0] == 0xFF) {
                         if (!prvDiagTsControl) {
                             request_tractive_system(true);
+                            prvIsCharging = false;
                         }
                     } else {
                         request_tractive_system(false);
+                        prvIsCharging = false;
                     }
                     break;
                 default:
@@ -357,8 +404,10 @@ static void can_rec_diag_task(void *p) {
                     if (prvDiagTsControl) {
                         if (msg.payload[1] == 0xFF) {
                             request_tractive_system(true);
+                            prvIsCharging = true;
                         } else {
                             request_tractive_system(false);
+                            prvIsCharging = false;
                         }
                     }
 
@@ -413,6 +462,9 @@ static void prv_timer_callback(TimerHandle_t timer) {
     prvDiagTsControl = false;
 }
 
+bool system_is_charging(void) {
+    return prvIsCharging;
+}
 
 
 

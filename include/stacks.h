@@ -39,19 +39,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "cal.h"
 #include <stdbool.h>
 
-/*! @def MAX_NUM_OF_SLAVES
- * Defines the number of slaves during normal operation.
- * NUMBEROFSLAVES can be different from this value.
- * This is useful during development when only one slave
- * is available for testing on the bench.
- * To ensure that the software will work with NUMBEROFSLAVES != 12,
- * MAX_NUM_OF_SLAVES defines the number of slaves during normal operation.
- * If NUMBEROFSLAVES is less than this value, all unused values in the arrays
- * are filled with 0.
- * Note that a greater value for NUMBEROFSLAVES than MAX_NUM_OF_SLAVES will lead
- * to crashes
- */
-#define MAX_NUM_OF_SLAVES 12
+
 
 /*!
  * @struct stacks_data_t
@@ -134,6 +122,9 @@ bool copy_stacks_data(stacks_data_t *dest, TickType_t blocktime);
  *  @see get_stacks_data()
  */
 void release_stacks_data(void);
+
+bool check_voltage_validity(uint8_t voltageStatus[][MAX_NUM_OF_CELLS+1], uint8_t stacks);
+bool check_temperature_validity(uint8_t temperatureStatus[][MAX_NUM_OF_TEMPSENS], uint8_t stacks);
 
 
 #endif /* STACKS_H_ */

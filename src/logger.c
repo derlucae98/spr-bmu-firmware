@@ -61,6 +61,7 @@ void prv_logger_prepare_task(void *p) {
             if (prvSdInitialized && prvLoggerActive) {
                 copy_stacks_data(&loggingData.stacksData, pdMS_TO_TICKS(20));
                 copy_adc_data(&loggingData.adcData, pdMS_TO_TICKS(20));
+                loggingData.soc = get_soc_stats();
                 loggingData.stateMachineError = get_contactor_error();
                 loggingData.tsState = get_contactor_SM_state();
                 loggingData.timestamp = rtc_get_unix_time();

@@ -55,7 +55,19 @@
 #define PERIPH_SPI_SLOW LPSPI_PRESC_16
 #define PERIPH_SPI_FAST LPSPI_PRESC_1
 
-
+/*! @def MAX_NUM_OF_SLAVES
+ * Defines the number of slaves during normal operation.
+ * NUMBEROFSLAVES can be different from this value.
+ * This is useful during development when only one slave
+ * is available for testing on the bench.
+ * To ensure that the software will work with NUMBEROFSLAVES != 12,
+ * MAX_NUM_OF_SLAVES defines the number of slaves during normal operation.
+ * If NUMBEROFSLAVES is less than this value, all unused values in the arrays
+ * are filled with 0.
+ * Note that a greater value for NUMBEROFSLAVES than MAX_NUM_OF_SLAVES will lead
+ * to crashes
+ */
+#define MAX_NUM_OF_SLAVES 12
 
 /*!
  * @def CAL_DATA_EEPROM_PAGE

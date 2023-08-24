@@ -21,11 +21,13 @@
 #include "stacks.h"
 #include "adc.h"
 #include "cal.h"
+#include "soc.h"
 
 
 void init_comm(void);
 uint32_t get_reset_reason(void);
 void print_reset_reason(uint32_t resetReason);
+bool system_is_charging(void);
 
 
 

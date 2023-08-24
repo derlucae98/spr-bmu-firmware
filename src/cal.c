@@ -154,7 +154,7 @@ void handle_cal_request(uint8_t *data, size_t len) {
         case ID_SOC_LOOKUP: {
                 bool ret = true;
                 PRINTF("SOC lookup\n");
-                //TODO call ret = soc_lookup();
+                ret = soc_lookup();
                 if (ret != true) {
                     prv_send_negative_response(ID, CAL_ERROR_INTERNAL_ERROR);
                     return;
@@ -257,8 +257,6 @@ static void prv_send_config(void) {
 }
 
 static void prv_update_config(uint8_t *data) {
-//    logger_control(false); //Deactivate logger
-//    vTaskDelay(pdMS_TO_TICKS(2000)); //Wait for logger to finish
     memcpy(&prvConfig.balancingThreshold, data + 1, sizeof(uint16_t));
     prvConfig.numberOfStacks = data[3] & 0x0F;
     prvConfig.autoResetOnPowerCycleEnable = (data[3] >> 4) & 0x01;

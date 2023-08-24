@@ -16,6 +16,7 @@
 #include "can.h"
 #include "rtc.h"
 #include "adc_cal.h"
+//#include "soc.h"
 #include "system_S32K148.h"
 
 
