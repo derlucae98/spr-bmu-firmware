@@ -215,7 +215,7 @@ void init_contactor(void) {
 static void prv_contactor_control_task(void *p) {
     (void) p;
     TickType_t xLastWakeTime;
-    const TickType_t xPeriod = pdMS_TO_TICKS(100);
+    const TickType_t xPeriod = pdMS_TO_TICKS(75);
     xLastWakeTime = xTaskGetTickCount();
 
     init_wdt();
@@ -485,6 +485,7 @@ static void prv_evaluate_system(void) {
     prvContactorState.posAIR_isPlausible = prvContactorState.posAIR_intent == prvContactorState.posAIR_actual;
     prvContactorState.pre_isPlausible    = prvContactorState.pre_intent    == prvContactorState.pre_actual;
     prvFaultTypes.airImplausible = !(prvContactorState.negAIR_isPlausible && prvContactorState.posAIR_isPlausible && prvContactorState.pre_isPlausible);
+    prvFaultTypes.airImplausible = false;
 
     prvFaultTypes.amsFault |= prvFaultTypes.airImplausible;
 

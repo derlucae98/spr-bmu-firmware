@@ -155,6 +155,15 @@ static void can_send_task(void *p) {
             get_balancing_status(canData.balance);
         }
 
+        msg.ID = 0x00F;
+        msg.payload[0] = canData.minSoc * 10 >> 8;
+        msg.payload[1] = canData.minSoc * 10 & 0xFF;
+        msg.payload[2] = canData.maxTemp * 5 >> 8;
+        msg.payload[3] = canData.maxTemp * 5 & 0xFF;
+        msg.payload[4] = canData.tsState;
+        msg.DLC = 5;
+        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
+
         msg.ID = CAN_ID_INFO;
         msg.DLC = 7;
         msg.payload[0] = (canData.errorCode >> 24) & 0xFF;
@@ -247,7 +256,7 @@ static void can_send_task(void *p) {
         msg.payload[4] = (canData.current >> 8);
         msg.payload[5] = (canData.current & 0xFF);
         msg.payload[6] = (canData.currentValid & 0x01) << 7;
-        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
+        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
 
 
         msg.ID = CAN_ID_CELL_VOLTAGE_1;
@@ -330,6 +339,9 @@ static void can_send_task(void *p) {
         msg.payload[6] = 0;
         msg.payload[7] = 0;
         can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
+
+
+
 
         for (size_t stack = 0; stack < MAX_NUM_OF_SLAVES; stack++) {
             for (size_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {

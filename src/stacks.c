@@ -113,7 +113,7 @@ void stacks_worker_task(void *p) {
 
     static uint8_t pecVoltage[MAX_NUM_OF_SLAVES][MAX_NUM_OF_CELLS];
     TickType_t xLastWakeTime = xTaskGetTickCount();
-    const TickType_t xPeriod = pdMS_TO_TICKS(75);
+    const TickType_t xPeriod = pdMS_TO_TICKS(100);
 
     uint8_t cycle = 0;
 
@@ -140,11 +140,11 @@ void stacks_worker_task(void *p) {
         // value out of range
         errorCounter = 0;
 
-        for (size_t slave = 0; slave < MAX_NUM_OF_SLAVES; slave++) {
-            for (size_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
-                temperatureFaulty[slave][tempsens] = 0;
-            }
-        }
+//        for (size_t slave = 0; slave < MAX_NUM_OF_SLAVES; slave++) {
+//            for (size_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
+//                temperatureFaulty[slave][tempsens] = 0;
+//            }
+//        }
 
 
         for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
@@ -185,16 +185,16 @@ void stacks_worker_task(void *p) {
             }
         }
 
-        if (errorCounter <= 2) {
-            for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
-                for (size_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
-                    prvStacksDataLocal.temperatureStatus[slave][tempsens] = NOERROR;
-                    if (temperatureFaulty[slave][tempsens] == 1) {
-                        prvStacksDataLocal.temperature[slave][tempsens] = 0;
-                    }
-                }
-            }
-        }
+//        if (errorCounter <= 2) {
+//            for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
+//                for (size_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
+//                    prvStacksDataLocal.temperatureStatus[slave][tempsens] = NOERROR;
+//                    if (temperatureFaulty[slave][tempsens] == 1) {
+//                        prvStacksDataLocal.temperature[slave][tempsens] = 0;
+//                    }
+//                }
+//            }
+//        }
 
 
         bool cellVoltValid = check_voltage_validity(prvStacksDataLocal.cellVoltageStatus, NUMBEROFSLAVES);
