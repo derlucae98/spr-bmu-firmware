@@ -37,7 +37,6 @@ static uint8_t prvBalancingGates[MAX_NUM_OF_SLAVES][MAX_NUM_OF_CELLS];
 static bool prvBalanceEnable = false;
 static uint16_t prvBalanceThreshold;
 static TaskHandle_t prvBalanceTaskHandle = NULL;
-static bool prvCharging = false;
 static stacks_data_t prvStacksDataLocal;
 
 static BaseType_t prv_balancingGatesMutex_take(TickType_t blocktime);
