@@ -24,7 +24,7 @@ typedef struct {
 extern QueueHandle_t can0RxQueueHandle;
 extern QueueHandle_t can1RxQueueHandle;
 
-void can_init(CAN_Type *can);
+void can_init(CAN_Type *can, uint32_t filterMask);
 bool can_enqueue_message(CAN_Type *can, can_msg_t *message, TickType_t blocktime);
 
 

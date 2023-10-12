@@ -133,8 +133,8 @@ int main(void)
     disable_wdt();
     clock_init();
     set_gpio_config();
-    can_init(CAN0);
-    can_init(CAN1);
+    can_init(CAN0, 0xFFFFFFFF);
+    can_init(CAN1, 0x00000000);
     uart_init(false);
     set_pin(AMS_FAULT_PORT, AMS_FAULT_PIN);
 

@@ -8,9 +8,8 @@ static uint16_t prv_raw_to_csv(log_data_t *input, char *output);
 static TaskHandle_t prvLoggerPrepareHandle = NULL;
 static TaskHandle_t prvLoggerWriteHandle = NULL;
 static QueueHandle_t prvLoggingQ = NULL;
-static uint32_t prvUptime;
 static bool prvSdInitialized = false;
-#define NUMBER_OF_Q_ITEMS 10
+#define NUMBER_OF_Q_ITEMS 4
 static FIL *prvFile = NULL;
 static bool prvHeaderWritten = false;
 static bool prvLoggerActive = true;
@@ -35,21 +34,20 @@ void logger_control(bool active) {
 }
 
 void logger_tick_hook(uint32_t uptime) {
-    prvUptime = uptime;
-    if (prvLoggerPrepareHandle) {
-        xTaskNotifyGive(prvLoggerPrepareHandle);
-    }
+    (void) uptime;
 }
 
 void prv_logger_prepare_task(void *p) {
     (void) p;
     log_data_t loggingData;
     memset(&loggingData, 0, sizeof(log_data_t));
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    const TickType_t xPeriod = pdMS_TO_TICKS(250);
 
     while (1) {
-        if (ulTaskNotifyTake(pdFALSE, portMAX_DELAY)) {
-
+        if (prvLoggerPrepareHandle) {
             if (prvFile == NULL) {
+                vTaskDelayUntil(&xLastWakeTime, xPeriod);
                 continue;
             }
 
@@ -70,7 +68,9 @@ void prv_logger_prepare_task(void *p) {
 
                 xQueueSendToBack(prvLoggingQ, &loggingData, portMAX_DELAY);
             }
+
         }
+        vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
 }
 
@@ -98,12 +98,12 @@ void prv_logger_write_task(void *p) {
 
                 UINT bw;
                 if (get_peripheral_mutex(pdMS_TO_TICKS(1000))) {
-                    DSTATUS stat = f_write(prvFile, (void*)&buffer, 920, &bw);
+                    DSTATUS stat = f_write(prvFile, (void*)&buffer, 7700, &bw);
                     f_sync(prvFile);
                     volatile TickType_t end = xTaskGetTickCount();
+                    PRINTF("Logger: %lu bytes written! Took %lu ms\n", bw, end - start);
                     if (stat != 0) {
                         PRINTF("Logger: failed to log\n");
-                        //PRINTF("Logger: %lu bytes written! Took %lu ms\n", bw, end - start);
                     }
                     release_peripheral_mutex();
                 } else {
@@ -119,7 +119,7 @@ static void prv_write_header(void) {
         // Thanks ChatGPT:
         "timestamp;relative time;Battery Voltage;TSAC output voltage;voltage valid;"
         "current;current valid;"
-/*        "Cell 1;Cell 2;Cell 3;Cell 4;Cell 5;Cell 6;Cell 7;Cell 8;Cell 9;Cell 10;Cell 11;Cell 12;"
+        "Cell 1;Cell 2;Cell 3;Cell 4;Cell 5;Cell 6;Cell 7;Cell 8;Cell 9;Cell 10;Cell 11;Cell 12;"
         "Cell 13;Cell 14;Cell 15;Cell 16;Cell 17;Cell 18;Cell 19;Cell 20;Cell 21;Cell 22;Cell 23;Cell 24;"
         "Cell 25;Cell 26;Cell 27;Cell 28;Cell 29;Cell 30;Cell 31;Cell 32;Cell 33;Cell 34;Cell 35;Cell 36;"
         "Cell 37;Cell 38;Cell 39;Cell 40;Cell 41;Cell 42;Cell 43;Cell 44;Cell 45;Cell 46;Cell 47;Cell 48;"
@@ -130,7 +130,7 @@ static void prv_write_header(void) {
         "Cell 97;Cell 98;Cell 99;Cell 100;Cell 101;Cell 102;Cell 103;Cell 104;Cell 105;Cell 106;Cell 107;Cell 108;"
         "Cell 109;Cell 110;Cell 111;Cell 112;Cell 113;Cell 114;Cell 115;Cell 116;Cell 117;Cell 118;Cell 119;Cell 120;"
         "Cell 121;Cell 122;Cell 123;Cell 124;Cell 125;Cell 126;Cell 127;Cell 128;Cell 129;Cell 130;Cell 131;Cell 132;"
-        "Cell 133;Cell 134;Cell 135;Cell 136;Cell 137;Cell 138;Cell 139;Cell 140;Cell 141;Cell 142;Cell 143;Cell 144;"*/
+        "Cell 133;Cell 134;Cell 135;Cell 136;Cell 137;Cell 138;Cell 139;Cell 140;Cell 141;Cell 142;Cell 143;Cell 144;"
         "Temp 1;Temp 2;Temp 3;Temp 4;Temp 5;Temp 6;Temp 7;Temp 8;Temp 9;Temp 10;Temp 11;Temp 12;"
         "Temp 13;Temp 14;Temp 15;Temp 16;Temp 17;Temp 18;Temp 19;Temp 20;Temp 21;Temp 22;Temp 23;Temp 24;"
         "Temp 25;Temp 26;Temp 27;Temp 28;Temp 29;Temp 30;Temp 31;Temp 32;Temp 33;Temp 34;Temp 35;Temp 36;"
@@ -201,7 +201,7 @@ static uint16_t prv_raw_to_csv(log_data_t *input, char *output) {
     // Current and validity
     snprintf(output + offset, 11, "%07.2f;%u;", input->adcData.current, input->adcData.currentValid);
     offset += 10;
-/*
+
     //Cell voltages
     for (size_t stack = 0; stack < MAX_NUM_OF_SLAVES; stack++) {
         // Convert fixed-point data to ascii string, move decimal places to the right and manually add decimal point and semicolon
@@ -226,7 +226,7 @@ static uint16_t prv_raw_to_csv(log_data_t *input, char *output) {
             }
         }
     }
-*/
+
     //Cell temperatures
     for (size_t stack = 0; stack < MAX_NUM_OF_SLAVES; stack++) {
         // Convert fixed-point data to ascii string, move decimal places to the right and manually add decimal point and semicolon

@@ -37,11 +37,7 @@ static uint8_t prvBalancingGates[MAX_NUM_OF_SLAVES][MAX_NUM_OF_CELLS];
 static bool prvBalanceEnable = false;
 static uint16_t prvBalanceThreshold;
 static TaskHandle_t prvBalanceTaskHandle = NULL;
-static bool prvCharging = false;
 static stacks_data_t prvStacksDataLocal;
-
-static uint8_t errorCounter = 0;
-static uint16_t temperatureFaulty[MAX_NUM_OF_SLAVES][MAX_NUM_OF_TEMPSENS];
 
 static BaseType_t prv_balancingGatesMutex_take(TickType_t blocktime);
 static void prv_balancingGatesMutex_give(void);
@@ -102,10 +98,6 @@ void init_stacks(void) {
 
     xTaskCreate(stacks_worker_task, "LTC", LTC_WORKER_TASK_STACK, NULL, LTC_WORKER_TASK_PRIO, NULL);
     xTaskCreate(balancing_task, "balance", BALANCING_TASK_STACK, NULL, BALANCING_TASK_PRIO, &prvBalanceTaskHandle);
-
-    if (!prvCharging) {
-        vTaskSuspend(prvBalanceTaskHandle); //Balancing must only be activated during charging TODO: Implement a function to detect charging and resuming task
-    }
 }
 
 void stacks_worker_task(void *p) {
@@ -118,7 +110,6 @@ void stacks_worker_task(void *p) {
     uint8_t cycle = 0;
 
     while (1) {
-
         ltc6811_wake_daisy_chain();
         ltc6811_set_balancing_gates(prvBalancingGates);
         ltc6811_get_voltage(prvStacksDataLocal.cellVoltage, pecVoltage);
@@ -138,14 +129,6 @@ void stacks_worker_task(void *p) {
         // PEC error
         // Open cell wire
         // value out of range
-        errorCounter = 0;
-
-//        for (size_t slave = 0; slave < MAX_NUM_OF_SLAVES; slave++) {
-//            for (size_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
-//                temperatureFaulty[slave][tempsens] = 0;
-//            }
-//        }
-
 
         for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
             // Validity check for temperature sensors
@@ -156,12 +139,8 @@ void stacks_worker_task(void *p) {
                 }
                 if (prvStacksDataLocal.temperature[slave][tempsens] > MAXCELLTEMP) {
                     prvStacksDataLocal.temperatureStatus[slave][tempsens] = VALUEOUTOFRANGE;
-                    errorCounter++;
-                    temperatureFaulty[slave][tempsens] = 1;
                 } else if (prvStacksDataLocal.temperature[slave][tempsens] < 10) {
                     prvStacksDataLocal.temperatureStatus[slave][tempsens] = OPENCELLWIRE;
-                    errorCounter++;
-                    temperatureFaulty[slave][tempsens] = 1;
                 }
             }
 
@@ -185,18 +164,6 @@ void stacks_worker_task(void *p) {
             }
         }
 
-//        if (errorCounter <= 2) {
-//            for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
-//                for (size_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
-//                    prvStacksDataLocal.temperatureStatus[slave][tempsens] = NOERROR;
-//                    if (temperatureFaulty[slave][tempsens] == 1) {
-//                        prvStacksDataLocal.temperature[slave][tempsens] = 0;
-//                    }
-//                }
-//            }
-//        }
-
-
         bool cellVoltValid = check_voltage_validity(prvStacksDataLocal.cellVoltageStatus, NUMBEROFSLAVES);
         prvStacksDataLocal.minCellVolt = prv_min_cell_voltage(prvStacksDataLocal.cellVoltage, NUMBEROFSLAVES);
         prvStacksDataLocal.maxCellVolt = prv_max_cell_voltage(prvStacksDataLocal.cellVoltage, NUMBEROFSLAVES);
@@ -214,7 +181,6 @@ void stacks_worker_task(void *p) {
             memcpy(stacksData, &prvStacksDataLocal, sizeof(stacks_data_t));
             release_stacks_data();
         }
-
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
 }
@@ -247,15 +213,24 @@ void balancing_task(void *p) {
 
             uint16_t delta = maxCellVoltage - minCellVoltage;
 
-            if (!valid) {
-                PRINTF("Balancing stopped due to invalid values!\n");
-                continue;
-            }
+            /* The following requirements have to be met in order for the balancing to be active:
+             * 1) The voltage delta between the highest and lowest cell musst be > 5 mV
+             * 2) The cell voltage measurement must be valid
+             * 3) The average cell voltage must be greater than the balancing threshold set by the user
+             * 4) The balancing must be globally enabled
+             * 5) The system must be in charging mode (Regenerative braking is not considered charging mode)
+             * 6) The system must be in a healthy state. Balancing must be interrupted in case of any fault
+             * 7) Balancing must be disabled when the system is in error state
+             */
 
-            bool balancingEnable = system_is_charging();
+            bool isCharging = system_is_charging();
+            bool deltaLargeEnough = delta > 50; // 100 uV resolution
+            bool avgVoltGreaterThreshold = avgCellVoltage >= prvBalanceThreshold;
+            bool systemHealthy = get_contactor_error() == ERROR_NO_ERROR;
+            bool isNotInErrorState = get_contactor_SM_state() != CONTACTOR_STATE_ERROR;
+            bool balancing = deltaLargeEnough && valid && avgVoltGreaterThreshold && prvBalanceEnable && isCharging && systemHealthy &&isNotInErrorState;
 
-            if (delta > 50 && valid && avgCellVoltage >= prvBalanceThreshold && balancingEnable) {
-                //Balance only, if difference is greater than 5 mV
+            if (balancing) {
                 for (size_t stack = 0; stack < NUMBEROFSLAVES; stack++) {
                     for (size_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
                         if (cellVoltage[stack][cell] > (minCellVoltage + 50)) {
@@ -421,5 +396,5 @@ static uint16_t prv_avg_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPS
             temp += (double)temperature[stack][tempsens];
         }
     }
-    return (uint16_t)(temp / (MAX_NUM_OF_TEMPSENS * stacks - errorCounter));
+    return (uint16_t)(temp / (MAX_NUM_OF_TEMPSENS * stacks));
 }
