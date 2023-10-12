@@ -35,7 +35,7 @@ static bool prv_can_send(CAN_Type *can, can_msg_t *msg);
 
 static void handle_irq(CAN_Type *can, BaseType_t *higherPrioTaskWoken);
 
-void can_init(CAN_Type *can) {
+void can_init(CAN_Type *can, uint32_t filterMask) {
     configASSERT(can);
 
     uintptr_t canModule = (uintptr_t)can;
@@ -61,31 +61,13 @@ void can_init(CAN_Type *can) {
     }
 
     for (size_t i = 0; i < CAN_MB_REC; i++) {
-        switch (canModule) {
-            case CAN0_BASE:
-                CAN0->RXIMR[i] = 0xFFFFFFFF; //Filter Mask 0x00F
-                break;
-            case CAN1_BASE:
-                CAN1->RXIMR[i] = 0x00000000; //Filter Mask 0x00F
-                break;
-            }
-
-
+        can->RXIMR[i] = filterMask;
     }
     //Mask for message buffer 14 and 15 is handled separately
-    can->RX14MASK = 0xFFFFFFFF;
-    can->RX15MASK = 0xFFFFFFFF;
+    can->RX14MASK = filterMask;
+    can->RX15MASK = filterMask;
 
-
-
-    switch (canModule) {
-                case CAN0_BASE:
-                    CAN0->RXMGMASK = 0xFFFFFFFF;
-                    break;
-                case CAN1_BASE:
-                    CAN1->RXMGMASK = 0x00000000;
-                    break;
-                }
+    can->RXMGMASK = filterMask;
 
     //Prepare message buffer for reception
     for (size_t i = 0; i < CAN_MB_REC; i++) {
