@@ -99,10 +99,6 @@ void init_stacks(void) {
 
     xTaskCreate(stacks_worker_task, "LTC", LTC_WORKER_TASK_STACK, NULL, LTC_WORKER_TASK_PRIO, NULL);
     xTaskCreate(balancing_task, "balance", BALANCING_TASK_STACK, NULL, BALANCING_TASK_PRIO, &prvBalanceTaskHandle);
-
-    if (!prvCharging) {
-        vTaskSuspend(prvBalanceTaskHandle); //Balancing must only be activated during charging TODO: Implement a function to detect charging and resuming task
-    }
 }
 
 void stacks_worker_task(void *p) {
@@ -218,15 +214,24 @@ void balancing_task(void *p) {
 
             uint16_t delta = maxCellVoltage - minCellVoltage;
 
-            if (!valid) {
-                PRINTF("Balancing stopped due to invalid values!\n");
-                continue;
-            }
+            /* The following requirements have to be met in order for the balancing to be active:
+             * 1) The voltage delta between the highest and lowest cell musst be > 5 mV
+             * 2) The cell voltage measurement must be valid
+             * 3) The average cell voltage must be greater than the balancing threshold set by the user
+             * 4) The balancing must be globally enabled
+             * 5) The system must be in charging mode (Regenerative braking is not considered charging mode)
+             * 6) The system must be in a healthy state. Balancing must be interrupted in case of any fault
+             * 7) Balancing must be disabled when the system is in error state
+             */
 
-            bool balancingEnable = system_is_charging();
+            bool isCharging = system_is_charging();
+            bool deltaLargeEnough = delta > 50; // 100 uV resolution
+            bool avgVoltGreaterThreshold = avgCellVoltage >= prvBalanceThreshold;
+            bool systemHealthy = get_contactor_error() == ERROR_NO_ERROR;
+            bool isNotInErrorState = get_contactor_SM_state() != CONTACTOR_STATE_ERROR;
+            bool balancing = deltaLargeEnough && valid && avgVoltGreaterThreshold && prvBalanceEnable && isCharging && systemHealthy &&isNotInErrorState;
 
-            if (delta > 50 && valid && avgCellVoltage >= prvBalanceThreshold && balancingEnable) {
-                //Balance only, if difference is greater than 5 mV
+            if (balancing) {
                 for (size_t stack = 0; stack < NUMBEROFSLAVES; stack++) {
                     for (size_t cell = 0; cell < MAX_NUM_OF_CELLS; cell++) {
                         if (cellVoltage[stack][cell] > (minCellVoltage + 50)) {
