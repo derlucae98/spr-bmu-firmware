@@ -40,6 +40,8 @@ static TaskHandle_t prvBalanceTaskHandle = NULL;
 static bool prvCharging = false;
 static stacks_data_t prvStacksDataLocal;
 
+static uint8_t errorCounter = 0;
+static uint16_t temperatureFaulty[MAX_NUM_OF_SLAVES][MAX_NUM_OF_TEMPSENS];
 
 static BaseType_t prv_balancingGatesMutex_take(TickType_t blocktime);
 static void prv_balancingGatesMutex_give(void);
@@ -111,7 +113,7 @@ void stacks_worker_task(void *p) {
 
     static uint8_t pecVoltage[MAX_NUM_OF_SLAVES][MAX_NUM_OF_CELLS];
     TickType_t xLastWakeTime = xTaskGetTickCount();
-    const TickType_t xPeriod = pdMS_TO_TICKS(75);
+    const TickType_t xPeriod = pdMS_TO_TICKS(100);
 
     uint8_t cycle = 0;
 
@@ -136,6 +138,13 @@ void stacks_worker_task(void *p) {
         // PEC error
         // Open cell wire
         // value out of range
+        errorCounter = 0;
+
+//        for (size_t slave = 0; slave < MAX_NUM_OF_SLAVES; slave++) {
+//            for (size_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
+//                temperatureFaulty[slave][tempsens] = 0;
+//            }
+//        }
 
 
         for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
@@ -147,8 +156,12 @@ void stacks_worker_task(void *p) {
                 }
                 if (prvStacksDataLocal.temperature[slave][tempsens] > MAXCELLTEMP) {
                     prvStacksDataLocal.temperatureStatus[slave][tempsens] = VALUEOUTOFRANGE;
+                    errorCounter++;
+                    temperatureFaulty[slave][tempsens] = 1;
                 } else if (prvStacksDataLocal.temperature[slave][tempsens] < 10) {
                     prvStacksDataLocal.temperatureStatus[slave][tempsens] = OPENCELLWIRE;
+                    errorCounter++;
+                    temperatureFaulty[slave][tempsens] = 1;
                 }
             }
 
@@ -171,6 +184,18 @@ void stacks_worker_task(void *p) {
 
             }
         }
+
+//        if (errorCounter <= 2) {
+//            for (size_t slave = 0; slave < NUMBEROFSLAVES; slave++) {
+//                for (size_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
+//                    prvStacksDataLocal.temperatureStatus[slave][tempsens] = NOERROR;
+//                    if (temperatureFaulty[slave][tempsens] == 1) {
+//                        prvStacksDataLocal.temperature[slave][tempsens] = 0;
+//                    }
+//                }
+//            }
+//        }
+
 
         bool cellVoltValid = check_voltage_validity(prvStacksDataLocal.cellVoltageStatus, NUMBEROFSLAVES);
         prvStacksDataLocal.minCellVolt = prv_min_cell_voltage(prvStacksDataLocal.cellVoltage, NUMBEROFSLAVES);
@@ -396,5 +421,5 @@ static uint16_t prv_avg_cell_temperature(uint16_t temperature[][MAX_NUM_OF_TEMPS
             temp += (double)temperature[stack][tempsens];
         }
     }
-    return (uint16_t)(temp / ((MAX_NUM_OF_TEMPSENS) * stacks));
+    return (uint16_t)(temp / (MAX_NUM_OF_TEMPSENS * stacks - errorCounter));
 }

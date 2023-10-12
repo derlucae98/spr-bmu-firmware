@@ -113,12 +113,6 @@ static void can_send_task(void *p) {
             canData.avgTemp = stacksData->avgTemperature / 5;
             canData.tempValid = stacksData->temperatureValid;
 
-            for (size_t stack = 0; stack < MAX_NUM_OF_SLAVES; stack++) {
-                for (size_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
-                    canData.temperature[stack][tempsens] /= 5;
-                }
-            }
-
             release_stacks_data();
         }
 
@@ -161,6 +155,15 @@ static void can_send_task(void *p) {
             get_balancing_status(canData.balance);
         }
 
+        msg.ID = 0x00F;
+        msg.payload[0] = canData.minSoc * 10 >> 8;
+        msg.payload[1] = canData.minSoc * 10 & 0xFF;
+        msg.payload[2] = canData.maxTemp * 5 >> 8;
+        msg.payload[3] = canData.maxTemp * 5 & 0xFF;
+        msg.payload[4] = canData.tsState;
+        msg.DLC = 5;
+        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
+
         msg.ID = CAN_ID_INFO;
         msg.DLC = 7;
         msg.payload[0] = (canData.errorCode >> 24) & 0xFF;
@@ -172,6 +175,8 @@ static void can_send_task(void *p) {
         msg.payload[6] = ((canData.isolationResistanceValid & 0x01) << 7) | (canData.tsState & 0x0F);
 //        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
         can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
+        msg.ID = 0x0C;
+        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
 
         msg.ID = CAN_ID_STATS_1;
         msg.DLC = 7;
@@ -206,7 +211,7 @@ static void can_send_task(void *p) {
         msg.DLC = 8;
         msg.payload[0] = ((canData.dcLinkVoltageValid & 0x01) << 2) | ((canData.socValid & 0x01) << 1) | (canData.tempValid & 0x01);
         msg.payload[1] = canData.minTemp;
-        msg.payload[2] = canData.maxTemp;
+        msg.payload[2] = canData.avgTemp; //Only for testing due to faulty sensor
         msg.payload[3] = canData.avgTemp;
         msg.payload[4] = canData.minSoc;
         msg.payload[5] = canData.maxSoc;
@@ -251,7 +256,7 @@ static void can_send_task(void *p) {
         msg.payload[4] = (canData.current >> 8);
         msg.payload[5] = (canData.current & 0xFF);
         msg.payload[6] = (canData.currentValid & 0x01) << 7;
-        can_enqueue_message(CAN0, &msg, pdMS_TO_TICKS(100));
+        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
 
 
         msg.ID = CAN_ID_CELL_VOLTAGE_1;
@@ -309,6 +314,40 @@ static void can_send_task(void *p) {
         msg.payload[6] = (canData.cellVoltage[slaveCounter][11] >> 8) & 0xFF;
         msg.payload[7] = canData.cellVoltage[slaveCounter][11] & 0xFF;
         can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
+
+
+        msg.ID = 0x004;
+        msg.DLC = 8;
+        msg.payload[0] = (slaveCounter << 4) | ((canData.temperature[slaveCounter][0] >> 6) & 0x0F);
+        msg.payload[1] = (canData.temperature[slaveCounter][0] << 2) | (canData.temperatureStatus[slaveCounter][0] & 0x03);
+        msg.payload[2] = (canData.temperature[slaveCounter][1] >> 2);
+        msg.payload[3] = (canData.temperature[slaveCounter][1] << 6) | ((canData.temperatureStatus[slaveCounter][1] & 0x03) << 4) | ((canData.temperature[slaveCounter][2] >> 6) & 0x0F);
+        msg.payload[4] = (canData.temperature[slaveCounter][2] << 2) | (canData.temperatureStatus[slaveCounter][2] & 0x03);
+        msg.payload[5] = (canData.temperature[slaveCounter][3] >> 2);
+        msg.payload[6] = (canData.temperature[slaveCounter][3] << 6) | ((canData.temperatureStatus[slaveCounter][3] & 0x03) << 4) | ((canData.temperature[slaveCounter][4] >> 6) & 0x0F);
+        msg.payload[7] = (canData.temperature[slaveCounter][4] << 2) | (canData.temperatureStatus[slaveCounter][4] & 0x03);
+        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
+
+        msg.ID = 0x005;
+        msg.DLC = 8;
+        msg.payload[0] = (slaveCounter << 4) | ((canData.temperature[slaveCounter][5] >> 6) & 0x0F);
+        msg.payload[1] = 0;
+        msg.payload[2] = 0;
+        msg.payload[3] = 0;
+        msg.payload[4] = 0;
+        msg.payload[5] = 0;
+        msg.payload[6] = 0;
+        msg.payload[7] = 0;
+        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
+
+
+
+
+        for (size_t stack = 0; stack < MAX_NUM_OF_SLAVES; stack++) {
+            for (size_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
+                canData.temperature[stack][tempsens] /= 5;
+            }
+        }
 
         msg.ID = CAN_ID_CELL_TEMPERATURE;
         msg.DLC = 8;
