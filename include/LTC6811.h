@@ -41,7 +41,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*! @def NTC_CELL
  *  Defines the B-value for the NTCs used for the cell temperature monitoring
  */
-#define NTC_CELL 3435
+#define NTC_CELL 3960
 
 /*! @brief NUMBEROFSLAVES
  *  Defines the number of devices in a the daisy-chain
