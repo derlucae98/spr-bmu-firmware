@@ -20,6 +20,7 @@ typedef struct {
     float minSoc;
     float maxSoc;
     float avgSoc;
+    double mAhSinceStartup;
     bool valid;
 } soc_stats_t;
 

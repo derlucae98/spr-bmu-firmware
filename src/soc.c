@@ -21,6 +21,7 @@ static uint16_t prv_linear_interpolate(uint16_t interpolPoint, uint16_t lutIndex
 
 static cell_soc_t prvSoc;
 static SemaphoreHandle_t prvSocMutex = NULL;
+static double prvmAhIntegrationSinceSystemStart = 0.0;
 
 #define SOC_LOOKUP_SIZE 256
 #define ELEMENT_SOC 0
@@ -96,6 +97,13 @@ void soc_coulomb_count(adc_data_t newData) {
         return;
     }
 
+    contactor_SM_state_t tsState = get_contactor_SM_state();
+    if (tsState != CONTACTOR_STATE_OPERATE) {
+        // Enable Coulomb Counter only when TS is active
+        // This removes the error in the SOC calculation due to the hysteresis error of the current sensor in idle
+        return;
+    }
+
     cell_soc_t* soc = get_soc(pdMS_TO_TICKS(15));
     if (soc == NULL) {
         PRINTF("Could not get SOC mutex!\n");
@@ -103,6 +111,7 @@ void soc_coulomb_count(adc_data_t newData) {
     }
 
     double chargeDelta = newData.current * (ADC_SAMPLE_PERIOD / 3600.0); //Charge delta in mAh
+    prvmAhIntegrationSinceSystemStart += chargeDelta;
 
     float socDelta = 100.0f * chargeDelta / NOMINAL_CELL_CAPACITY_mAh; //in percent
 
@@ -166,6 +175,7 @@ soc_stats_t get_soc_stats(void) {
     stats.minSoc = minSoc;
     stats.maxSoc = maxSoc;
     stats.avgSoc = avgSoc;
+    stats.mAhSinceStartup = prvmAhIntegrationSinceSystemStart;
     stats.valid = true; //TODO: Find a way to check the validity of the SOC values
 
     return stats;

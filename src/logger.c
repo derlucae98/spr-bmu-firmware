@@ -101,7 +101,7 @@ void prv_logger_write_task(void *p) {
                     DSTATUS stat = f_write(prvFile, (void*)&buffer, 7700, &bw);
                     f_sync(prvFile);
                     volatile TickType_t end = xTaskGetTickCount();
-                    PRINTF("Logger: %lu bytes written! Took %lu ms\n", bw, end - start);
+                    //PRINTF("Logger: %lu bytes written! Took %lu ms\n", bw, end - start);
                     if (stat != 0) {
                         PRINTF("Logger: failed to log\n");
                     }
