@@ -485,7 +485,6 @@ static void prv_evaluate_system(void) {
     prvContactorState.posAIR_isPlausible = prvContactorState.posAIR_intent == prvContactorState.posAIR_actual;
     prvContactorState.pre_isPlausible    = prvContactorState.pre_intent    == prvContactorState.pre_actual;
     prvFaultTypes.airImplausible = !(prvContactorState.negAIR_isPlausible && prvContactorState.posAIR_isPlausible && prvContactorState.pre_isPlausible);
-    prvFaultTypes.airImplausible = false;
 
     prvFaultTypes.amsFault |= prvFaultTypes.airImplausible;
 
