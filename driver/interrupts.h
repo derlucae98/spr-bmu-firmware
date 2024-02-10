@@ -2,7 +2,7 @@
 #define INTERRUPTS_H_
 
 #include "FreeRTOS.h"
-#include "S32K146.h"
+#include "S32K14x.h"
 #include "gpio.h"
 
 typedef void (*interrupt_callback_t)(BaseType_t*);

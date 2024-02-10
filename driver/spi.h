@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include "FreeRTOS.h"
 #include "semphr.h"
-#include "S32K146.h"
+#include "S32K14x.h"
 #include "config.h"
 #include "interrupts.h"
 
@@ -37,7 +37,8 @@ void spi_mutex_give(LPSPI_Type *spi);
 void spi_enable_dma(LPSPI_Type *spi);
 void spi_disable_dma(LPSPI_Type *spi);
 
-void spi_dma_move(LPSPI_Type *spi, uint8_t *data, size_t len);
+void spi_change_mode(LPSPI_Type *spi, uint8_t presc, uint8_t mode);
+
 
 
 #endif /* SPI_H_ */

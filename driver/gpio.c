@@ -1,5 +1,11 @@
 #include "gpio.h"
 
+void gpio_enable_clock(PORT_Type *port) {
+    uintptr_t portType = (uintptr_t)port;
+    uint32_t index = (portType >> 12u) & 0xFF;
+
+    PCC->PCCn[index] = PCC_PCCn_CGC_MASK;
+}
 
 void set_direction(PORT_Type *port, uint8_t pin, uint8_t io) {
     port->PCR[pin] |= PORT_PCR_MUX(1); //Enable pin in any case
@@ -11,6 +17,9 @@ void set_direction(PORT_Type *port, uint8_t pin, uint8_t io) {
 }
 
 void enable_pull(PORT_Type *port, uint8_t pin, uint8_t pullType) {
+    if (pullType == PULL_NONE) {
+        return;
+    }
     port->PCR[pin] |= PORT_PCR_PE_MASK | PORT_PCR_PS(pullType & 0x1);
 }
 

@@ -59,7 +59,7 @@ typedef struct {
 #define SD_INIT_OK        1
 #define SD_R1_NO_ERROR(X) (X < 0x02)
 
-#define SD_SPI LPSPI0
+#define SD_SPI LPSPI2
 
 void sd_available(bool available);
 DSTATUS disk_initialize (BYTE pdrv);

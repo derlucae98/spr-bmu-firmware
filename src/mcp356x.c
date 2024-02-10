@@ -1,24 +1,32 @@
+/*!
+ * @file            mcp356x.c
+ * @brief           Library to interface with MCP356x(R) ADCs.
+ *                  It is fully hardware independent and uses callback functions
+ *                  to interface with the hardware. This library can be used with multiple
+ *                  ADCs which are addressed by objects of type mcp356x_obj_t.
+ */
+
 /*
-Copyright (c) 2022 Luca Engelmann (derlucae98)
+Copyright 2023 Luca Engelmann
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 
 #include "mcp356x.h"
 
@@ -36,8 +44,6 @@ SOFTWARE.
 #define REG_MUX                 0x6
 #define ADC_CONV_COMPLETE       0x13
 #define MCLK_INT                3300000UL //3.3 MHz min.
-
-extern void PRINTF(const char *format, ...);
 
 static const uint16_t crcLookup[256] = {
     0x0000, 0x8005, 0x800F, 0x000A, 0x801B, 0x001E, 0x0014, 0x8011, 0x8033, 0x0036, 0x003C, 0x8039, 0x0028, 0x802D, 0x8027, 0x0022,
@@ -91,18 +97,6 @@ static bool check_crc(mcp356x_obj_t *obj, const uint8_t *a) {
     return true;
 }
 
-static float gain_lookup(mcp356x_obj_t *obj) {
-    //Returns the value of the gain. See mcp356x_get_voltage()
-    uint8_t gain = (1u << obj->config.GAIN);
-    gain >>= 1;
-
-    if (gain == 0) {
-        return 0.33f;
-    }
-
-    return (float)gain;
-}
-
 static bool check_status(uint8_t status) {
     status &= 0xF8;
     if (status == 0x10) {
@@ -130,18 +124,15 @@ mcp356x_obj_t mcp356x_init(mcp356x_spi_move_array_t mcp356x_spi_move_array,
     obj.config.OSR = OSR_256;
     obj.config.BOOST = BOOST_1;
     obj.config.GAIN = GAIN_1;
-    obj.config.AZ_MUX = 0;
-    obj.config.AZ_REF = 1;
+    obj.config.AZ_MUX = AZ_MUX_DISABLED;
+    obj.config.AZ_REF = AZ_REF_DISABLED;
     obj.config.CONV_MODE = CONV_MODE_ONE_SHOT_SCAN_SDN;
     obj.config.DATA_FORMAT = DATA_FORMAT_24;
     obj.config.CRC_FORMAT = CRC_FORMAT_16;
-    obj.config.EN_CRCCOM = 0;
-    obj.config.EN_OFFCAL = 0;
-    obj.config.EN_GAINCAL = 0;
+    obj.config.EN_CRCCOM = EN_CRCCOM_ENABLED;
     obj.config.IRQ_MODE = IRQ_MODE_IRQ_HIGH_Z;
-    obj.config.EN_FASTCMD = 1;
-    obj.config.EN_STP = 1;
-    obj.config.MCLK = 0;
+    obj.config.EN_FASTCMD = EN_FASTCMD_ENABLED;
+    obj.config.EN_STP = EN_STP_DISABLED;
     return obj;
 }
 
@@ -168,15 +159,22 @@ mcp356x_error_t mcp356x_set_config(mcp356x_obj_t *obj) {
         return MCP356X_ERROR_FAILED;
     }
 
-    uint8_t buf[6];
+    uint8_t buf[13];
     memset(buf, 0, sizeof(buf));
-    buf[0] = INCR_WRITE(REG_CONFIG0);
-    buf[1] = (obj->config.VREF_SEL << 7) | (obj->config.CLK_SEL << 4) | (obj->config.CS_SEL << 2) | (obj->config.ADC_MODE);
-    buf[2] = (obj->config.PRE << 6) | (obj->config.OSR << 2);
-    buf[3] = (obj->config.BOOST << 6) | (obj->config.GAIN << 3) | (obj->config.AZ_MUX << 2) | (obj->config.AZ_REF << 1);
+    buf[0] = INCR_WRITE(REG_CONFIG0); //Command byte
+    buf[1] = (obj->config.VREF_SEL << 7) | (obj->config.CLK_SEL << 4) | (obj->config.CS_SEL << 2) | (obj->config.ADC_MODE); //CONFIG0
+    buf[2] = (obj->config.PRE << 6) | (obj->config.OSR << 2); //CONFIG1
+    buf[3] = (obj->config.BOOST << 6) | (obj->config.GAIN << 3) | (obj->config.AZ_MUX << 2) | (obj->config.AZ_REF << 1); //CONFIG2
     buf[4] = (obj->config.CONV_MODE << 6) | (obj->config.DATA_FORMAT << 4) | (obj->config.CRC_FORMAT << 3)
-           | (obj->config.EN_CRCCOM << 2) | (obj->config.EN_OFFCAL << 1) | (obj->config.EN_GAINCAL);
-    buf[5] = (obj->config.IRQ_MODE << 2) | (obj->config.EN_FASTCMD << 1) | (obj->config.EN_STP);
+           | (obj->config.EN_CRCCOM << 2) | (obj->config.EN_OFFCAL << 1) | (obj->config.EN_GAINCAL); //CONFIG3
+    buf[5] = (obj->config.IRQ_MODE << 2) | (obj->config.EN_FASTCMD << 1) | (obj->config.EN_STP); //IRQ
+    buf[6] = 0x00; //MUX
+    buf[7] = (obj->config.DLY & 0x7) << 5; //SCAN2
+    buf[8] = obj->config.SCAN >> 8;        //SCAN1
+    buf[9] = obj->config.SCAN & 0xFF;      //SCAN0
+    buf[10] = (obj->config.TIMER >> 16) & 0xFF; //TIMER3
+    buf[11] = (obj->config.TIMER >> 8) & 0xFF;  //TIMER2
+    buf[12] = obj->config.TIMER & 0xFF;         //TIMER0
 
     obj->assert_cs();
     obj->spi_move_array(buf, sizeof(buf));
@@ -202,18 +200,6 @@ mcp356x_error_t mcp356x_get_value(mcp356x_obj_t *obj, mcp356x_channel_t ch_pos, 
     return MCP356X_ERROR_OK;
 }
 
-mcp356x_error_t mcp356x_get_voltage(mcp356x_obj_t *obj, mcp356x_channel_t ch_pos, mcp356x_channel_t ch_neg, float refVoltage, float *result) {
-    mcp356x_error_t err;
-    err = mcp356x_acquire(obj, ch_pos, ch_neg);
-    if (err != MCP356X_ERROR_OK) {
-        return err;
-    }
-    err = mcp356x_read_voltage(obj, refVoltage, result);
-    if (err != MCP356X_ERROR_OK) {
-        return err;
-    }
-    return MCP356X_ERROR_OK;
-}
 
 mcp356x_error_t mcp356x_acquire(mcp356x_obj_t *obj, mcp356x_channel_t ch_pos, mcp356x_channel_t ch_neg) {
     if (!obj) {
@@ -281,8 +267,10 @@ mcp356x_error_t mcp356x_read_value(mcp356x_obj_t *obj, int32_t *val, uint8_t *sg
         return MCP356X_ERROR_FAILED;
     }
 
-    if (!check_crc(obj, rec)) {
-        return MCP356X_ERROR_CRC;
+    if (obj->config.EN_CRCCOM) {
+        if (!check_crc(obj, rec)) {
+            return MCP356X_ERROR_CRC;
+        }
     }
 
     uint8_t sign = 0;
@@ -313,26 +301,6 @@ mcp356x_error_t mcp356x_read_value(mcp356x_obj_t *obj, int32_t *val, uint8_t *sg
     if (chID != NULL && obj->config.DATA_FORMAT == DATA_FORMAT_32_SGN_CHID) {
         *chID = (rec[1] >> 4);
     }
-
-    return MCP356X_ERROR_OK;
-}
-
-mcp356x_error_t mcp356x_read_voltage(mcp356x_obj_t *obj, float refVoltage, float *result) {
-    int32_t val;
-    uint8_t sgn;
-    uint8_t chID;
-    mcp356x_error_t res;
-    res = mcp356x_read_value(obj, &val, &sgn, &chID);
-
-    if (res != MCP356X_ERROR_OK) {
-        return res;
-    }
-
-    if (result == NULL) {
-        return MCP356X_ERROR_FAILED;
-    }
-
-    *result = 2.0f * val * refVoltage * 5.96046483E-8 * (1 / gain_lookup(obj));
 
     return MCP356X_ERROR_OK;
 }

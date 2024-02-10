@@ -1,0 +1,104 @@
+VERSION ""
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_:
+VAL_TABLE_ Error_Code 1024 "IMD Powerstage disabled" 512 "AMS Powerstage disabled" 256 "Shutdown Circuit open" 128 "Pre-charge timeout" 64 "Current out of range" 32 "Current implausible" 16 "Battery voltage implausible" 8 "DC-Link Voltage implausible" 4 "Contactor Implausible" 2 "AMS Fault" 1 "IMD Fault" 0 "No Error" ;
+VAL_TABLE_ TS_states 3 "Error" 2 "Operate" 1 "Pre-charging" 0 "Standby" ;
+VAL_TABLE_ validity 1 "true" 0 "false" ;
+VAL_TABLE_ ValueStatus 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
+VAL_TABLE_ States 1 "Active" 0 "Inactive" ;
+VAL_TABLE_ SlaveMultiplex 11 "Slave 12" 10 "Slave 11" 9 "Slave 10" 8 "Slave 9" 7 "Slave 8" 6 "Slave 7" 5 "Slave 6" 4 "Slave 5" 3 "Slave 4" 2 "Slave 3" 1 "Slave 2" 0 "Slave 1" ;
+
+
+BO_ 1 Startup: 4 Vector__XXX
+ SG_ Reset_Reason : 7|32@0+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 0 TS_request: 1 Vector__XXX
+ SG_ TS_request : 7|8@0+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 13 Time: 8 Vector__XXX
+ SG_ Uptime : 0|32@1+ (0.1,0) [0|429496729.5] "s" Vector__XXX
+ SG_ SysTime : 32|32@1+ (1,0) [0|4294967295] "s" Vector__XXX
+
+BO_ 5 UIP: 7 Vector__XXX
+ SG_ BatteryPowerValid : 2|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ BatteryPower : 47|16@0- (0.0025,0) [-81.92|81.9175] "kW" Vector__XXX
+ SG_ BatteryCurrent : 31|16@0- (0.00625,0) [-200|200] "A" Vector__XXX
+ SG_ Battery_Current_Valid : 1|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ BatteryVoltage : 15|16@0+ (0.1,0) [0|620] "V" Vector__XXX
+ SG_ Battery_Voltage_Valid : 0|1@0+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 4 Stats2: 8 Vector__XXX
+ SG_ DC_Link_Voltage_Valid : 2|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ DC_Link_Voltage : 55|16@0+ (0.1,0) [0|620] "V" Vector__XXX
+ SG_ temperature_valid : 0|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ min_temperature : 15|8@0+ (0.5,0) [0|127.5] "°C" Vector__XXX
+ SG_ min_soc : 39|8@0+ (1,0) [0|255] "%" Vector__XXX
+ SG_ max_temperature : 23|8@0+ (0.5,0) [0|127.5] "°C" Vector__XXX
+ SG_ soc_valid : 1|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ max_soc : 47|8@0+ (1,0) [0|255] "%" Vector__XXX
+ SG_ avg_temperature : 31|8@0+ (0.5,0) [0|127.5] "°C" Vector__XXX
+
+BO_ 3 Stats1: 7 Vector__XXX
+ SG_ min_cell_voltage : 15|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ max_cell_voltage : 31|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ voltage_valid : 0|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ avg_cell_voltage : 47|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+
+BO_ 2 Info: 7 Vector__XXX
+ SG_ Error_code : 7|32@0+ (1,0) [0|65535] "" Vector__XXX
+ SG_ TS_state : 49|2@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ isolation_resistance_valid : 55|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ isolation_resistance : 39|16@0+ (1,0) [0|65535] "kOhm" Vector__XXX
+
+
+
+CM_ BO_ 1 "Message is sent on startup";
+CM_ SG_ 0 TS_request "0xFF = On
+Else = Off";
+CM_ SG_ 13 SysTime "Unix timestamp";
+CM_ SG_ 2 Error_code "Bit-coded. Multiple errors can occur at the same time.";
+BA_DEF_  "BusType" STRING ;
+BA_DEF_DEF_  "BusType" "CAN";
+VAL_ 5 Battery_Current_Valid 1 "true" 0 "false" ;
+VAL_ 5 Battery_Voltage_Valid 1 "true" 0 "false" ;
+VAL_ 4 DC_Link_Voltage_Valid 1 "true" 0 "false" ;
+VAL_ 4 temperature_valid 1 "true" 0 "false" ;
+VAL_ 4 soc_valid 1 "true" 0 "false" ;
+VAL_ 3 voltage_valid 1 "true" 0 "false" ;
+VAL_ 2 Error_code 1024 "IMD Powerstage disabled" 512 "AMS Powerstage disabled" 256 "Shutdown Circuit open" 128 "Pre-charge timeout" 64 "Current out of range" 32 "Current implausible" 16 "Battery voltage implausible" 8 "DC-Link Voltage implausible" 4 "Contactor Implausible" 2 "AMS Fault" 1 "IMD Fault" 0 "No Error" ;
+VAL_ 2 TS_state 3 "Error" 2 "Operate" 1 "Pre-charging" 0 "Standby" ;
+VAL_ 2 isolation_resistance_valid 1 "true" 0 "false" ;
+

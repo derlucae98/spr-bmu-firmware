@@ -1,8 +1,33 @@
-#include "rtc.h"
-
-/* RTC: Microcrystal RV-3149-C3
- * https://www.microcrystal.com/fileadmin/Media/Products/RTC/App.Manual/RV-3149-C3_App-Manual.pdf
+/*!
+ * @file            rtc.c
+ * @brief           Library which interfaces with Microcrystal RV-3149-C3 RTC.
+ * This Library is not really hardware-independent and relies heavily on the driver modules for the S32K14x
+ * @note            Reference Manual: https://www.microcrystal.com/fileadmin/Media/Products/RTC/App.Manual/RV-3149-C3_App-Manual.pdf
  */
+
+/*
+Copyright 2023 Luca Engelmann
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+#include "rtc.h"
 
 #define CONTROL_1               (0x00)
 #define CONTROL_1_CLK_INT       (1 << 7)
@@ -36,6 +61,16 @@
 #define CONTROL_STATUS_SR       (1 << 4)
 #define CONTROL_STATUS_V2F      (1 << 3)
 #define CONTROL_STATUS_V1F      (1 << 2)
+
+#define CONTROL_EEPROM          (0x30)
+#define CONTROL_EEPROM_R80k     (1 << 7)
+#define CONTROL_EEPROM_R20k     (1 << 6)
+#define CONTROL_EEPROM_R5k      (1 << 5)
+#define CONTROL_EEPROM_R1k      (1 << 4)
+#define CONTROL_EEPROM_FD0      (1 << 3)
+#define CONTROL_EEPROM_FD1      (1 << 2)
+#define CONTROL_EEPROM_ThE      (1 << 1)
+#define CONTROL_EEPROM_ThP      (1 << 0)
 
 #define CONTROL_RESET           (0x04)
 #define CONTROL_RESET_SysR      (1 << 4)
@@ -80,95 +115,106 @@
 #define DECTOMON(x) ((((x / 10) & 0x1) << 4) | ((x % 10) & 0xF))
 #define DECTOYEAR(x) ((((x / 10) & 0xF) << 4) | ((x % 10) & 0xF))
 
-static TaskHandle_t _rtcTickTaskHandle = NULL;
-static rtc_date_time_t _rtcDateTime;
-static rtc_tick_hook_t _tickHook = NULL;
-static SemaphoreHandle_t _dateTimeMutex = NULL;
 
-extern void PRINTF(const char *format, ...);
-static inline void assert_cs(void);
-static inline void deassert_cs(void);
-static void rtc_irq_handler(BaseType_t *higherPrioTaskWoken);
-static BaseType_t rtc_date_time_mutex_take(TickType_t blocktime);
+static rtc_date_time_t prvRtcDateTime;
+static rtc_tick_hook_t prvTickHook = NULL;
+static uint32_t prvUptime = 0;
+static uint32_t prvEpoch = 0;
 
-void rtc_register_tick_hook(rtc_tick_hook_t rtcTickHook) {
-    _tickHook = rtcTickHook;
+static void prv_rtc_clkout_handler(BaseType_t *higherPrioTaskWoken);
+static uint32_t prv_make_unix_time(void);
+static rtc_date_time_t prv_make_date_time_from_epoch(uint32_t epoch);
+
+static TimerHandle_t prvTimer;
+static void prv_timer_callback(TimerHandle_t xTimer);
+
+static inline void prv_assert_cs(void) {
+    set_pin(CS_RTC_PORT, CS_RTC_PIN);
 }
 
-void init_rtc(void) {
-    _dateTimeMutex = xSemaphoreCreateMutex();
-    configASSERT(_dateTimeMutex);
+static inline void prv_deassert_cs(void) {
+    clear_pin(CS_RTC_PORT, CS_RTC_PIN);
+}
 
-    attach_interrupt(INT_RTC_PORT, INT_RTC_PIN, IRQ_EDGE_FALLING, rtc_irq_handler);
-    xTaskCreate(rtc_tick_task, "rtc tick", 300, NULL, 3, &_rtcTickTaskHandle);
+void init_rtc(rtc_tick_hook_t rtcTickHook) {
 
+    prvTickHook = rtcTickHook;
+
+    prvTimer = xTimerCreate("100ms", pdMS_TO_TICKS(100), pdTRUE, NULL, prv_timer_callback);
+
+    //Initialize RTC
     uint8_t init[5];
-    init[0] = COMMAND_WRITE(CONTROL_1);
-    init[1] = CONTROL_1_TD_8 | CONTROL_1_SROn | CONTROL_1_EERE | CONTROL_1_WE | CONTROL_1_TE | CONTROL_1_TAR;
-    init[2] = CONTROL_INT_SRIE | CONTROL_INT_TIE;
-    init[3] = 0;
-    init[4] = 0;
+    init[0] = COMMAND_WRITE(CONTROL_1); //Control page
+    init[1] = CONTROL_1_CLK_INT | CONTROL_1_TD_8 | CONTROL_1_SROn | CONTROL_1_EERE | CONTROL_1_WE; //Control_1
+    init[2] = CONTROL_INT_SRIE; //Control_INT
+    init[3] = 0; //Control_INT Flag
+    init[4] = 0; //Control_Status
 
-    uint8_t timer[3];
-    timer[0] = COMMAND_WRITE(TIMER_LOW);
-    timer[1] = 7; //Countdown timer interrupts every second
-    timer[2] = 0;
+    //Enable 1 Hz Clkout
+    uint8_t clkout[2];
+    clkout[0] = COMMAND_WRITE(CONTROL_EEPROM);
+    clkout[1] = CONTROL_EEPROM_FD1 | CONTROL_EEPROM_FD0;
 
     if (spi_mutex_take(RTC_SPI, pdMS_TO_TICKS(500))) {
-        assert_cs();
-        spi_move_array(RTC_SPI, timer, sizeof(timer));
-        deassert_cs();
+        prv_assert_cs();
+        spi_move_array(RTC_SPI, clkout, sizeof(clkout));
+        prv_deassert_cs();
 
-        assert_cs();
+        prv_assert_cs();
         spi_move_array(RTC_SPI, init, sizeof(init));
-        deassert_cs();
+        prv_deassert_cs();
         spi_mutex_give(RTC_SPI);
+    } else {
+        PRINTF("RTC: Initialization failed! Could not get SPI mutex!\n");
+        configASSERT(0);
     }
 
     rtc_sync();
+
+    prvEpoch = prv_make_unix_time();
+
+    attach_interrupt(CLKOUT_RTC_PORT, CLKOUT_RTC_PIN, IRQ_EDGE_FALLING, prv_rtc_clkout_handler);
 }
 
-void rtc_print_time(void) {
+bool rtc_sync(void) {
     uint8_t time[8];
     memset(time, 0xFF, sizeof(time));
     time[0] = COMMAND_READ(CLOCK_SECONDS);
-    if (spi_mutex_take(RTC_SPI, pdMS_TO_TICKS(100))) {
-        assert_cs();
+
+    if (get_peripheral_mutex(pdMS_TO_TICKS(2000))) {
+        prv_assert_cs();
         spi_move_array(RTC_SPI, time, sizeof(time));
-        deassert_cs();
-        spi_mutex_give(RTC_SPI);
-        PRINTF("%02u.%02u.%04u %02u:%02u:%02u\n", DAYTODEC(time[4]), MONTODEC(time[6]), YEARTODEC(time[7]) + 2000, HOURTODEC(time[3]), MINTODEC(time[2]), SECTODEC(time[1]));
-    }
-}
+        prv_deassert_cs();
+        release_peripheral_mutex();
 
-BaseType_t rtc_date_time_mutex_take(TickType_t blocktime) {
-    return xSemaphoreTake(_dateTimeMutex, blocktime);
-}
-
-void release_rtc_date_time(void) {
-    xSemaphoreGive(_dateTimeMutex);
-}
-
-rtc_date_time_t* get_rtc_date_time(TickType_t blocktime) {
-    if (rtc_date_time_mutex_take(blocktime)) {
-        return &_rtcDateTime;
+        prvRtcDateTime.second = SECTODEC(time[1]);
+        prvRtcDateTime.minute = MINTODEC(time[2]);
+        prvRtcDateTime.hour   = HOURTODEC(time[3]);
+        prvRtcDateTime.day    = DAYTODEC(time[4]);
+        prvRtcDateTime.month  = MONTODEC(time[6]);
+        prvRtcDateTime.year   = YEARTODEC(time[7]) + 2000;
+        prvEpoch = prv_make_unix_time();
     } else {
-        return NULL;
-    }
-}
-
-bool copy_rtc_date_time(rtc_date_time_t *dest, TickType_t blocktime) {
-    rtc_date_time_t *src = get_rtc_date_time(blocktime);
-    if (src != NULL) {
-        memcpy(dest, src, sizeof(rtc_date_time_t));
-        release_rtc_date_time();
-        return true;
-    } else {
+        PRINTF("RTC sync: Peripheral mutex lock failed: %s\n", pcTaskGetName(NULL));
         return false;
     }
+
+    return true;
 }
 
-void rtc_set_date_time(rtc_date_time_t *dateTime) {
+rtc_date_time_t rtc_get_date_time(void) {
+    return prvRtcDateTime;
+}
+
+uint32_t rtc_get_unix_time(void) {
+    return prvEpoch;
+}
+
+uint32_t uptime_in_100_ms(void) {
+    return prvUptime;
+}
+
+bool rtc_set_date_time(rtc_date_time_t *dateTime) {
     uint8_t buffer[8];
     buffer[0] = COMMAND_WRITE(CLOCK_SECONDS);
     buffer[1] = DECTOSEC(dateTime->second);
@@ -179,85 +225,88 @@ void rtc_set_date_time(rtc_date_time_t *dateTime) {
     buffer[6] = DECTOMON(dateTime->month);
     buffer[7] = DECTOYEAR((dateTime->year - 2000));
 
-    if (spi_mutex_take(RTC_SPI, pdMS_TO_TICKS(100))) {
-        assert_cs();
+    if (get_peripheral_mutex(pdMS_TO_TICKS(2000))) {
+        prv_assert_cs();
         spi_move_array(RTC_SPI, buffer, sizeof(buffer));
-        deassert_cs();
-        spi_mutex_give(RTC_SPI);
+        prv_deassert_cs();
+        release_peripheral_mutex();
+    } else {
+        PRINTF("RTC set date time: Peripheral mutex lock failed\n");
+        return false;
     }
+
+    return true;
 }
 
-char* rtc_get_timestamp(TickType_t blocktime) {
-    static char timestamp[20];
-    rtc_date_time_t *dateTime = get_rtc_date_time(blocktime);
-    if (dateTime != NULL) {
-        snprintf(timestamp, sizeof(timestamp), "%04u-%02u-%02u %02u:%02u:%02u", dateTime->year,
-                dateTime->month, dateTime->day, dateTime->hour, dateTime->minute, dateTime->second);
-        release_rtc_date_time();
-    }
+bool rtc_set_date_time_from_epoch(uint32_t epoch) {
+    rtc_date_time_t dateTime;
+    dateTime = prv_make_date_time_from_epoch(epoch);
 
+    bool ret = rtc_set_date_time(&dateTime);
+
+    if (ret) {
+        rtc_sync();
+    }
+    return ret;
+}
+
+char* rtc_get_timestamp(void) {
+    rtc_sync();
+    static char timestamp[26];
+    snprintf(timestamp, sizeof(timestamp), "%04u-%02u-%02u_%02u-%02u-%02u", prvRtcDateTime.year,
+            prvRtcDateTime.month, prvRtcDateTime.day, prvRtcDateTime.hour, prvRtcDateTime.minute, prvRtcDateTime.second);
     return timestamp;
 }
 
-void rtc_tick_task(void *p) {
-    (void)p;
-    uint32_t notification;
-    while (1) {
-        notification = ulTaskNotifyTake(pdFALSE, pdMS_TO_TICKS(2000));
-        if (notification > 0) {
-            rtc_sync();
+static uint32_t prv_make_unix_time(void) {
+    struct tm t;
+    time_t epoch;
 
-            uint8_t buffer[2];
-            buffer[0] = COMMAND_WRITE(CONTROL_INT_FLAG);
-            buffer[1] = 0;
-            //Clear all interrupt flags
-            if (spi_mutex_take(RTC_SPI, pdMS_TO_TICKS(100))) {
-                assert_cs();
-                spi_move_array(RTC_SPI, buffer, sizeof(buffer));
-                deassert_cs();
-                spi_mutex_give(RTC_SPI);
-            }
+    t.tm_year = prvRtcDateTime.year-1900;
+    t.tm_mon = prvRtcDateTime.month - 1;
+    t.tm_mday = prvRtcDateTime.day;
+    t.tm_hour = prvRtcDateTime.hour;
+    t.tm_min = prvRtcDateTime.minute;
+    t.tm_sec = prvRtcDateTime.second;
+    t.tm_isdst = -1; //TODO DST flag should be stored in EEPROM
+    epoch = mktime(&t);
+    epoch -= TIMEZONE_GMT_PLUS_2;
+    return (uint32_t) epoch;
+}
 
-            if (_tickHook != NULL) {
-                (_tickHook)(); //Invoke callback function
-            }
-        }
+static rtc_date_time_t prv_make_date_time_from_epoch(uint32_t epoch) {
+    struct tm t;
+    rtc_date_time_t dateTime;
+    time_t unix = epoch + TIMEZONE_GMT_PLUS_2;
+    localtime_r(&unix, &t);
+    dateTime.year = t.tm_year + 1900;
+    dateTime.month = t.tm_mon + 1;
+    dateTime.day = t.tm_mday;
+    dateTime.hour = t.tm_hour;
+    dateTime.minute = t.tm_min;
+    dateTime.second = t.tm_sec;
+    return dateTime;
+}
+
+static void prv_rtc_clkout_handler(BaseType_t *higherPrioTaskWoken) {
+    //Restart the software timer to sync it with the RTC
+    xTimerResetFromISR(prvTimer, higherPrioTaskWoken);
+    prvEpoch++;
+}
+
+static void prv_timer_callback(TimerHandle_t timer) {
+    (void) timer;
+    static uint8_t syncTimer = 0;
+
+    if (syncTimer++ >= 100) {
+        //Sync local time with RTC every 10s
+        rtc_sync();
+        syncTimer = 0;
+    }
+
+    prvUptime++;
+    if (prvTickHook != NULL) {
+        (prvTickHook)(prvUptime); //Invoke callback function
     }
 }
 
-void rtc_sync(void) {
-    uint8_t time[8];
-    memset(time, 0xFF, sizeof(time));
-    time[0] = COMMAND_READ(CLOCK_SECONDS);
-
-    if (spi_mutex_take(RTC_SPI, pdMS_TO_TICKS(100))) {
-        assert_cs();
-        spi_move_array(RTC_SPI, time, sizeof(time));
-        deassert_cs();
-        spi_mutex_give(RTC_SPI);
-        rtc_date_time_t *dateTime = get_rtc_date_time(pdMS_TO_TICKS(100));
-        if (dateTime != NULL) {
-            dateTime->second = SECTODEC(time[1]);
-            dateTime->minute = MINTODEC(time[2]);
-            dateTime->hour = HOURTODEC(time[3]);
-            dateTime->day = DAYTODEC(time[4]);
-            dateTime->month = MONTODEC(time[6]);
-            dateTime->year = YEARTODEC(time[7]) + 2000;
-            release_rtc_date_time();
-        }
-    }
-}
-
-static void rtc_irq_handler(BaseType_t *higherPrioTaskWoken) {
-    if (_rtcTickTaskHandle != NULL) {
-        vTaskNotifyGiveFromISR(_rtcTickTaskHandle, higherPrioTaskWoken);
-    }
-}
-
-static inline void assert_cs(void) {
-    set_pin(CS_RTC_PORT, CS_RTC_PIN);
-}
-
-static inline void deassert_cs(void) {
-    clear_pin(CS_RTC_PORT, CS_RTC_PIN);
-}
