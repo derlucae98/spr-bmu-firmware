@@ -87,11 +87,10 @@ static void can_send_task(void *p) {
 
     //Send reset reason on startup over CAN
     uint32_t resetReason = get_reset_reason();
-    msg.ID = CAN_ID_STARTUP;
+    msg.ID = CAN_ID_DIAG_STARTUP;
     msg.DLC = 4;
     memcpy(msg.payload, &resetReason, 4);
     can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
-    can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
 
     while (1) {
 
@@ -143,11 +142,10 @@ static void can_send_task(void *p) {
         if (counter100ms == 0) {
             canData.uptime = uptime_in_100_ms();
             canData.sysTime = rtc_get_unix_time();
-            msg.ID = CAN_ID_TIME;
+            msg.ID = CAN_ID_DIAG_TIME;
             msg.DLC = 8;
             memcpy(msg.payload, &canData.uptime, sizeof(canData.uptime));
             memcpy(msg.payload + sizeof(canData.uptime), &canData.sysTime, sizeof(canData.sysTime));
-            can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
             can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
         }
 
@@ -155,16 +153,7 @@ static void can_send_task(void *p) {
             get_balancing_status(canData.balance);
         }
 
-        msg.ID = 0x00F;
-        msg.payload[0] = canData.minSoc * 10 >> 8;
-        msg.payload[1] = canData.minSoc * 10 & 0xFF;
-        msg.payload[2] = canData.maxTemp * 5 >> 8;
-        msg.payload[3] = canData.maxTemp * 5 & 0xFF;
-        msg.payload[4] = canData.tsState;
-        msg.DLC = 5;
-        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
-
-        msg.ID = CAN_ID_INFO;
+        msg.ID = CAN_ID_DIAG_INFO;
         msg.DLC = 7;
         msg.payload[0] = (canData.errorCode >> 24) & 0xFF;
         msg.payload[1] = (canData.errorCode >> 16) & 0xFF;
@@ -173,12 +162,11 @@ static void can_send_task(void *p) {
         msg.payload[4] = (canData.isolationResistance >> 8) & 0xFF;
         msg.payload[5] = canData.isolationResistance & 0xFF;
         msg.payload[6] = ((canData.isolationResistanceValid & 0x01) << 7) | (canData.tsState & 0x0F);
-//        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
         can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
-        msg.ID = 0x0C;
+        msg.ID = CAN_ID_VEHIC_INFO;
         can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
 
-        msg.ID = CAN_ID_STATS_1;
+        msg.ID = CAN_ID_DIAG_STATS_1;
         msg.DLC = 7;
         msg.payload[0] = canData.voltageValid & 0x01;
         msg.payload[1] = (canData.minCellVolt >> 8) & 0xFF;
@@ -188,26 +176,10 @@ static void can_send_task(void *p) {
         msg.payload[5] = (canData.avgCellVolt >> 8) & 0xFF;
         msg.payload[6] = canData.avgCellVolt & 0xFF;
         can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
-
-        //Legacy protocol for validation in SPR22e accumulator
-        //BMS_Info_1
-        canData.minCellVolt /= 10;
-        canData.maxCellVolt /= 10;
-        canData.avgCellVolt /= 10;
-
-        msg.ID = 0x001;
-        msg.DLC = 8;
-        msg.payload[0] = canData.minCellVolt >> 5;
-        msg.payload[1] = ((canData.minCellVolt & 0x1F) << 3) | ((canData.voltageValid & 0x01) << 2) | ((canData.maxCellVolt & 0x1FFF) >> 11);
-        msg.payload[2] = (canData.maxCellVolt & 0x7FF) >> 3;
-        msg.payload[3] = ((canData.maxCellVolt & 0x07) << 5) | ((canData.voltageValid & 0x01) << 4) | ((canData.avgCellVolt & 0x1FFF) >> 9);
-        msg.payload[4] = ((canData.avgCellVolt & 0x1FFF) >> 1);
-        msg.payload[5] = ((canData.avgCellVolt & 0x1FFF) << 7) | ((canData.voltageValid & 0x01) << 6) | ((canData.minSoc & 0x3FF) >> 4);
-        msg.payload[6] = ((canData.minSoc & 0x3FF) << 4) | ((canData.socValid & 0x01) << 3) | ((canData.maxSoc & 0x3FF) >> 7);
-        msg.payload[7] = ((canData.maxSoc & 0x3FF) << 1) | ((canData.socValid & 0x01));
+        msg.ID = CAN_ID_VEHIC_STATS_1;
         can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
 
-        msg.ID = CAN_ID_STATS_2;
+        msg.ID = CAN_ID_DIAG_STATS_2;
         msg.DLC = 8;
         msg.payload[0] = ((canData.dcLinkVoltageValid & 0x01) << 2) | ((canData.socValid & 0x01) << 1) | (canData.tempValid & 0x01);
         msg.payload[1] = canData.minTemp;
@@ -217,24 +189,11 @@ static void can_send_task(void *p) {
         msg.payload[5] = canData.maxSoc;
         msg.payload[6] = (canData.dcLinkVoltage >> 8) & 0xFF;
         msg.payload[7] = canData.dcLinkVoltage & 0xFF;
-//        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
         can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
-
-        //BMS_Info_3
-        msg.ID = 0x003;
-        msg.DLC = 8;
-        msg.payload[0] = (canData.isolationResistance & 0x7FFF) >> 8;
-        msg.payload[1] = ((canData.isolationResistance & 0x7FFF) << 1) | ((canData.isolationResistanceValid & 0x01));
-        msg.payload[2] = ((canData.tsState & 0x03) << 5);
-        msg.payload[3] = ((canData.minTemp * 5 & 0x3FF) >> 9);
-        msg.payload[4] = (canData.minTemp * 5 & 0x3FF) >> 1;
-        msg.payload[5] = ((canData.minTemp * 5 & 0x3FF) << 7) | ((canData.tempValid & 0x01) << 6) | ((canData.maxTemp * 5 >> 4) & 0x3F);
-        msg.payload[6] = ((canData.maxTemp * 5 & 0x3FF) << 4) | ((canData.tempValid & 0x01) << 3) | ((canData.avgTemp * 5& 0x3FF) >> 7);
-        msg.payload[7] = ((canData.avgTemp * 5& 0x3FF) << 1) | (canData.tempValid & 0x01);
+        msg.ID = CAN_ID_VEHIC_STATS_2;
         can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
 
-
-        msg.ID = CAN_ID_UIP;
+        msg.ID = CAN_ID_DIAG_UIP;
         msg.DLC = 7;
         msg.payload[0] = ((canData.batteryPowerValid & 0x01) << 2) | ((canData.currentValid & 0x01) << 1) | (canData.batteryVoltageValid & 0x01);
         msg.payload[1] = (canData.batteryVoltage >> 8) & 0xFF;
@@ -243,23 +202,11 @@ static void can_send_task(void *p) {
         msg.payload[4] = canData.current & 0xFF;
         msg.payload[5] = (canData.batteryPower >> 8) & 0xFF;
         msg.payload[6] = canData.batteryPower & 0xFF;
-//        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
         can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
-
-        //BMS_Info_2
-        msg.ID = 0x002;
-        msg.DLC = 7;
-        msg.payload[0] = ((canData.batteryVoltage) >> 5);
-        msg.payload[1] = ((canData.batteryVoltage) << 3) | ((canData.batteryVoltageValid & 0x01) << 2);
-        msg.payload[2] = ((canData.dcLinkVoltage & 0x1FFF) >> 5);
-        msg.payload[3] = ((canData.dcLinkVoltage & 0x1FFF) << 3) | ((canData.dcLinkVoltageValid & 0x01) << 2);
-        msg.payload[4] = (canData.current >> 8);
-        msg.payload[5] = (canData.current & 0xFF);
-        msg.payload[6] = (canData.currentValid & 0x01) << 7;
+        msg.ID = CAN_ID_VEHIC_UIP;
         can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
 
-
-        msg.ID = CAN_ID_CELL_VOLTAGE_1;
+        msg.ID = CAN_ID_DIAG_CELL_VOLTAGE_1;
         msg.DLC = 8;
         msg.payload[0] = ((slaveCounter & 0x0F) << 4) | (canData.cellVoltageStatus[slaveCounter][0] & 0x01);
         msg.payload[1] = ((canData.cellVoltageStatus[slaveCounter][3] & 0x03) << 4)
@@ -273,7 +220,7 @@ static void can_send_task(void *p) {
         msg.payload[7] = canData.cellVoltage[slaveCounter][2] & 0xFF;
         can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
 
-        msg.ID = CAN_ID_CELL_VOLTAGE_2;
+        msg.ID = CAN_ID_DIAG_CELL_VOLTAGE_2;
         msg.DLC = 8;
         msg.payload[0] = ((slaveCounter & 0x0F) << 4);
         msg.payload[1] = ((canData.cellVoltageStatus[slaveCounter][6] & 0x03) << 4)
@@ -287,7 +234,7 @@ static void can_send_task(void *p) {
         msg.payload[7] = canData.cellVoltage[slaveCounter][5] & 0xFF;
         can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
 
-        msg.ID = CAN_ID_CELL_VOLTAGE_3;
+        msg.ID = CAN_ID_DIAG_CELL_VOLTAGE_3;
         msg.DLC = 8;
         msg.payload[0] = ((slaveCounter & 0x0F) << 4);
         msg.payload[1] = ((canData.cellVoltageStatus[slaveCounter][9] & 0x03) << 4)
@@ -301,7 +248,7 @@ static void can_send_task(void *p) {
         msg.payload[7] = canData.cellVoltage[slaveCounter][8] & 0xFF;
         can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
 
-        msg.ID = CAN_ID_CELL_VOLTAGE_4;
+        msg.ID = CAN_ID_DIAG_CELL_VOLTAGE_4;
         msg.DLC = 8;
         msg.payload[0] = ((slaveCounter & 0x0F) << 4);
         msg.payload[1] = ((canData.cellVoltageStatus[slaveCounter][12] & 0x03) << 4)
@@ -316,40 +263,13 @@ static void can_send_task(void *p) {
         can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
 
 
-        msg.ID = 0x004;
-        msg.DLC = 8;
-        msg.payload[0] = (slaveCounter << 4) | ((canData.temperature[slaveCounter][0] >> 6) & 0x0F);
-        msg.payload[1] = (canData.temperature[slaveCounter][0] << 2) | (canData.temperatureStatus[slaveCounter][0] & 0x03);
-        msg.payload[2] = (canData.temperature[slaveCounter][1] >> 2);
-        msg.payload[3] = (canData.temperature[slaveCounter][1] << 6) | ((canData.temperatureStatus[slaveCounter][1] & 0x03) << 4) | ((canData.temperature[slaveCounter][2] >> 6) & 0x0F);
-        msg.payload[4] = (canData.temperature[slaveCounter][2] << 2) | (canData.temperatureStatus[slaveCounter][2] & 0x03);
-        msg.payload[5] = (canData.temperature[slaveCounter][3] >> 2);
-        msg.payload[6] = (canData.temperature[slaveCounter][3] << 6) | ((canData.temperatureStatus[slaveCounter][3] & 0x03) << 4) | ((canData.temperature[slaveCounter][4] >> 6) & 0x0F);
-        msg.payload[7] = (canData.temperature[slaveCounter][4] << 2) | (canData.temperatureStatus[slaveCounter][4] & 0x03);
-        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
-
-        msg.ID = 0x005;
-        msg.DLC = 8;
-        msg.payload[0] = (slaveCounter << 4) | ((canData.temperature[slaveCounter][5] >> 6) & 0x0F);
-        msg.payload[1] = 0;
-        msg.payload[2] = 0;
-        msg.payload[3] = 0;
-        msg.payload[4] = 0;
-        msg.payload[5] = 0;
-        msg.payload[6] = 0;
-        msg.payload[7] = 0;
-        can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
-
-
-
-
         for (size_t stack = 0; stack < MAX_NUM_OF_SLAVES; stack++) {
             for (size_t tempsens = 0; tempsens < MAX_NUM_OF_TEMPSENS; tempsens++) {
                 canData.temperature[stack][tempsens] /= 5;
             }
         }
 
-        msg.ID = CAN_ID_CELL_TEMPERATURE;
+        msg.ID = CAN_ID_DIAG_CELL_TEMPERATURE;
         msg.DLC = 8;
         msg.payload[0] = ((slaveCounter & 0x0F) << 4) | ((canData.temperatureStatus[slaveCounter][5] & 0x03) << 2)
                        | (canData.temperatureStatus[slaveCounter][4] & 0x03);
@@ -363,7 +283,7 @@ static void can_send_task(void *p) {
         msg.payload[7] = canData.temperature[slaveCounter][5];
         can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
 
-        msg.ID = CAN_ID_BALANCING_FEEDBACK;
+        msg.ID = CAN_ID_DIAG_BALANCING_FEEDBACK;
         msg.DLC = 2;
         msg.payload[0] = ((slaveCounter & 0x0F) << 4) | ((canData.balance[slaveCounter][11] & 0x01) << 3)
                        | ((canData.balance[slaveCounter][10] & 0x01) << 2) | ((canData.balance[slaveCounter][9] & 0x01) << 1)
@@ -374,7 +294,7 @@ static void can_send_task(void *p) {
                        | ((canData.balance[slaveCounter][1] & 0x01) << 1) | (canData.balance[slaveCounter][0] & 0x01);
         can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
 
-        msg.ID = CAN_ID_UNIQUE_ID;
+        msg.ID = CAN_ID_DIAG_UNIQUE_ID;
         msg.DLC = 5;
         msg.payload[0] = ((slaveCounter & 0x0F) << 4);
         msg.payload[1] = (canData.UID[slaveCounter] >> 24) & 0xFF;
@@ -402,7 +322,7 @@ static void can_rec_vehic_task(void *p) {
     while (1) {
         if (xQueueReceive(CAN_VEHIC_RX_Q, &msg, portMAX_DELAY)) {
             switch (msg.ID) {
-                case CAN_ID_TS_REQUEST:
+                case CAN_ID_VEHIC_TS_REQUEST:
                     if (msg.DLC == 1 && msg.payload[0] == 0xFF) {
                         if (!prvDiagTsControl) {
                             request_tractive_system(true);
@@ -426,7 +346,7 @@ static void can_rec_diag_task(void *p) {
     while (1) {
         if (xQueueReceive(CAN_DIAG_RX_Q, &msg, portMAX_DELAY)) {
             switch (msg.ID) {
-                case CAN_ID_TS_REQUEST:
+                case CAN_ID_DIAG_TS_REQUEST:
                     if (msg.DLC != 2) {
                         continue;
                     }

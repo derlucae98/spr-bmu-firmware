@@ -92,26 +92,30 @@
 #define CAN_DIAG_RX_Q can1RxQueueHandle
 
 enum can_id_vehicle {
-    CAN_ID_xx
+    CAN_ID_VEHIC_TS_REQUEST        = 0x000,
+    CAN_ID_VEHIC_INFO              = 0x002,
+    CAN_ID_VEHIC_STATS_1           = 0x003,
+    CAN_ID_VEHIC_STATS_2           = 0x004,
+    CAN_ID_VEHIC_UIP               = 0x005,
 };
 
-enum can_id {
-    CAN_ID_TS_REQUEST         = 0x000,
-    CAN_ID_STARTUP            = 0x001,
-    CAN_ID_INFO               = 0x002,
-    CAN_ID_STATS_1            = 0x003,
-    CAN_ID_STATS_2            = 0x004,
-    CAN_ID_UIP                = 0x005,
-    CAN_ID_CELL_VOLTAGE_1     = 0x006,
-    CAN_ID_CELL_VOLTAGE_2     = 0x007,
-    CAN_ID_CELL_VOLTAGE_3     = 0x008,
-    CAN_ID_CELL_VOLTAGE_4     = 0x009,
-    CAN_ID_CELL_TEMPERATURE   = 0x00A,
-    CAN_ID_BALANCING_FEEDBACK = 0x00B,
-    CAN_ID_UNIQUE_ID          = 0x00C,
-    CAN_ID_TIME               = 0x00D,
-    CAN_ID_DIAG_REQUEST       = 0x00E,
-    CAN_ID_DIAG_RESPONSE      = 0x00F
+enum can_id_diag {
+    CAN_ID_DIAG_TS_REQUEST         = 0x100,
+    CAN_ID_DIAG_STARTUP            = 0x101,
+    CAN_ID_DIAG_INFO               = 0x102,
+    CAN_ID_DIAG_STATS_1            = 0x103,
+    CAN_ID_DIAG_STATS_2            = 0x104,
+    CAN_ID_DIAG_UIP                = 0x105,
+    CAN_ID_DIAG_CELL_VOLTAGE_1     = 0x106,
+    CAN_ID_DIAG_CELL_VOLTAGE_2     = 0x107,
+    CAN_ID_DIAG_CELL_VOLTAGE_3     = 0x108,
+    CAN_ID_DIAG_CELL_VOLTAGE_4     = 0x109,
+    CAN_ID_DIAG_CELL_TEMPERATURE   = 0x10A,
+    CAN_ID_DIAG_BALANCING_FEEDBACK = 0x10B,
+    CAN_ID_DIAG_UNIQUE_ID          = 0x10C,
+    CAN_ID_DIAG_TIME               = 0x10D,
+    CAN_ID_DIAG_REQUEST            = 0x10E,
+    CAN_ID_DIAG_RESPONSE           = 0x10F
 };
 
 
