@@ -13,8 +13,6 @@
 #include "adc.h"
 #include "contactor.h"
 #include "rtc.h"
-#include "sd.h"
-#include "logger.h"
 #include "communication.h"
 #include "cal.h"
 #include "soc.h"
@@ -116,13 +114,7 @@ void init_task(void *p) {
         init_contactor();
         init_comm();
         init_stacks();
-        init_rtc(logger_tick_hook);
-        sd_init(logger_set_file);
-        logger_init();
-
-
-
-
+        init_rtc(NULL);
 
         vTaskDelete(NULL);
     }

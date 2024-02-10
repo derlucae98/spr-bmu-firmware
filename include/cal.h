@@ -11,7 +11,6 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "communication.h"
-#include "sd.h"
 #include "config.h"
 #include "can.h"
 #include "rtc.h"

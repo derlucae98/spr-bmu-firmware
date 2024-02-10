@@ -11,8 +11,6 @@
 static config_t prvConfig;
 static SemaphoreHandle_t prvConfigMutex = NULL;
 
-extern void logger_control(bool active);
-
 enum {
     ID_LOAD_DEFAULT_CONFIG = 0x00,
     ID_QUERY_CONFIG        = 0x01,
@@ -276,7 +274,6 @@ static void prv_update_config(uint8_t *data) {
         PRINTF("New config: failed!\n");
         prv_send_negative_response(ID_UPDATE_CONFIG, CAL_ERROR_INTERNAL_ERROR);
     }
-    logger_control(true); //Reactivate logger
 }
 
 static BaseType_t prv_config_mutex_take(TickType_t blocktime) {
