@@ -183,7 +183,7 @@ static void can_send_task(void *p) {
         msg.DLC = 8;
         msg.payload[0] = ((canData.dcLinkVoltageValid & 0x01) << 2) | ((canData.socValid & 0x01) << 1) | (canData.tempValid & 0x01);
         msg.payload[1] = canData.minTemp;
-        msg.payload[2] = canData.avgTemp; //Only for testing due to faulty sensor
+        msg.payload[2] = canData.maxTemp;
         msg.payload[3] = canData.avgTemp;
         msg.payload[4] = canData.minSoc;
         msg.payload[5] = canData.maxSoc;
