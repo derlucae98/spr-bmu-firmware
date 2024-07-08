@@ -126,7 +126,7 @@ static void can_send_task(void *p) {
             release_adc_data();
         }
 
-        canData.batteryPower = abs(canData.batteryVoltage * canData.current) * 0.4f; // Conversion factor: /1000 for W in kW, x400 for DBC file signal range
+        canData.batteryPower = (canData.batteryVoltage * canData.current) * 0.4f; // Conversion factor: /1000 for W in kW, x400 for DBC file signal range
         canData.batteryPowerValid = canData.batteryVoltageValid && canData.currentValid;
 
         canData.current = canData.current * 160;
