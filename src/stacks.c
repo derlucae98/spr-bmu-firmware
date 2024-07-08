@@ -137,7 +137,16 @@ void stacks_worker_task(void *p) {
                 if (prvStacksDataLocal.temperatureStatus[slave][tempsens] == PECERROR) {
                     continue;
                 }
-                if (prvStacksDataLocal.temperature[slave][tempsens] > MAXCELLTEMP) {
+
+                uint16_t maxCellTemp;
+                // Different maximum temperatures for charging and discharging
+                if (system_is_charging()) {
+                    maxCellTemp = MAXCELLTEMP_CHARGING;
+                } else {
+                    maxCellTemp = MAXCELLTEMP;
+                }
+
+                if (prvStacksDataLocal.temperature[slave][tempsens] > maxCellTemp) {
                     prvStacksDataLocal.temperatureStatus[slave][tempsens] = VALUEOUTOFRANGE;
                 } else if (prvStacksDataLocal.temperature[slave][tempsens] < 10) {
                     prvStacksDataLocal.temperatureStatus[slave][tempsens] = OPENCELLWIRE;
