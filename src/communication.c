@@ -45,7 +45,7 @@ typedef struct {
     bool batteryVoltageValid;
     int16_t current;
     bool currentValid;
-    uint16_t batteryPower;
+    uint32_t batteryPower;
     bool batteryPowerValid;
 
     //Unique ID
@@ -117,17 +117,20 @@ static void can_send_task(void *p) {
 
         adc_data_t *adcData = get_adc_data(portMAX_DELAY);
         if (adcData != NULL) {
-            canData.batteryVoltage = (uint16_t)(adcData->batteryVoltage * 10);
+            canData.batteryVoltage = (uint16_t)(adcData->batteryVoltage);
             canData.batteryVoltageValid = adcData->voltageValid;
             canData.dcLinkVoltage = (uint16_t)(adcData->dcLinkVoltage * 10);
             canData.dcLinkVoltageValid = adcData->voltageValid;
-            canData.current = (int16_t)(adcData->current * 160);
+            canData.current = (int16_t)(adcData->current);
             canData.currentValid = adcData->currentValid;
             release_adc_data();
         }
 
-        canData.batteryPower = abs(canData.batteryVoltage * canData.current);
+        canData.batteryPower = abs(canData.batteryVoltage * canData.current) * 0.4f; // Conversion factor: /1000 for W in kW, x400 for DBC file signal range
         canData.batteryPowerValid = canData.batteryVoltageValid && canData.currentValid;
+
+        canData.current = canData.current * 160;
+        canData.batteryVoltage = canData.batteryVoltage * 10;
 
         canData.isolationResistance = 0; //TODO isolation resistance CAN
         canData.isolationResistanceValid = false; //TODO isolation resistance CAN validity
