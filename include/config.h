@@ -80,7 +80,7 @@
 #define EEPROM_SOC_PAGE_2 0x300
 #define EEPROM_SOC_PAGE_3 0x400
 
-#define NOMINAL_CELL_CAPACITY_mAh 15000
+#define NOMINAL_CELL_CAPACITY_mAh 13100
 
 #define ADC_VOLTAGE_CONVERSION_RATIO 301.0f
 #define ADC_CURRENT_CONVERSION_RATIO 83.333f //I = Us * k/R; k = current ratio (1000), R = shunt resistance (12R)
