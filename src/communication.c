@@ -41,11 +41,11 @@ typedef struct {
     bool tempValid;
 
     //UIP
-    uint16_t batteryVoltage;
+    float batteryVoltage;
     bool batteryVoltageValid;
-    int16_t current;
+    float current;
     bool currentValid;
-    uint32_t batteryPower;
+    float batteryPower;
     bool batteryPowerValid;
 
     //Unique ID
@@ -117,11 +117,11 @@ static void can_send_task(void *p) {
 
         adc_data_t *adcData = get_adc_data(portMAX_DELAY);
         if (adcData != NULL) {
-            canData.batteryVoltage = (uint16_t)(adcData->batteryVoltage);
+            canData.batteryVoltage = adcData->batteryVoltage;
             canData.batteryVoltageValid = adcData->voltageValid;
-            canData.dcLinkVoltage = (uint16_t)(adcData->dcLinkVoltage * 10);
+            canData.dcLinkVoltage = adcData->dcLinkVoltage;
             canData.dcLinkVoltageValid = adcData->voltageValid;
-            canData.current = (int16_t)(adcData->current);
+            canData.current = adcData->current;
             canData.currentValid = adcData->currentValid;
             release_adc_data();
         }
@@ -129,8 +129,9 @@ static void can_send_task(void *p) {
         canData.batteryPower = (canData.batteryVoltage * canData.current) * 0.4f; // Conversion factor: /1000 for W in kW, x400 for DBC file signal range
         canData.batteryPowerValid = canData.batteryVoltageValid && canData.currentValid;
 
-        canData.current = canData.current * 160;
-        canData.batteryVoltage = canData.batteryVoltage * 10;
+        canData.current = canData.current * 160.0f;
+        canData.batteryVoltage = canData.batteryVoltage * 10.0f;
+        canData.dcLinkVoltage = canData.dcLinkVoltage * 10.0f;
 
         canData.isolationResistance = 0; //TODO isolation resistance CAN
         canData.isolationResistanceValid = false; //TODO isolation resistance CAN validity
@@ -199,12 +200,12 @@ static void can_send_task(void *p) {
         msg.ID = CAN_ID_DIAG_UIP;
         msg.DLC = 7;
         msg.payload[0] = ((canData.batteryPowerValid & 0x01) << 2) | ((canData.currentValid & 0x01) << 1) | (canData.batteryVoltageValid & 0x01);
-        msg.payload[1] = (canData.batteryVoltage >> 8) & 0xFF;
-        msg.payload[2] = canData.batteryVoltage & 0xFF;
-        msg.payload[3] = (canData.current >> 8) & 0xFF;
-        msg.payload[4] = canData.current & 0xFF;
-        msg.payload[5] = (canData.batteryPower >> 8) & 0xFF;
-        msg.payload[6] = canData.batteryPower & 0xFF;
+        msg.payload[1] = ((uint16_t)canData.batteryVoltage >> 8) & 0xFF;
+        msg.payload[2] = (uint16_t)canData.batteryVoltage & 0xFF;
+        msg.payload[3] = ((int16_t)canData.current >> 8) & 0xFF;
+        msg.payload[4] = (int16_t)canData.current & 0xFF;
+        msg.payload[5] = ((int16_t)canData.batteryPower >> 8) & 0xFF;
+        msg.payload[6] = (int16_t)canData.batteryPower & 0xFF;
         can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
         msg.ID = CAN_ID_VEHIC_UIP;
         can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
