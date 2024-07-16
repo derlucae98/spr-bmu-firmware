@@ -26,7 +26,7 @@ Firmware for Battery Management Unit (BMS, IMD evaluation, AIR control) used in 
 - ~~Trace the bug that corrupts the file system~~
 - Implementation of the Bender IR155 PWM protocol to provide the isolation resistance measurement to the HMI **(POSTPONED)**
 - ~~Maybe: Implement CAN bootloader (https://www.feaser.com/en/blog/2020/04/nxp-s32k-support-in-the-openblt-bootloader/)~~
-- Update Coulomb counter and SOC(OCV) LUT for new Cells
+- ✅ Update Coulomb counter and SOC(OCV) LUT for new Cells
 - ✅ Fully implement diag protocol ~~and logging data~~
 - Validate watchdog
 
