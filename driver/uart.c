@@ -1,6 +1,6 @@
 #include "uart.h"
 
-TaskHandle_t uartRecTaskHandle = NULL;
+static TaskHandle_t _uartRecTaskHandle = NULL;
 
 static SemaphoreHandle_t _uartMutex = NULL;
 static volatile uint8_t _uartStrComplete = 0;
@@ -15,6 +15,8 @@ void uart_register_receive_hook(uart_receive_hook_t uartRecHook) {
     _uartReceiveHook = uartRecHook;
 }
 
+void uart_rec_task(void *p);
+
 void uart_init(bool enableRecv) {
 
     PCC->PCCn[PCC_LPUART0_INDEX] &= ~PCC_PCCn_CGC_MASK; //Disable clock
@@ -28,6 +30,8 @@ void uart_init(bool enableRecv) {
 
         nvic_set_priority(LPUART0_RxTx_IRQn, 0xFF);
         nvic_enable_irq(LPUART0_RxTx_IRQn);
+
+        xTaskCreate(uart_rec_task, "uartrecv", UART_RECV_TASK_STACK, NULL, UART_RECV_TASK_PRIO, &_uartRecTaskHandle);
     }
 
     LPUART0->CTRL |= LPUART_CTRL_TE_MASK;
@@ -71,8 +75,8 @@ void LPUART0_RxTx_IRQHandler(void) {
                 _uartStrCount = 0;
                 _uartStrComplete = 1;
 
-                if (uartRecTaskHandle != NULL) {
-                    vTaskNotifyGiveFromISR(uartRecTaskHandle, &xHigherPriorityTaskWoken);
+                if (_uartRecTaskHandle != NULL) {
+                    vTaskNotifyGiveFromISR(_uartRecTaskHandle, &xHigherPriorityTaskWoken);
                 }
             }
         }

@@ -1,10 +1,10 @@
 #include "interrupts.h"
 
-#define NUMOFPINS_A 14
-#define NUMOFPINS_B 14
-#define NUMOFPINS_C 18
-#define NUMOFPINS_D 17
-#define NUMOFPINS_E 12
+#define NUMOFPINS_A 32
+#define NUMOFPINS_B 32
+#define NUMOFPINS_C 32
+#define NUMOFPINS_D 32
+#define NUMOFPINS_E 32
 static interrupt_callback_t callbacksA[NUMOFPINS_A];
 static interrupt_callback_t callbacksB[NUMOFPINS_B];
 static interrupt_callback_t callbacksC[NUMOFPINS_C];

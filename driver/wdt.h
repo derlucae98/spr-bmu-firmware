@@ -8,7 +8,7 @@
 #ifndef WDT_H_
 #define WDT_H_
 
-#include "S32K146.h"
+#include "S32K14x.h"
 #include "FreeRTOS.h"
 #include "task.h"
 

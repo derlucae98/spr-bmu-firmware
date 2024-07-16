@@ -9,8 +9,11 @@
 #include "task.h"
 #include "semphr.h"
 #include "queue.h"
-#include "S32K146.h"
+#include "S32K14x.h"
 #include "interrupts.h"
+
+#define CAN_TX_Q_ITEMS 32
+#define CAN_RX_Q_ITEMS 16
 
 typedef struct {
     uint16_t ID;
@@ -21,9 +24,9 @@ typedef struct {
 extern QueueHandle_t can0RxQueueHandle;
 extern QueueHandle_t can1RxQueueHandle;
 
-void can_init(CAN_Type *can);
-void enqueue_message(can_msg_t *message);
-bool can_send(CAN_Type *can, can_msg_t *msg);
+void can_init(CAN_Type *can, uint32_t filterMask);
+bool can_enqueue_message(CAN_Type *can, can_msg_t *message, TickType_t blocktime);
+
 
 
 #endif /* CAN_H_ */
