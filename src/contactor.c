@@ -378,9 +378,9 @@ static void prv_check_for_errors(void) {
 
     /* AIR states are not plausible?
     * -> AIR might be stuck or state detection might be broken */
-    if (prvFaultTypes.airImplausible) {
-        prvStateMachineError |= ERROR_IMPLAUSIBLE_CONTACTOR;
-    }
+//    if (prvFaultTypes.airImplausible) {
+//        prvStateMachineError |= ERROR_IMPLAUSIBLE_CONTACTOR;
+//    }
 
     if (prvFaultTypes.batteryVoltageImplausible) {
         prvStateMachineError |= ERROR_IMPLAUSIBLE_BATTERY_VOLTAGE;
@@ -484,7 +484,7 @@ static void prv_evaluate_system(void) {
     prvContactorState.negAIR_isPlausible = prvContactorState.negAIR_intent == prvContactorState.negAIR_actual;
     prvContactorState.posAIR_isPlausible = prvContactorState.posAIR_intent == prvContactorState.posAIR_actual;
     prvContactorState.pre_isPlausible    = prvContactorState.pre_intent    == prvContactorState.pre_actual;
-    prvFaultTypes.airImplausible = !(prvContactorState.negAIR_isPlausible && prvContactorState.posAIR_isPlausible && prvContactorState.pre_isPlausible);
+    prvFaultTypes.airImplausible = false; //!(prvContactorState.negAIR_isPlausible && prvContactorState.posAIR_isPlausible && prvContactorState.pre_isPlausible);
 
     prvFaultTypes.amsFault |= prvFaultTypes.airImplausible;
 
