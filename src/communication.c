@@ -39,6 +39,7 @@ typedef struct {
     uint8_t maxTemp;
     uint8_t avgTemp;
     bool tempValid;
+    uint32_t coulomCounter; //Integrated value of the coulomb counter for validation
 
     //UIP
     float batteryVoltage;
@@ -142,6 +143,7 @@ static void can_send_task(void *p) {
         canData.minSoc = (uint16_t)(socStats.minSoc + 0.5f);
         canData.maxSoc = (uint16_t)(socStats.maxSoc + 0.5f);
         canData.socValid = socStats.valid;
+        canData.coulomCounter = socStats.mAhSinceStartup * 1000.0; //Unit: µAh
 
         if (counter100ms == 0) {
             canData.uptime = uptime_in_100_ms();
@@ -305,6 +307,14 @@ static void can_send_task(void *p) {
         msg.payload[2] = (canData.UID[slaveCounter] >> 16) & 0xFF;
         msg.payload[3] = (canData.UID[slaveCounter] >> 8) & 0xFF;
         msg.payload[4] = canData.UID[slaveCounter] & 0xFF;
+        can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
+
+        msg.ID = CAN_ID_DIAG_VALIDATION;
+        msg.DLC = 4;
+        msg.payload[0] = canData.coulomCounter >> 24;
+        msg.payload[1] = canData.coulomCounter >> 16;
+        msg.payload[2] = canData.coulomCounter >> 8;
+        msg.payload[3] = canData.coulomCounter >> 0;
         can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
 
 
