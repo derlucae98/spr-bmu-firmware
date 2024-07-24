@@ -449,14 +449,49 @@ static void prv_evaluate_system(void) {
     float current = 0.0f;
     static uint8_t currentTimeout = 0;
 
+    /*
+     * Problem: Sometimes during TS activation both TS voltage measurements and the current measurement
+     * report a fault for a really short time (within one cycle of the contactor task).
+     * This leads to an AMS error, tripping the latch, but seems more to be an EMI issue.
+     * To prevent false trips, an error counter is used to check if the fault remains for a reasonable time.
+     */
+    static uint8_t errorCounterTsVoltage = 0;
+    static uint8_t errorCounterTsCurrent = 0;
+
     // Evaluate ADC data healthiness
     adc_data_t *adcData = get_adc_data(portMAX_DELAY);
     if (adcData != NULL) {
-        prvFaultTypes.currentFault = !adcData->currentValid;
-        prvFaultTypes.voltageFault = !adcData->voltageValid;
+        if (!adcData->currentValid) {
+            errorCounterTsCurrent++;
+        } else {
+            errorCounterTsCurrent = 0;
+        }
+
+        if (!adcData->voltageValid) {
+            errorCounterTsVoltage++;
+        } else {
+            errorCounterTsVoltage = 0;
+        }
+
         current = adcData->current;
         release_adc_data();
     }
+
+    if (errorCounterTsCurrent >= 3) {
+        // Error persists for ~300 ms
+        prvFaultTypes.currentFault = true;
+    } else {
+        prvFaultTypes.currentFault = false;
+    }
+
+    if (errorCounterTsVoltage >= 3) {
+        // Error persists for ~300 ms
+        prvFaultTypes.voltageFault = true;
+    } else {
+        prvFaultTypes.voltageFault = false;
+    }
+
+    prvFaultTypes.voltageFault = !adcData->voltageValid;
 
     // Overcurrent detection
     if (!prvFaultTypes.currentFault && current > MAX_CURRENT) {
