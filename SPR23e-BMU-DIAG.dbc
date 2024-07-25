@@ -46,7 +46,7 @@ BO_ 3221225472 VECTOR__INDEPENDENT_SIG_MSG: 0 Vector__XXX
  SG_ SlaveMpx : 0|4@0+ (1,0) [0|11] "" Vector__XXX
 
 BO_ 272 Validation: 4 Vector__XXX
- SG_ CoulombCounter : 7|32@0+ (1,0) [0|4294967295] "µAh" Vector__XXX
+ SG_ CoulombCounter : 7|32@0- (1,0) [-2147483648|2147483647] "µAh" Vector__XXX
 
 BO_ 267 Balancing_Feedback: 2 Vector__XXX
  SG_ Balancing_gates : 3|12@0+ (1,0) [0|0] "" Vector__XXX
