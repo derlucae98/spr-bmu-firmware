@@ -491,8 +491,6 @@ static void prv_evaluate_system(void) {
         prvFaultTypes.voltageFault = false;
     }
 
-    prvFaultTypes.voltageFault = !adcData->voltageValid;
-
     // Overcurrent detection
     if (!prvFaultTypes.currentFault && current > MAX_CURRENT) {
         currentTimeout++;
