@@ -90,7 +90,10 @@ static void can_send_task(void *p) {
     uint32_t resetReason = get_reset_reason();
     msg.ID = CAN_ID_DIAG_STARTUP;
     msg.DLC = 4;
-    memcpy(msg.payload, &resetReason, 4);
+    msg.payload[0] = resetReason >> 24;
+    msg.payload[1] = resetReason >> 16;
+    msg.payload[2] = resetReason >> 8;
+    msg.payload[3] = resetReason;
     can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
 
     while (1) {
