@@ -33,7 +33,7 @@ typedef struct {
     uint16_t minSoc;
     uint16_t maxSoc;
     bool socValid;
-    uint16_t dcLinkVoltage;
+    float dcLinkVoltage;
     bool dcLinkVoltageValid;
     uint8_t minTemp;
     uint8_t maxTemp;
@@ -196,8 +196,8 @@ static void can_send_task(void *p) {
         msg.payload[3] = canData.avgTemp;
         msg.payload[4] = canData.minSoc;
         msg.payload[5] = canData.maxSoc;
-        msg.payload[6] = (canData.dcLinkVoltage >> 8) & 0xFF;
-        msg.payload[7] = canData.dcLinkVoltage & 0xFF;
+        msg.payload[6] = ((uint16_t)canData.dcLinkVoltage >> 8) & 0xFF;
+        msg.payload[7] = (uint16_t)canData.dcLinkVoltage & 0xFF;
         can_enqueue_message(CAN_DIAG, &msg, pdMS_TO_TICKS(100));
         msg.ID = CAN_ID_VEHIC_STATS_2;
         can_enqueue_message(CAN_VEHIC, &msg, pdMS_TO_TICKS(100));
