@@ -233,6 +233,11 @@ static void prv_adc_task(void *p) {
         newAdcData.voltageValid = !adcError;
         newAdcData.currentValid = !currentInvalid;
 
+        if (fabs(current) > 81.9f) {
+            //Clip power if overrange is detected
+            newAdcData.current = (current / fabs(current)) * 81.9f; // Get sign and multiply by max value
+        }
+
         //The hook will provide the new data to a function, synchronous to the acquisition
         //Asynchronous access is possible using the access functions
         if (prv_adc_new_data_hook != NULL) {
