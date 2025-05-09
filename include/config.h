@@ -116,7 +116,8 @@ enum can_id_diag {
     CAN_ID_DIAG_UNIQUE_ID          = 0x10C,
     CAN_ID_DIAG_TIME               = 0x10D,
     CAN_ID_DIAG_REQUEST            = 0x10E,
-    CAN_ID_DIAG_RESPONSE           = 0x10F
+    CAN_ID_DIAG_RESPONSE           = 0x10F,
+    CAN_ID_DIAG_VALIDATION         = 0x110
 };
 
 

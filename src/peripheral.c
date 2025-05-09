@@ -15,7 +15,7 @@ BaseType_t get_peripheral_mutex(TickType_t blocktime) {
         configASSERT(prvPeripheralMutex);
     }
 
-    xSemaphoreTake(prvPeripheralMutex, blocktime);
+    return xSemaphoreTake(prvPeripheralMutex, blocktime);
 }
 
 void release_peripheral_mutex(void) {

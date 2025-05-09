@@ -42,165 +42,173 @@ VAL_TABLE_ States 1 "Active" 0 "Inactive" ;
 VAL_TABLE_ SlaveMultiplex 11 "Slave 12" 10 "Slave 11" 9 "Slave 10" 8 "Slave 9" 7 "Slave 8" 6 "Slave 7" 5 "Slave 6" 4 "Slave 5" 3 "Slave 4" 2 "Slave 3" 1 "Slave 2" 0 "Slave 1" ;
 
 
-BO_ 267 BMU_Diag_Balancing_Feedback: 2 Vector__XXX
- SG_ BMU_Balancing_gates : 3|12@0+ (1,0) [0|0] "" Vector__XXX
- SG_ BMU_SlaveMpx : 7|4@0+ (1,0) [0|11] "" Vector__XXX
+BO_ 3221225472 VECTOR__INDEPENDENT_SIG_MSG: 0 Vector__XXX
+ SG_ SlaveMpx : 0|4@0+ (1,0) [0|11] "" Vector__XXX
 
-BO_ 257 BMU_Diag_Startup: 4 Vector__XXX
- SG_ BMU_Reset_Reason : 7|32@0+ (1,0) [0|0] "" Vector__XXX
+BO_ 272 Validation: 4 Vector__XXX
+ SG_ CoulombCounter : 7|32@0- (1,0) [-2147483648|2147483647] "µAh" Vector__XXX
 
-BO_ 271 BMU_Diag_Diag_Response: 8 Vector__XXX
+BO_ 267 Balancing_Feedback: 2 Vector__XXX
+ SG_ Balancing_gates : 3|12@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ SlaveMpx : 7|4@0+ (1,0) [0|11] "" Vector__XXX
 
-BO_ 270 BMU_Diag_Diag_Request: 8 Vector__XXX
+BO_ 257 Startup: 4 Vector__XXX
+ SG_ Reset_Reason : 7|32@0+ (1,0) [0|0] "" Vector__XXX
 
-BO_ 256 BMU_Diag_TS_request: 2 Vector__XXX
- SG_ BMU_Request_Control : 0|1@0+ (1,0) [0|1] "" Vector__XXX
- SG_ BMU_TS_request : 15|8@0+ (1,0) [0|255] "" Vector__XXX
+BO_ 271 Diag_Response: 8 Vector__XXX
 
-BO_ 269 BMU_Diag_Time: 8 Vector__XXX
- SG_ BMU_Uptime : 0|32@1+ (0.1,0) [0|429496729.5] "s" Vector__XXX
- SG_ BMU_SysTime : 32|32@1+ (1,0) [0|4294967295] "s" Vector__XXX
+BO_ 270 Diag_Request: 8 Vector__XXX
 
-BO_ 261 BMU_Diag_UIP: 7 Vector__XXX
- SG_ BMU_BatteryPowerValid : 2|1@0+ (1,0) [0|1] "" Vector__XXX
- SG_ BMU_BatteryPower : 47|16@0- (0.0025,0) [-81.92|81.9175] "kW" Vector__XXX
- SG_ BMU_BatteryCurrent : 31|16@0- (0.00625,0) [-200|200] "A" Vector__XXX
- SG_ BMU_Battery_Current_Valid : 1|1@0+ (1,0) [0|0] "" Vector__XXX
- SG_ BMU_BatteryVoltage : 15|16@0+ (0.1,0) [0|620] "V" Vector__XXX
- SG_ BMU_Battery_Voltage_Valid : 0|1@0+ (1,0) [0|0] "" Vector__XXX
+BO_ 256 TS_request: 2 Vector__XXX
+ SG_ Request_Control : 0|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ TS_request : 15|8@0+ (1,0) [0|255] "" Vector__XXX
 
-BO_ 260 BMU_Diag_Stats2: 8 Vector__XXX
- SG_ BMU_DC_Link_Voltage_Valid : 2|1@0+ (1,0) [0|0] "" Vector__XXX
- SG_ BMU_DC_Link_Voltage : 55|16@0+ (0.1,0) [0|620] "V" Vector__XXX
- SG_ BMU_temperature_valid : 0|1@0+ (1,0) [0|0] "" Vector__XXX
- SG_ BMU_min_temperature : 15|8@0+ (0.5,0) [0|127.5] "°C" Vector__XXX
- SG_ BMU_min_soc : 39|8@0+ (1,0) [0|255] "%" Vector__XXX
- SG_ BMU_max_temperature : 23|8@0+ (0.5,0) [0|127.5] "°C" Vector__XXX
- SG_ BMU_soc_valid : 1|1@0+ (1,0) [0|0] "" Vector__XXX
- SG_ BMU_max_soc : 47|8@0+ (1,0) [0|255] "%" Vector__XXX
- SG_ BMU_avg_temperature : 31|8@0+ (0.5,0) [0|127.5] "°C" Vector__XXX
+BO_ 269 Time: 8 Vector__XXX
+ SG_ Uptime : 0|32@1+ (0.1,0) [0|429496729.5] "s" Vector__XXX
+ SG_ SysTime : 32|32@1+ (1,0) [0|4294967295] "s" Vector__XXX
 
-BO_ 259 BMU_Diag_Stats1: 7 Vector__XXX
- SG_ BMU_min_cell_voltage : 15|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ BMU_max_cell_voltage : 31|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ BMU_voltage_valid : 0|1@0+ (1,0) [0|0] "" Vector__XXX
- SG_ BMU_avg_cell_voltage : 47|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+BO_ 261 UIP: 7 Vector__XXX
+ SG_ BatteryPowerValid : 2|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ BatteryPower : 47|16@0- (0.0025,0) [-81.92|81.9175] "kW" Vector__XXX
+ SG_ BatteryCurrent : 31|16@0- (0.00625,0) [-200|200] "A" Vector__XXX
+ SG_ Battery_Current_Valid : 1|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ BatteryVoltage : 15|16@0+ (0.1,0) [0|620] "V" Vector__XXX
+ SG_ Battery_Voltage_Valid : 0|1@0+ (1,0) [0|0] "" Vector__XXX
 
-BO_ 258 BMU_Diag_Info: 7 Vector__XXX
- SG_ BMU_Error_code : 7|32@0+ (1,0) [0|65535] "" Vector__XXX
- SG_ BMU_TS_state : 49|2@0+ (1,0) [0|0] "" Vector__XXX
- SG_ BMU_isolation_resistance_valid : 55|1@0+ (1,0) [0|0] "" Vector__XXX
- SG_ BMU_isolation_resistance : 39|16@0+ (1,0) [0|65535] "kOhm" Vector__XXX
+BO_ 260 Stats2: 8 Vector__XXX
+ SG_ DC_Link_Voltage_Valid : 2|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ DC_Link_Voltage : 55|16@0+ (0.1,0) [0|620] "V" Vector__XXX
+ SG_ temperature_valid : 0|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ min_temperature : 15|8@0+ (0.5,0) [0|127.5] "°C" Vector__XXX
+ SG_ min_soc : 39|8@0+ (1,0) [0|255] "%" Vector__XXX
+ SG_ max_temperature : 23|8@0+ (0.5,0) [0|127.5] "°C" Vector__XXX
+ SG_ soc_valid : 1|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ max_soc : 47|8@0+ (1,0) [0|255] "%" Vector__XXX
+ SG_ avg_temperature : 31|8@0+ (0.5,0) [0|127.5] "°C" Vector__XXX
 
-BO_ 266 BMU_Diag_CellTemperature: 8 Vector__XXX
- SG_ BMU_CellTemperatureStatus6 : 3|2@0+ (1,0) [0|3] "" Vector__XXX
- SG_ BMU_CellTemperature6 : 63|8@0+ (0.5,0) [0|127.5] "°C" Vector__XXX
- SG_ BMU_CellTemperatureStatus5 : 1|2@0+ (1,0) [0|3] "" Vector__XXX
- SG_ BMU_CellTemperatureStatus4 : 15|2@0+ (1,0) [0|3] "" Vector__XXX
- SG_ BMU_CellTemperature5 : 55|8@0+ (0.5,0) [0|127.5] "°C" Vector__XXX
- SG_ BMU_CellTemperature4 : 47|8@0+ (0.5,0) [0|127.5] "°C" Vector__XXX
- SG_ BMU_CellTemperatureStatus3 : 13|2@0+ (1,0) [0|3] "" Vector__XXX
- SG_ BMU_CellTemperatureStatus2 : 11|2@0+ (1,0) [0|3] "" Vector__XXX
- SG_ BMU_CellTemperatureStatus1 : 9|2@0+ (1,0) [0|3] "" Vector__XXX
- SG_ BMU_CellTemperature3 : 39|8@0+ (0.5,0) [0|127.5] "°C" Vector__XXX
- SG_ BMU_CellTemperature2 : 31|8@0+ (0.5,0) [0|127.5] "°C" Vector__XXX
- SG_ BMU_CellTemperature1 : 23|8@0+ (0.5,0) [0|127.5] "°C" Vector__XXX
- SG_ BMU_SlaveMpx : 7|4@0+ (1,0) [0|11] "" Vector__XXX
+BO_ 259 Stats1: 7 Vector__XXX
+ SG_ min_cell_voltage : 15|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ max_cell_voltage : 31|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ voltage_valid : 0|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ avg_cell_voltage : 47|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
 
-BO_ 264 BMU_Diag_CellVoltage3: 8 Vector__XXX
- SG_ BMU_CellVoltageStatus09 : 13|2@0+ (1,0) [0|3] "" Vector__XXX
- SG_ BMU_CellVoltageStatus08 : 11|2@0+ (1,0) [0|3] "" Vector__XXX
- SG_ BMU_CellVoltageStatus07 : 9|2@0+ (1,0) [0|3] "" Vector__XXX
- SG_ BMU_SlaveMpx3 : 7|4@0+ (1,0) [0|11] "" Vector__XXX
- SG_ BMU_CellVoltage09 : 55|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ BMU_CellVoltage08 : 39|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ BMU_CellVoltage07 : 23|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+BO_ 258 Info: 7 Vector__XXX
+ SG_ Error_code : 7|32@0+ (1,0) [0|65535] "" Vector__XXX
+ SG_ TS_state : 49|2@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ isolation_resistance_valid : 55|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ isolation_resistance : 39|16@0+ (1,0) [0|65535] "kOhm" Vector__XXX
 
-BO_ 265 BMU_Diag_CellVoltage4: 8 Vector__XXX
- SG_ BMU_CellVoltageStatus12 : 13|2@0+ (1,0) [0|3] "" Vector__XXX
- SG_ BMU_CellVoltageStatus11 : 11|2@0+ (1,0) [0|3] "" Vector__XXX
- SG_ BMU_CellVoltageStatus10 : 9|2@0+ (1,0) [0|3] "" Vector__XXX
- SG_ BMU_SlaveMpx4 : 7|4@0+ (1,0) [0|11] "" Vector__XXX
- SG_ BMU_CellVoltage12 : 55|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ BMU_CellVoltage11 : 39|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ BMU_CellVoltage10 : 23|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+BO_ 266 CellTemperature: 8 Vector__XXX
+ SG_ CellTemperatureStatus6 : 3|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ CellTemperature6 : 63|8@0+ (0.5,0) [0|127.5] "°C" Vector__XXX
+ SG_ CellTemperatureStatus5 : 1|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ CellTemperatureStatus4 : 15|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ CellTemperature5 : 55|8@0+ (0.5,0) [0|127.5] "°C" Vector__XXX
+ SG_ CellTemperature4 : 47|8@0+ (0.5,0) [0|127.5] "°C" Vector__XXX
+ SG_ CellTemperatureStatus3 : 13|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ CellTemperatureStatus2 : 11|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ CellTemperatureStatus1 : 9|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ CellTemperature3 : 39|8@0+ (0.5,0) [0|127.5] "°C" Vector__XXX
+ SG_ CellTemperature2 : 31|8@0+ (0.5,0) [0|127.5] "°C" Vector__XXX
+ SG_ CellTemperature1 : 23|8@0+ (0.5,0) [0|127.5] "°C" Vector__XXX
+ SG_ SlaveMpx : 7|4@0+ (1,0) [0|11] "" Vector__XXX
 
-BO_ 263 BMU_Diag_CellVoltage2: 8 Vector__XXX
- SG_ BMU_CellVoltageStatus06 : 13|2@0+ (1,0) [0|3] "" Vector__XXX
- SG_ BMU_CellVoltageStatus05 : 11|2@0+ (1,0) [0|3] "" Vector__XXX
- SG_ BMU_CellVoltageStatus04 : 9|2@0+ (1,0) [0|3] "" Vector__XXX
- SG_ BMU_SlaveMpx2 : 7|4@0+ (1,0) [0|11] "" Vector__XXX
- SG_ BMU_CellVoltage06 : 55|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ BMU_CellVoltage05 : 39|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ BMU_CellVoltage04 : 23|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+BO_ 264 CellVoltage3: 8 Vector__XXX
+ SG_ CellVoltageStatus9 : 13|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ CellVoltageStatus8 : 11|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ CellVoltageStatus7 : 9|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ SlaveMpx : 7|4@0+ (1,0) [0|11] "" Vector__XXX
+ SG_ CellVoltage9 : 55|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ CellVoltage8 : 39|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ CellVoltage7 : 23|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
 
-BO_ 262 BMU_Diag_CellVoltage1: 8 Vector__XXX
- SG_ BMU_CellVoltageStatus03 : 13|2@0+ (1,0) [0|3] "" Vector__XXX
- SG_ BMU_CellVoltageStatus00 : 11|2@0+ (1,0) [0|3] "" Vector__XXX
- SG_ BMU_CellVoltageStatus01 : 9|2@0+ (1,0) [0|3] "" Vector__XXX
- SG_ BMU_CellWire0Status : 0|1@1- (1,0) [0|0] "" Vector__XXX
- SG_ BMU_SlaveMpx1 : 7|4@0+ (1,0) [0|11] "" Vector__XXX
- SG_ BMU_CellVoltage03 : 55|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ BMU_CellVoltage02 : 39|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
- SG_ BMU_CellVoltage01 : 23|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+BO_ 265 CellVoltage4: 8 Vector__XXX
+ SG_ CellVoltageStatus12 : 13|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ CellVoltageStatus11 : 11|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ CellVoltageStatus10 : 9|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ SlaveMpx : 7|4@0+ (1,0) [0|11] "" Vector__XXX
+ SG_ CellVoltage12 : 55|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ CellVoltage11 : 39|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ CellVoltage10 : 23|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
 
-BO_ 268 BMU_Diag_UniqueID: 5 Vector__XXX
- SG_ BMU_SlaveMpx : 7|4@0+ (1,0) [0|11] "" Vector__XXX
- SG_ BMU_UID : 15|32@0+ (1,0) [0|4294967295] "" Vector__XXX
+BO_ 263 CellVoltage2: 8 Vector__XXX
+ SG_ CellVoltageStatus6 : 13|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ CellVoltageStatus5 : 11|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ CellVoltageStatus4 : 9|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ SlaveMpx : 7|4@0+ (1,0) [0|11] "" Vector__XXX
+ SG_ CellVoltage6 : 55|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ CellVoltage5 : 39|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ CellVoltage4 : 23|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+
+BO_ 262 CellVoltage1: 8 Vector__XXX
+ SG_ CellVoltageStatus3 : 13|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ CellVoltageStatus2 : 11|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ CellVoltageStatus1 : 9|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ CellWire0Status : 0|1@1- (1,0) [0|0] "" Vector__XXX
+ SG_ SlaveMpx : 7|4@0+ (1,0) [0|11] "" Vector__XXX
+ SG_ CellVoltage3 : 55|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ CellVoltage2 : 39|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+ SG_ CellVoltage1 : 23|16@0+ (0.0001,0) [0|6.5535] "V" Vector__XXX
+
+BO_ 268 UniqueID: 5 Vector__XXX
+ SG_ SlaveMpx : 7|4@0+ (1,0) [0|11] "" Vector__XXX
+ SG_ UID : 15|32@0+ (1,0) [0|4294967295] "" Vector__XXX
 
 
 
-CM_ SG_ 267 BMU_Balancing_gates "Bit coded; Each bit represents one cell.
+CM_ BO_ 3221225472 "This is a message for not used signals, created by Vector CANdb++ DBC OLE DB Provider.";
+CM_ SG_ 267 Balancing_gates "Bit coded; Each bit represents one cell.
 LSB = Cell 1
 MSB = Cell 12";
 CM_ BO_ 257 "Message is sent on startup";
 CM_ BO_ 271 "See Spreadsheet for protocol documentation";
 CM_ BO_ 270 "See Spreadsheet for protocol documentation";
-CM_ SG_ 256 BMU_Request_Control "0 = TS request only possible on Vehicle Bus
+CM_ SG_ 256 Request_Control "0 = TS request only possible on Vehicle Bus
 1 = TS request only possible on Diag Bus
 
 This message has to be sent faster than 500 ms in case the value = 1. Otherwise a timeout is generated which gives the control back to the Vehicle Bus.";
-CM_ SG_ 256 BMU_TS_request "0xFF = On
+CM_ SG_ 256 TS_request "0xFF = On
 Else = Off";
-CM_ SG_ 269 BMU_SysTime "Unix timestamp";
-CM_ SG_ 258 BMU_Error_code "Bit-coded. Multiple errors can occur at the same time.";
-CM_ SG_ 262 BMU_CellWire0Status "0x0 = OK
+CM_ SG_ 269 SysTime "Unix timestamp";
+CM_ SG_ 258 Error_code "Bit-coded. Multiple errors can occur at the same time.";
+CM_ SG_ 262 CellWire0Status "0x0 = OK
 0x1 = Open";
-CM_ SG_ 268 BMU_UID "32 Bit unique ID";
+CM_ SG_ 268 UID "32 Bit unique ID";
 BA_DEF_  "BusType" STRING ;
 BA_DEF_DEF_  "BusType" "CAN";
-VAL_ 267 BMU_SlaveMpx 11 "Slave 12" 10 "Slave 11" 9 "Slave 10" 8 "Slave 9" 7 "Slave 8" 6 "Slave 7" 5 "Slave 6" 4 "Slave 5" 3 "Slave 4" 2 "Slave 3" 1 "Slave 2" 0 "Slave 1" ;
-VAL_ 261 BMU_Battery_Current_Valid 1 "true" 0 "false" ;
-VAL_ 261 BMU_Battery_Voltage_Valid 1 "true" 0 "false" ;
-VAL_ 260 BMU_DC_Link_Voltage_Valid 1 "true" 0 "false" ;
-VAL_ 260 BMU_temperature_valid 1 "true" 0 "false" ;
-VAL_ 260 BMU_soc_valid 1 "true" 0 "false" ;
-VAL_ 259 BMU_voltage_valid 1 "true" 0 "false" ;
-VAL_ 258 BMU_Error_code 1024 "IMD Powerstage disabled" 512 "AMS Powerstage disabled" 256 "Shutdown Circuit open" 128 "Pre-charge timeout" 64 "Current out of range" 32 "Current implausible" 16 "Battery voltage implausible" 8 "DC-Link Voltage implausible" 4 "Contactor Implausible" 2 "AMS Fault" 1 "IMD Fault" 0 "No Error" ;
-VAL_ 258 BMU_TS_state 3 "Error" 2 "Operate" 1 "Pre-charging" 0 "Standby" ;
-VAL_ 258 BMU_isolation_resistance_valid 1 "true" 0 "false" ;
-VAL_ 266 BMU_CellTemperatureStatus6 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
-VAL_ 266 BMU_CellTemperatureStatus5 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
-VAL_ 266 BMU_CellTemperatureStatus4 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
-VAL_ 266 BMU_CellTemperatureStatus3 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
-VAL_ 266 BMU_CellTemperatureStatus2 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
-VAL_ 266 BMU_CellTemperatureStatus1 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
-VAL_ 266 BMU_SlaveMpx 11 "Slave 12" 10 "Slave 11" 9 "Slave 10" 8 "Slave 9" 7 "Slave 8" 6 "Slave 7" 5 "Slave 6" 4 "Slave 5" 3 "Slave 4" 2 "Slave 3" 1 "Slave 2" 0 "Slave 1" ;
-VAL_ 264 BMU_CellVoltageStatus09 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
-VAL_ 264 BMU_CellVoltageStatus08 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
-VAL_ 264 BMU_CellVoltageStatus07 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
-VAL_ 264 BMU_SlaveMpx3 11 "Slave 12" 10 "Slave 11" 9 "Slave 10" 8 "Slave 9" 7 "Slave 8" 6 "Slave 7" 5 "Slave 6" 4 "Slave 5" 3 "Slave 4" 2 "Slave 3" 1 "Slave 2" 0 "Slave 1" ;
-VAL_ 265 BMU_CellVoltageStatus12 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
-VAL_ 265 BMU_CellVoltageStatus11 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
-VAL_ 265 BMU_CellVoltageStatus10 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
-VAL_ 265 BMU_SlaveMpx4 11 "Slave 12" 10 "Slave 11" 9 "Slave 10" 8 "Slave 9" 7 "Slave 8" 6 "Slave 7" 5 "Slave 6" 4 "Slave 5" 3 "Slave 4" 2 "Slave 3" 1 "Slave 2" 0 "Slave 1" ;
-VAL_ 263 BMU_CellVoltageStatus06 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
-VAL_ 263 BMU_CellVoltageStatus05 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
-VAL_ 263 BMU_CellVoltageStatus04 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
-VAL_ 263 BMU_SlaveMpx2 11 "Slave 12" 10 "Slave 11" 9 "Slave 10" 8 "Slave 9" 7 "Slave 8" 6 "Slave 7" 5 "Slave 6" 4 "Slave 5" 3 "Slave 4" 2 "Slave 3" 1 "Slave 2" 0 "Slave 1" ;
-VAL_ 262 BMU_CellVoltageStatus03 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
-VAL_ 262 BMU_CellVoltageStatus00 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
-VAL_ 262 BMU_CellVoltageStatus01 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
-VAL_ 262 BMU_SlaveMpx1 11 "Slave 12" 10 "Slave 11" 9 "Slave 10" 8 "Slave 9" 7 "Slave 8" 6 "Slave 7" 5 "Slave 6" 4 "Slave 5" 3 "Slave 4" 2 "Slave 3" 1 "Slave 2" 0 "Slave 1" ;
-VAL_ 268 BMU_SlaveMpx 11 "Slave 12" 10 "Slave 11" 9 "Slave 10" 8 "Slave 9" 7 "Slave 8" 6 "Slave 7" 5 "Slave 6" 4 "Slave 5" 3 "Slave 4" 2 "Slave 3" 1 "Slave 2" 0 "Slave 1" ;
+VAL_ 3221225472 SlaveMpx 11 "Slave 12" 10 "Slave 11" 9 "Slave 10" 8 "Slave 9" 7 "Slave 8" 6 "Slave 7" 5 "Slave 6" 4 "Slave 5" 3 "Slave 4" 2 "Slave 3" 1 "Slave 2" 0 "Slave 1" ;
+VAL_ 267 SlaveMpx 11 "Slave 12" 10 "Slave 11" 9 "Slave 10" 8 "Slave 9" 7 "Slave 8" 6 "Slave 7" 5 "Slave 6" 4 "Slave 5" 3 "Slave 4" 2 "Slave 3" 1 "Slave 2" 0 "Slave 1" ;
+VAL_ 261 Battery_Current_Valid 1 "true" 0 "false" ;
+VAL_ 261 Battery_Voltage_Valid 1 "true" 0 "false" ;
+VAL_ 260 DC_Link_Voltage_Valid 1 "true" 0 "false" ;
+VAL_ 260 temperature_valid 1 "true" 0 "false" ;
+VAL_ 260 soc_valid 1 "true" 0 "false" ;
+VAL_ 259 voltage_valid 1 "true" 0 "false" ;
+VAL_ 258 Error_code 1024 "IMD Powerstage disabled" 512 "AMS Powerstage disabled" 256 "Shutdown Circuit open" 128 "Pre-charge timeout" 64 "Current out of range" 32 "Current implausible" 16 "Battery voltage implausible" 8 "DC-Link Voltage implausible" 4 "Contactor Implausible" 2 "AMS Fault" 1 "IMD Fault" 0 "No Error" ;
+VAL_ 258 TS_state 3 "Error" 2 "Operate" 1 "Pre-charging" 0 "Standby" ;
+VAL_ 258 isolation_resistance_valid 1 "true" 0 "false" ;
+VAL_ 266 CellTemperatureStatus6 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
+VAL_ 266 CellTemperatureStatus5 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
+VAL_ 266 CellTemperatureStatus4 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
+VAL_ 266 CellTemperatureStatus3 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
+VAL_ 266 CellTemperatureStatus2 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
+VAL_ 266 CellTemperatureStatus1 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
+VAL_ 266 SlaveMpx 11 "Slave 12" 10 "Slave 11" 9 "Slave 10" 8 "Slave 9" 7 "Slave 8" 6 "Slave 7" 5 "Slave 6" 4 "Slave 5" 3 "Slave 4" 2 "Slave 3" 1 "Slave 2" 0 "Slave 1" ;
+VAL_ 264 CellVoltageStatus9 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
+VAL_ 264 CellVoltageStatus8 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
+VAL_ 264 CellVoltageStatus7 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
+VAL_ 264 SlaveMpx 11 "Slave 12" 10 "Slave 11" 9 "Slave 10" 8 "Slave 9" 7 "Slave 8" 6 "Slave 7" 5 "Slave 6" 4 "Slave 5" 3 "Slave 4" 2 "Slave 3" 1 "Slave 2" 0 "Slave 1" ;
+VAL_ 265 CellVoltageStatus12 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
+VAL_ 265 CellVoltageStatus11 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
+VAL_ 265 CellVoltageStatus10 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
+VAL_ 265 SlaveMpx 11 "Slave 12" 10 "Slave 11" 9 "Slave 10" 8 "Slave 9" 7 "Slave 8" 6 "Slave 7" 5 "Slave 6" 4 "Slave 5" 3 "Slave 4" 2 "Slave 3" 1 "Slave 2" 0 "Slave 1" ;
+VAL_ 263 CellVoltageStatus6 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
+VAL_ 263 CellVoltageStatus5 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
+VAL_ 263 CellVoltageStatus4 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
+VAL_ 263 SlaveMpx 11 "Slave 12" 10 "Slave 11" 9 "Slave 10" 8 "Slave 9" 7 "Slave 8" 6 "Slave 7" 5 "Slave 6" 4 "Slave 5" 3 "Slave 4" 2 "Slave 3" 1 "Slave 2" 0 "Slave 1" ;
+VAL_ 262 CellVoltageStatus3 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
+VAL_ 262 CellVoltageStatus2 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
+VAL_ 262 CellVoltageStatus1 3 "Invalid - Open sensor wire" 2 "Invalid - Value out of range" 1 "Invalid - PEC error" 0 "Valid" ;
+VAL_ 262 SlaveMpx 11 "Slave 12" 10 "Slave 11" 9 "Slave 10" 8 "Slave 9" 7 "Slave 8" 6 "Slave 7" 5 "Slave 6" 4 "Slave 5" 3 "Slave 4" 2 "Slave 3" 1 "Slave 2" 0 "Slave 1" ;
+VAL_ 268 SlaveMpx 11 "Slave 12" 10 "Slave 11" 9 "Slave 10" 8 "Slave 9" 7 "Slave 8" 6 "Slave 7" 5 "Slave 6" 4 "Slave 5" 3 "Slave 4" 2 "Slave 3" 1 "Slave 2" 0 "Slave 1" ;
 
